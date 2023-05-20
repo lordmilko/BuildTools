@@ -13,6 +13,13 @@
     <PackageReference Include="coverlet.collector" Version="3.0.2" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Reference Include="System.Management.Automation">
+			<HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\WindowsPowerShell\3.0\System.Management.Automation.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\BuildTools\BuildTools.csproj" />
   </ItemGroup>
