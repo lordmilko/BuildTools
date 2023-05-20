@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BuildTools
 {
@@ -10,11 +11,7 @@ namespace BuildTools
 
         public void AddSingleton(Type serviceType, Type implementationType)
         {
-            if (implementationType.IsInterface)
-                throw new ArgumentException($"Cannot create service using implementation type '{implementationType.Name}': type is an interface.", nameof(implementationType));
-
-            if (services.TryGetValue(serviceType, out _))
-                throw new InvalidOperationException($"Cannot create service '{serviceType.Name}': service has already been added to the {nameof(ServiceCollection)}.");
+            Validate(serviceType, implementationType);
 
             services[serviceType] = new ServiceDescriptor(serviceType, implementationType);
         }
@@ -23,12 +20,27 @@ namespace BuildTools
 
         public void Add(Type serviceType, Type implementationType) => AddSingleton(serviceType, implementationType);
 
+        public void Add<T>(Func<IServiceProvider, T> factory) where T : class
+        {
+            var type = factory.Method.ReturnType;
+
+            Validate(type, type);
+
+            services[type] = new ServiceDescriptor(type, type, factory);
+        }
+
+        private void Validate(Type serviceType, Type implementationType)
+        {
+            if (implementationType.IsInterface)
+                throw new ArgumentException($"Cannot create service using implementation type '{implementationType.Name}': type is an interface.", nameof(implementationType));
+
+            if (services.TryGetValue(serviceType, out _))
+                throw new InvalidOperationException($"Cannot create service '{serviceType.Name}': service has already been added to the {nameof(ServiceCollection)}.");
+        }
+
         public IServiceProvider Build()
         {
-            var serviceProvider = new ServiceProvider();
-
-            foreach (var service in services)
-                serviceProvider.AddSingleton(service.Value.ServiceType, service.Value.ImplementationType);
+            var serviceProvider = new ServiceProvider(services.Values.ToArray());
 
             return serviceProvider;
         }

@@ -1,12 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using static System.Linq.Expressions.Expression;
 
 namespace BuildTools
 {
     public class ServiceProvider : IServiceProvider
     {
+        private static MethodInfo getServiceMethod;
+
         private readonly Dictionary<Type, ServiceDescriptor> services = new Dictionary<Type, ServiceDescriptor>();
+
+        static ServiceProvider()
+        {
+            getServiceMethod = typeof(ServiceProviderExtensions).GetMethod(nameof(ServiceProviderExtensions.GetService));
+
+            if (getServiceMethod == null)
+                throw new InvalidOperationException($"Failed to find method {nameof(ServiceProviderExtensions)}.{nameof(ServiceProviderExtensions.GetService)}");
+        }
+
+        internal ServiceProvider(ServiceDescriptor[] serviceDescriptors)
+        {
+            foreach (var service in serviceDescriptors)
+                services[service.ServiceType] = service;
+        }
 
         public void AddSingleton<TService>() => AddSingleton<TService, TService>();
 
@@ -28,7 +46,18 @@ namespace BuildTools
         private object GetServiceInternal(Type serviceType, Stack<Type> resolutionScope)
         {
             if (!services.TryGetValue(serviceType, out var descriptor))
-                throw new InvalidOperationException($"Cannot retrieve service '{serviceType.Name}': service has not been registered with the service provider.");
+            {
+                if (serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(Lazy<>))
+                {
+                    var factory = MakeLazyFactory(serviceType);
+
+                    descriptor = new ServiceDescriptor(serviceType, serviceType, factory);
+
+                    services[serviceType] = descriptor;
+                }
+                else
+                    throw new InvalidOperationException($"Cannot retrieve service '{serviceType.Name}': service has not been registered with the service provider.");
+            }
 
             if (descriptor.Value != null)
                 return descriptor.Value;
@@ -44,7 +73,10 @@ namespace BuildTools
 
             try
             {
-                descriptor.Value = ResolveService(descriptor.ImplementationType, resolutionScope);
+                if (descriptor.Factory != null)
+                    descriptor.Value = descriptor.Factory(this);
+                else
+                    descriptor.Value = ResolveService(descriptor.ImplementationType, resolutionScope);
 
                 return descriptor.Value;
             }
@@ -52,6 +84,32 @@ namespace BuildTools
             {
                 resolutionScope.Pop();
             }
+        }
+
+        private Func<IServiceProvider, object> MakeLazyFactory(Type lazyType)
+        {
+            var realServiceType = lazyType.GetGenericArguments()[0];
+
+            var funcType = typeof(Func<>).MakeGenericType(realServiceType);
+
+            var realGetServiceMethod = getServiceMethod.MakeGenericMethod(realServiceType);
+
+            var providerParameter = Parameter(typeof(IServiceProvider), "provider");
+            var lazyCtor = lazyType.GetConstructor(new[] {funcType});
+
+            if (lazyCtor == null)
+                throw new InvalidOperationException($"Failed to find required constructor on type {lazyType.Name}");
+
+            var call = Call(realGetServiceMethod, providerParameter);
+            var innerLambda = Lambda(call);
+
+            var newLazy = New(lazyCtor, innerLambda);
+
+            var outerLambda = Lambda(newLazy, providerParameter);
+
+            var func = outerLambda.Compile();
+
+            return (Func<IServiceProvider, object>) func;
         }
 
         private object ResolveService(Type type, Stack<Type> resolutionScope)

@@ -127,6 +127,37 @@ namespace BuildTools.Tests
             );
         }
 
+        [TestMethod]
+        public void ServiceProvider_GetService_ExplicitLazy()
+        {
+            var serviceProvider = new ServiceCollection
+            {
+                {typeof(IIFace), typeof(IImpl)},
+                provider => new Lazy<IIFace>(provider.GetService<IIFace>)
+            }.Build();
+
+            var lazyValue = serviceProvider.GetService<Lazy<IIFace>>();
+            var realValue = lazyValue.Value;
+
+            Assert.IsNotNull(realValue);
+        }
+
+        [TestMethod]
+        public void ServiceProvider_GetService_DynamicLazy()
+        {
+            var serviceProvider = new ServiceCollection
+            {
+                {typeof(IIFace), typeof(IImpl)}
+            }.Build();
+
+            var lazyValue1 = serviceProvider.GetService<Lazy<IIFace>>();
+            var lazyValue2 = serviceProvider.GetService<Lazy<IIFace>>();
+            var realValue = lazyValue1.Value;
+
+            Assert.IsTrue(ReferenceEquals(lazyValue1, lazyValue2));
+            Assert.IsNotNull(realValue);
+        }
+
         #endregion
     }
 }

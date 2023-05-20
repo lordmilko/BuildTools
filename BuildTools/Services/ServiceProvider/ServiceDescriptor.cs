@@ -10,10 +10,13 @@ namespace BuildTools
 
         internal object Value { get; set; }
 
-        internal ServiceDescriptor(Type serviceType, Type implementationType)
+        internal Func<IServiceProvider, object> Factory { get; }
+
+        internal ServiceDescriptor(Type serviceType, Type implementationType, Func<IServiceProvider, object> factory = null)
         {
             ServiceType = serviceType;
             ImplementationType = implementationType;
+            Factory = factory;
         }
     }
 }
