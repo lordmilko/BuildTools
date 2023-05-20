@@ -21,10 +21,10 @@ namespace BuildTools.PowerShell
 
         IPowerShellModule[] GetInstalledModules(string name);
 
-        PowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null, bool skipPublisherCheck = false);
+        IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null, bool skipPublisherCheck = false);
 
-        PackageProvider GetPackageProvider(string name);
+        IPackageProvider GetPackageProvider(string name);
 
-        PackageProvider InstallPackageProvider(string name, Version minimumVersion = null);
+        IPackageProvider InstallPackageProvider(string name, Version minimumVersion = null);
     }
 }

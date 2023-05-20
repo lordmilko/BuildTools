@@ -3,7 +3,14 @@ using System.Management.Automation;
 
 namespace BuildTools.PowerShell
 {
-    public class PowerShellPackage
+    interface IPowerShellPackage
+    {
+        string Name { get; }
+
+        Version Version { get; }
+    }
+
+    public class PowerShellPackage : IPowerShellPackage
     {
         //Real type is SoftwareIdentity in Microsoft.PowerShell.PackageManagement.dll
 

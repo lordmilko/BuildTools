@@ -9,9 +9,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_NoVersion_NoneInstalled()
         {
-            Test((PowerShellDependencyInstaller installer, IPowerShellService powerShell, IConsoleLogger logger) =>
+            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
             {
-                var dep = new PowerShellModuleDependency("foo");
+                var dep = new PSPackageDependency("foo");
 
                 var result = installer.Install(dep, true);
 
@@ -28,9 +28,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_RequiredVersion_NoneInstalled()
         {
-            Test((PowerShellDependencyInstaller installer, IPowerShellService powerShell, IConsoleLogger logger) =>
+            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
             {
-                var dep = new PowerShellModuleDependency("foo", version: "2.0");
+                var dep = new PSPackageDependency("foo", version: "2.0");
 
                 var result = installer.Install(dep, true);
 
@@ -47,7 +47,7 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_RequiredVersion_LowerInstalled()
         {
-            Test((PowerShellDependencyInstaller installer, IPowerShellService powerShell, IConsoleLogger logger) =>
+            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
             {
                 var mockPowerShell = (MockPowerShellService)powerShell;
 
@@ -56,7 +56,7 @@ namespace BuildTools.Tests.Dependency
                     new MockPowerShellModule("foo", "1.0")
                 };
 
-                var dep = new PowerShellModuleDependency("foo", version: "2.0");
+                var dep = new PSPackageDependency("foo", version: "2.0");
 
                 var result = installer.Install(dep, true);
 
@@ -73,7 +73,7 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_RequiredVersion_ExactInstalled()
         {
-            Test((PowerShellDependencyInstaller installer, IPowerShellService powerShell, IConsoleLogger logger) =>
+            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
             {
                 var mockPowerShell = (MockPowerShellService)powerShell;
 
@@ -82,7 +82,7 @@ namespace BuildTools.Tests.Dependency
                     new MockPowerShellModule("foo", "2.0")
                 };
 
-                var dep = new PowerShellModuleDependency("foo", version: "2.0");
+                var dep = new PSPackageDependency("foo", version: "2.0");
 
                 var result = installer.Install(dep, true);
 
@@ -99,7 +99,7 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_RequiredVersion_HigherInstalled()
         {
-            Test((PowerShellDependencyInstaller installer, IPowerShellService powerShell, IConsoleLogger logger) =>
+            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
             {
                 var mockPowerShell = (MockPowerShellService)powerShell;
 
@@ -108,7 +108,7 @@ namespace BuildTools.Tests.Dependency
                     new MockPowerShellModule("foo", "2.0")
                 };
 
-                var dep = new PowerShellModuleDependency("foo", version: "1.0");
+                var dep = new PSPackageDependency("foo", version: "1.0");
 
                 var result = installer.Install(dep, true);
 
@@ -125,9 +125,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_MinimumVersion_NoneInstalled()
         {
-            Test((PowerShellDependencyInstaller installer, IPowerShellService powerShell, IConsoleLogger logger) =>
+            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
             {
-                var dep = new PowerShellModuleDependency("foo", minimumVersion: "2.0");
+                var dep = new PSPackageDependency("foo", minimumVersion: "2.0");
 
                 var result = installer.Install(dep, true);
 
@@ -144,7 +144,7 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_MinimumVersion_LowerInstalled()
         {
-            Test((PowerShellDependencyInstaller installer, IPowerShellService powerShell, IConsoleLogger logger) =>
+            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
             {
                 var mockPowerShell = (MockPowerShellService)powerShell;
 
@@ -153,7 +153,7 @@ namespace BuildTools.Tests.Dependency
                     new MockPowerShellModule("foo", "1.0")
                 };
 
-                var dep = new PowerShellModuleDependency("foo", minimumVersion: "2.0");
+                var dep = new PSPackageDependency("foo", minimumVersion: "2.0");
 
                 var result = installer.Install(dep, true);
 
@@ -170,7 +170,7 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_MinimumVersion_ExactInstalled()
         {
-            Test((PowerShellDependencyInstaller installer, IPowerShellService powerShell, IConsoleLogger logger) =>
+            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
             {
                 var mockPowerShell = (MockPowerShellService)powerShell;
 
@@ -179,7 +179,7 @@ namespace BuildTools.Tests.Dependency
                     new MockPowerShellModule("foo", "2.0")
                 };
 
-                var dep = new PowerShellModuleDependency("foo", minimumVersion: "2.0");
+                var dep = new PSPackageDependency("foo", minimumVersion: "2.0");
 
                 var result = installer.Install(dep, true);
 
@@ -196,7 +196,7 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_MinimumVersion_HigherInstalled()
         {
-            Test((PowerShellDependencyInstaller installer, IPowerShellService powerShell, IConsoleLogger logger) =>
+            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
             {
                 var mockPowerShell = (MockPowerShellService)powerShell;
 
@@ -205,7 +205,7 @@ namespace BuildTools.Tests.Dependency
                     new MockPowerShellModule("foo", "2.0")
                 };
 
-                var dep = new PowerShellModuleDependency("foo", minimumVersion: "1.0");
+                var dep = new PSPackageDependency("foo", minimumVersion: "1.0");
 
                 var result = installer.Install(dep, true);
 
@@ -223,7 +223,7 @@ namespace BuildTools.Tests.Dependency
         {
             serviceCollection = new ServiceCollection
             {
-                typeof(PowerShellDependencyInstaller),
+                typeof(PSPackageDependencyInstaller),
                 typeof(Logger),
                 typeof(EnvironmentService),
                 { typeof(IConsoleLogger), typeof(MockConsoleLogger) },

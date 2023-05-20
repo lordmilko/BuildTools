@@ -3,7 +3,14 @@ using System.Management.Automation;
 
 namespace BuildTools.PowerShell
 {
-    public class PackageProvider
+    interface IPackageProvider
+    {
+        string Name { get; }
+
+        Version Version { get; }
+    }
+
+    public class PackageProvider : IPackageProvider
     {
         public string Name { get; }
 
@@ -11,7 +18,7 @@ namespace BuildTools.PowerShell
 
         internal PackageProvider(PSObject pso)
         {
-            Name = (string)pso.Properties["Name"].Value;
+            Name = (string) pso.Properties["Name"].Value;
             Version = (Version) pso.Properties["Version"].Value;
         }
     }

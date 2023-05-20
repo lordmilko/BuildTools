@@ -7,6 +7,7 @@ namespace BuildTools.Tests
     class MockPowerShellService : IPowerShellService
     {
         public IPowerShellModule[] InstalledModules { get; set; }
+        public IPackageProvider InstalledPackageProvider { get; set; }
 
         public bool IsISE { get; }
         public PSEdition Edition { get; }
@@ -33,27 +34,26 @@ namespace BuildTools.Tests
             return InstalledModules ?? new IPowerShellModule[0];
         }
 
-        public PowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null,
+        public IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null,
             bool skipPublisherCheck = false)
         {
-            return new PowerShellPackage(new PSObject
-            {
-                Properties =
-                {
-                    new PSNoteProperty("Name", name),
-                    new PSNoteProperty("Version", (requiredVersion ?? minimumVersion ?? new Version("1.0")).ToString())
-                }
-            });
+            return new MockPowerShellPackage(
+                name,
+                requiredVersion ?? minimumVersion ?? new Version("1.0")
+            );
         }
 
-        public PackageProvider GetPackageProvider(string name)
+        public IPackageProvider GetPackageProvider(string name)
         {
-            throw new NotImplementedException();
+            return InstalledPackageProvider;
         }
 
-        public PackageProvider InstallPackageProvider(string name, Version minimumVersion = null)
+        public IPackageProvider InstallPackageProvider(string name, Version minimumVersion = null)
         {
-            throw new NotImplementedException();
+            return new MockPackageProvider(
+                name,
+                minimumVersion ?? new Version("1.0")
+            );
         }
     }
 }
