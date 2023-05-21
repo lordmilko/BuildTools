@@ -4,7 +4,7 @@ using BuildTools.PowerShell;
 
 namespace BuildTools.Tests
 {
-    class MockPowerShellService : IPowerShellService
+    class MockPowerShellService : IPowerShellService, IMock<IPowerShellService>
     {
         public IPowerShellModule[] InstalledModules { get; set; }
         public IPackageProvider InstalledPackageProvider { get; set; }
@@ -12,7 +12,7 @@ namespace BuildTools.Tests
         public bool IsISE { get; }
         public PSEdition Edition { get; }
         public bool IsProgressEnabled { get; }
-        public bool IsWindows { get; }
+        public bool IsWindows { get; set; }
 
         public CommandInfo GetCommand(string name)
         {

@@ -14,6 +14,10 @@ namespace BuildTools.Tests
 
         protected void Test<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action) => Test((Delegate)action);
 
+        protected void Test<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action) => Test((Delegate)action);
+
+        protected void Test<T1, T2, T3, T4, T5, T6>(Action<T1, T2, T3, T4, T5, T6> action) => Test((Delegate)action);
+
         protected void Test(Delegate action)
         {
             CreateServices(out var serviceCollection);
@@ -22,7 +26,17 @@ namespace BuildTools.Tests
 
             var parametersTypes = action.Method.GetParameters();
 
-            var parameters = parametersTypes.Select(p => serviceProvider.GetService(p.ParameterType)).ToArray();
+            var parameters = parametersTypes.Select(p =>
+            {
+                var type = p.ParameterType;
+
+                var mockIface = type.GetInterfaces().SingleOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMock<>));
+
+                if (mockIface != null)
+                    type = mockIface.GetGenericArguments()[0];
+
+                return serviceProvider.GetService(type);
+            }).ToArray();
 
             try
             {

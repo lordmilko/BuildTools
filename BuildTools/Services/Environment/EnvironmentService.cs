@@ -6,10 +6,14 @@ namespace BuildTools
 {
     class EnvironmentService
     {
+        private readonly IEnvironmentVariableProvider envProvider;
         private readonly IPowerShellService powerShell;
 
-        public EnvironmentService(IPowerShellService powerShell)
+        public EnvironmentService(
+            IEnvironmentVariableProvider envProvider,
+            IPowerShellService powerShell)
         {
+            this.envProvider = envProvider;
             this.powerShell = powerShell;
         }
 
@@ -30,9 +34,9 @@ namespace BuildTools
 
         public string ChocolateyInstall => Get(Env.ChocolateyInstall);
 
-        private string Get(string variable) => Environment.GetEnvironmentVariable(variable);
+        private string Get(string variable) => envProvider.GetValue(variable);
 
-        private void Set(string variable, string value) => Environment.SetEnvironmentVariable(variable, value);
+        private void Set(string variable, string value) => envProvider.SetValue(variable, value);
 
         public void AppendPath(string item)
         {

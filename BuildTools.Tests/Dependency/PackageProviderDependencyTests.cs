@@ -67,10 +67,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PackageProvider_NoVersion_AlreadyInstalled()
         {
-            Test((PSPackageProviderDependencyInstaller installer, IPowerShellService powerShell) =>
+            Test((PSPackageProviderDependencyInstaller installer, MockPowerShellService powerShell) =>
             {
-                var mockPowerShell = (MockPowerShellService) powerShell;
-                mockPowerShell.InstalledPackageProvider = new MockPackageProvider("foo", new Version("2.0"));
+                powerShell.InstalledPackageProvider = new MockPackageProvider("foo", new Version("2.0"));
 
                 var dep = new PSPackageProviderDependency("foo");
 
@@ -108,10 +107,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PackageProvider_MinimumVersion_LowerInstalled()
         {
-            Test((PSPackageProviderDependencyInstaller installer, IPowerShellService powerShell) =>
+            Test((PSPackageProviderDependencyInstaller installer, MockPowerShellService powerShell) =>
             {
-                var mockPowerShell = (MockPowerShellService)powerShell;
-                mockPowerShell.InstalledPackageProvider = new MockPackageProvider("foo", new Version("1.0"));
+                powerShell.InstalledPackageProvider = new MockPackageProvider("foo", new Version("1.0"));
 
                 var dep = new PSPackageProviderDependency("foo", minimumVersion: "2.0");
 
@@ -130,10 +128,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PackageProvider_MinimumVersion_ExactInstalled()
         {
-            Test((PSPackageProviderDependencyInstaller installer, IPowerShellService powerShell) =>
+            Test((PSPackageProviderDependencyInstaller installer, MockPowerShellService powerShell) =>
             {
-                var mockPowerShell = (MockPowerShellService)powerShell;
-                mockPowerShell.InstalledPackageProvider = new MockPackageProvider("foo", new Version("2.0"));
+                powerShell.InstalledPackageProvider = new MockPackageProvider("foo", new Version("2.0"));
 
                 var dep = new PSPackageProviderDependency("foo", minimumVersion: "2.0");
 
@@ -152,10 +149,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PackageProvider_MinimumVersion_HigherInstalled()
         {
-            Test((PSPackageProviderDependencyInstaller installer, IPowerShellService powerShell) =>
+            Test((PSPackageProviderDependencyInstaller installer, MockPowerShellService powerShell) =>
             {
-                var mockPowerShell = (MockPowerShellService)powerShell;
-                mockPowerShell.InstalledPackageProvider = new MockPackageProvider("foo", new Version("2.0"));
+                powerShell.InstalledPackageProvider = new MockPackageProvider("foo", new Version("2.0"));
 
                 var dep = new PSPackageProviderDependency("foo", minimumVersion: "1.0");
 
@@ -178,6 +174,7 @@ namespace BuildTools.Tests.Dependency
                 typeof(PSPackageProviderDependencyInstaller),
                 typeof(Logger),
                 typeof(EnvironmentService),
+                { typeof(IEnvironmentVariableProvider), typeof(MockEnvironmentVariableProvider) },
                 { typeof(IConsoleLogger), typeof(MockConsoleLogger) },
                 { typeof(IFileLogger), typeof(MockFileLogger) },
                 { typeof(IPowerShellService), typeof(MockPowerShellService) },

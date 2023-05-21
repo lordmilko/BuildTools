@@ -47,11 +47,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_RequiredVersion_LowerInstalled()
         {
-            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
+            Test((PSPackageDependencyInstaller installer, MockPowerShellService powerShell) =>
             {
-                var mockPowerShell = (MockPowerShellService)powerShell;
-
-                mockPowerShell.InstalledModules = new IPowerShellModule[]
+                powerShell.InstalledModules = new IPowerShellModule[]
                 {
                     new MockPowerShellModule("foo", "1.0")
                 };
@@ -73,11 +71,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_RequiredVersion_ExactInstalled()
         {
-            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
+            Test((PSPackageDependencyInstaller installer, MockPowerShellService powerShell) =>
             {
-                var mockPowerShell = (MockPowerShellService)powerShell;
-
-                mockPowerShell.InstalledModules = new IPowerShellModule[]
+                powerShell.InstalledModules = new IPowerShellModule[]
                 {
                     new MockPowerShellModule("foo", "2.0")
                 };
@@ -99,11 +95,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_RequiredVersion_HigherInstalled()
         {
-            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
+            Test((PSPackageDependencyInstaller installer, MockPowerShellService powerShell) =>
             {
-                var mockPowerShell = (MockPowerShellService)powerShell;
-
-                mockPowerShell.InstalledModules = new IPowerShellModule[]
+                powerShell.InstalledModules = new IPowerShellModule[]
                 {
                     new MockPowerShellModule("foo", "2.0")
                 };
@@ -144,11 +138,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_MinimumVersion_LowerInstalled()
         {
-            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
+            Test((PSPackageDependencyInstaller installer, MockPowerShellService powerShell) =>
             {
-                var mockPowerShell = (MockPowerShellService)powerShell;
-
-                mockPowerShell.InstalledModules = new IPowerShellModule[]
+                powerShell.InstalledModules = new IPowerShellModule[]
                 {
                     new MockPowerShellModule("foo", "1.0")
                 };
@@ -170,11 +162,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_MinimumVersion_ExactInstalled()
         {
-            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
+            Test((PSPackageDependencyInstaller installer, MockPowerShellService powerShell) =>
             {
-                var mockPowerShell = (MockPowerShellService)powerShell;
-
-                mockPowerShell.InstalledModules = new IPowerShellModule[]
+                powerShell.InstalledModules = new IPowerShellModule[]
                 {
                     new MockPowerShellModule("foo", "2.0")
                 };
@@ -196,11 +186,9 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void PowerShellDependency_Install_MinimumVersion_HigherInstalled()
         {
-            Test((PSPackageDependencyInstaller installer, IPowerShellService powerShell) =>
+            Test((PSPackageDependencyInstaller installer, MockPowerShellService powerShell) =>
             {
-                var mockPowerShell = (MockPowerShellService)powerShell;
-
-                mockPowerShell.InstalledModules = new IPowerShellModule[]
+                powerShell.InstalledModules = new IPowerShellModule[]
                 {
                     new MockPowerShellModule("foo", "2.0")
                 };
@@ -226,6 +214,7 @@ namespace BuildTools.Tests.Dependency
                 typeof(PSPackageDependencyInstaller),
                 typeof(Logger),
                 typeof(EnvironmentService),
+                { typeof(IEnvironmentVariableProvider), typeof(MockEnvironmentVariableProvider) },
                 { typeof(IConsoleLogger), typeof(MockConsoleLogger) },
                 { typeof(IFileLogger), typeof(MockFileLogger) },
                 { typeof(IPowerShellService), typeof(MockPowerShellService) },
