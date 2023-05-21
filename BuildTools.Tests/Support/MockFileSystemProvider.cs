@@ -8,6 +8,7 @@ namespace BuildTools.Tests
     {
         public Dictionary<string, bool> DirectoryMap { get; } = new Dictionary<string, bool>();
         public Dictionary<string, bool> FileMap { get; } = new Dictionary<string, bool>();
+        public Dictionary<string, string[]> DirectoryFiles { get; } = new Dictionary<string, string[]>();
 
         public bool DirectoryExists(string path)
         {
@@ -27,7 +28,10 @@ namespace BuildTools.Tests
 
         public IEnumerable<string> EnumerateFiles(string path)
         {
-            throw new System.NotImplementedException();
+            if (DirectoryFiles.TryGetValue(path, out var files))
+                return files;
+
+            throw new InvalidOperationException($"Files of directory '{path}' have not been set");
         }
     }
 }

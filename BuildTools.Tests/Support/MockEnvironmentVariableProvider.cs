@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BuildTools.Tests
 {
-    class MockEnvironmentVariableProvider : IEnvironmentVariableProvider
+    class MockEnvironmentVariableProvider : IEnvironmentVariableProvider, IMock<IEnvironmentVariableProvider>
     {
         private Dictionary<string, string> dict = new Dictionary<string, string>();
 

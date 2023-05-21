@@ -13,7 +13,7 @@ namespace BuildTools.PowerShell
 
         bool IsWindows { get; }
 
-        CommandInfo GetCommand(string name);
+        IPowerShellCommand GetCommand(string name);
 
         void WriteVerbose(string message);
 
@@ -26,5 +26,7 @@ namespace BuildTools.PowerShell
         IPackageProvider GetPackageProvider(string name);
 
         IPackageProvider InstallPackageProvider(string name, Version minimumVersion = null);
+
+        void Invoke(string script);
     }
 }

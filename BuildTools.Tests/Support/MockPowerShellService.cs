@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Management.Automation;
 using BuildTools.PowerShell;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BuildTools.Tests
 {
@@ -9,14 +11,21 @@ namespace BuildTools.Tests
         public IPowerShellModule[] InstalledModules { get; set; }
         public IPackageProvider InstalledPackageProvider { get; set; }
 
+        public Dictionary<string, IPowerShellCommand> KnownCommands { get; } = new Dictionary<string, IPowerShellCommand>();
+
+        public List<string> InvokedCommands { get; } = new List<string>();
+
         public bool IsISE { get; }
         public PSEdition Edition { get; }
         public bool IsProgressEnabled { get; }
         public bool IsWindows { get; set; }
 
-        public CommandInfo GetCommand(string name)
+        public IPowerShellCommand GetCommand(string name)
         {
-            throw new NotImplementedException();
+            if (KnownCommands.TryGetValue(name, out var command))
+                return command;
+
+            throw new InvalidOperationException($"Existence of command '{name}' has not been specified.");
         }
 
         public void WriteVerbose(string message)
@@ -54,6 +63,16 @@ namespace BuildTools.Tests
                 name,
                 minimumVersion ?? new Version("1.0")
             );
+        }
+
+        public void Invoke(string script)
+        {
+            InvokedCommands.Add(script);
+        }
+
+        public void AssertInvoked(string script)
+        {
+            Assert.IsTrue(InvokedCommands.Contains(script), $"Command '{script}' was not invoked");
         }
     }
 }
