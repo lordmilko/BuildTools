@@ -1,0 +1,1 @@
+start powershell -executionpolicy bypass -noexit -noninteractive -command "ipmo psreadline; $env:LORDMILKO_BUILDTOOLS_DEVELOPMENT=1; ipmo %~dp0\..\..\BuildTools\bin\Debug\BuildTools.dll; . '%~dp0\Build\Bootstrap.ps1'"

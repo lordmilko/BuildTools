@@ -9,8 +9,8 @@
         {
             Config = new ProjectConfig
             {
-                SolutionName = "Foo",
-                ProjectName = "Bar",
+                Name = "Foo",
+                SolutionName = "Bar",
                 CmdletPrefix = "Foo"
             };
         }

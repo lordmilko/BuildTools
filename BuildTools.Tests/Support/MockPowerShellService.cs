@@ -48,6 +48,11 @@ namespace BuildTools.Tests
             return InstalledModules ?? new IPowerShellModule[0];
         }
 
+        public IPowerShellModule RegisterModule(string name, IList<Type> cmdletTypes)
+        {
+            throw new NotImplementedException();
+        }
+
         public IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null,
             bool skipPublisherCheck = false)
         {
@@ -70,9 +75,10 @@ namespace BuildTools.Tests
             );
         }
 
-        public void Invoke(string script)
+        public object Invoke(string script, params object[] input)
         {
             InvokedCommands.Add(script);
+            return null;
         }
 
         public void AssertInvoked(string script)

@@ -38,5 +38,10 @@ namespace BuildTools.Tests
         {
             return new Version(1, 0);
         }
+
+        public string GetFileText(string path)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

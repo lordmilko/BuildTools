@@ -26,7 +26,23 @@ namespace BuildTools
 
             Validate(type, type);
 
-            services[type] = new ServiceDescriptor(type, type, factory);
+            services[type] = new ServiceDescriptor(type, type, factory: factory);
+        }
+
+        public void Add(Type serviceType, object implementation)
+        {
+            if (serviceType == null)
+                throw new ArgumentNullException(nameof(serviceType));
+
+            if (implementation == null)
+                throw new ArgumentNullException(nameof(implementation));
+
+            if (!serviceType.IsInstanceOfType(implementation))
+                throw new ArgumentException($"Implementation type '{implementation.GetType().Name}' does not implement service type '{serviceType.Name}'");
+
+            Validate(serviceType, serviceType);
+
+            services[serviceType] = new ServiceDescriptor(serviceType, implementation.GetType(), implementation: implementation);
         }
 
         private void Validate(Type serviceType, Type implementationType)

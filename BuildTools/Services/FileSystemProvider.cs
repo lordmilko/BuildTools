@@ -14,6 +14,8 @@ namespace BuildTools
         IEnumerable<string> EnumerateFiles(string path);
 
         Version GetVersionInfo(string fileName);
+
+        string GetFileText(string path);
     }
 
     class FileSystemProvider : IFileSystemProvider
@@ -28,5 +30,7 @@ namespace BuildTools
         {
             return new Version(FileVersionInfo.GetVersionInfo(fileName).FileVersion);
         }
+
+        public string GetFileText(string path) => File.ReadAllText(path);
     }
 }
