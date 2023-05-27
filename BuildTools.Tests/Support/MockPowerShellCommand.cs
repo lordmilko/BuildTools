@@ -1,4 +1,5 @@
-﻿using BuildTools.PowerShell;
+﻿using System;
+using BuildTools.PowerShell;
 
 namespace BuildTools.Tests
 {
@@ -6,6 +7,8 @@ namespace BuildTools.Tests
     {
         public string Name { get; }
         public string Source { get; }
+
+        public Version Version { get; }
 
         public MockPowerShellCommand(string name)
         {

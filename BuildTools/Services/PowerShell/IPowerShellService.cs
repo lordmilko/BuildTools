@@ -19,6 +19,8 @@ namespace BuildTools.PowerShell
 
         void WriteProgress(string message);
 
+        void WriteWarning(string message);
+
         IPowerShellModule[] GetInstalledModules(string name);
 
         IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null, bool skipPublisherCheck = false);

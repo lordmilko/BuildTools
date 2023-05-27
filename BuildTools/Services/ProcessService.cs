@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace BuildTools
@@ -6,6 +7,8 @@ namespace BuildTools
     interface IProcessService
     {
         void Execute(string fileName, string arguments = null, string errorFormat = null);
+
+        void Execute(string fileName, IEnumerable<string> arguments = null, string errorFormat = null);
     }
 
     class ProcessService : IProcessService
@@ -31,5 +34,8 @@ namespace BuildTools
                 );
             }
         }
+
+        public void Execute(string fileName, IEnumerable<string> arguments = null, string errorFormat = null) =>
+            Execute(fileName, arguments == null ? null : string.Join(" ", arguments), errorFormat);
     }
 }

@@ -33,5 +33,10 @@ namespace BuildTools.Tests
 
             throw new InvalidOperationException($"Files of directory '{path}' have not been set");
         }
+
+        public Version GetVersionInfo(string fileName)
+        {
+            return new Version(1, 0);
+        }
     }
 }

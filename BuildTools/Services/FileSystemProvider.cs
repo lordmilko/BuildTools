@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace BuildTools
@@ -10,6 +12,8 @@ namespace BuildTools
         bool FileExists(string path);
 
         IEnumerable<string> EnumerateFiles(string path);
+
+        Version GetVersionInfo(string fileName);
     }
 
     class FileSystemProvider : IFileSystemProvider
@@ -19,5 +23,10 @@ namespace BuildTools
         public bool FileExists(string path) => File.Exists(path);
 
         public IEnumerable<string> EnumerateFiles(string path) => Directory.EnumerateFiles(path);
+
+        public Version GetVersionInfo(string fileName)
+        {
+            return new Version(FileVersionInfo.GetVersionInfo(fileName).FileVersion);
+        }
     }
 }

@@ -3,6 +3,8 @@
     interface IWebClient
     {
         void DownloadFile(string url, string outputFile);
+
+        string GetString(string url);
     }
 
     class WebClient : IWebClient
@@ -12,6 +14,11 @@
         public void DownloadFile(string url, string outputFile)
         {
             webClient.DownloadFile(url, outputFile);
+        }
+
+        public string GetString(string url)
+        {
+            return webClient.DownloadString(url);
         }
     }
 }

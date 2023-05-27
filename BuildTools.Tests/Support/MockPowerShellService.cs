@@ -38,6 +38,11 @@ namespace BuildTools.Tests
             throw new NotImplementedException();
         }
 
+        public void WriteWarning(string message)
+        {
+            throw new NotImplementedException();
+        }
+
         public IPowerShellModule[] GetInstalledModules(string name)
         {
             return InstalledModules ?? new IPowerShellModule[0];

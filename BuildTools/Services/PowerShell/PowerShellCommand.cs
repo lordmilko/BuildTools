@@ -1,4 +1,5 @@
-﻿using System.Management.Automation;
+﻿using System;
+using System.Management.Automation;
 
 namespace BuildTools.PowerShell
 {
@@ -7,6 +8,8 @@ namespace BuildTools.PowerShell
         string Name { get; }
 
         string Source { get; }
+
+        Version Version { get; }
     }
 
     class PowerShellCommand : IPowerShellCommand
@@ -16,6 +19,8 @@ namespace BuildTools.PowerShell
         public string Name => commandInfo.Name;
 
         public string Source => commandInfo.Source;
+
+        public Version Version => commandInfo.Version;
 
         public PowerShellCommand(CommandInfo commandInfo)
         {

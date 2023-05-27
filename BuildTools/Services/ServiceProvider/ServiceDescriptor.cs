@@ -18,5 +18,13 @@ namespace BuildTools
             ImplementationType = implementationType;
             Factory = factory;
         }
+
+        public override string ToString()
+        {
+            if (ServiceType == ImplementationType)
+                return ServiceType.Name;
+
+            return $"{ServiceType.Name} ({ImplementationType.Name})";
+        }
     }
 }

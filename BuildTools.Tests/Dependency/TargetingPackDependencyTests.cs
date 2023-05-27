@@ -80,7 +80,7 @@ namespace BuildTools.Tests.Dependency
                     "4.5.2"
                 );
 
-                Assert.AreEqual(0, webClient.Downloaded.Count);
+                Assert.AreEqual(0, webClient.DownloadedFile.Count);
                 process.AssertExecuted($"{File452} /quiet /norestart");
             });
         }

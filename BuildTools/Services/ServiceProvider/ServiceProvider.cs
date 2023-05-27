@@ -41,9 +41,9 @@ namespace BuildTools
             services[serviceType] = new ServiceDescriptor(serviceType, implementationType);
         }
 
-        public object GetService(Type serviceType) => GetServiceInternal(serviceType, new Stack<Type>());
+        public object GetService(Type serviceType) => GetServiceInternal(serviceType, new Stack<ServiceDescriptor>());
 
-        private object GetServiceInternal(Type serviceType, Stack<Type> resolutionScope)
+        private object GetServiceInternal(Type serviceType, Stack<ServiceDescriptor> resolutionScope)
         {
             if (!services.TryGetValue(serviceType, out var descriptor))
             {
@@ -62,14 +62,14 @@ namespace BuildTools
             if (descriptor.Value != null)
                 return descriptor.Value;
 
-            if (resolutionScope.Contains(serviceType))
+            if (resolutionScope.Contains(descriptor))
             {
-                var str = string.Join(" -> ", resolutionScope.Select(r => r.Name));
+                var str = string.Join(" -> ", resolutionScope.Reverse().Select(r => r.ImplementationType.Name));
 
-                throw new InvalidOperationException($"Cannot resolve service '{serviceType.Name}': a recursive reference was found in hierarchy {str}.");
+                throw new InvalidOperationException($"Cannot resolve service '{serviceType.Name}': a recursive reference was found in hierarchy {str} -> {descriptor.ImplementationType.Name}.");
             }
 
-            resolutionScope.Push(serviceType);
+            resolutionScope.Push(descriptor);
 
             try
             {
@@ -112,7 +112,7 @@ namespace BuildTools
             return (Func<IServiceProvider, object>) func;
         }
 
-        private object ResolveService(Type type, Stack<Type> resolutionScope)
+        private object ResolveService(Type type, Stack<ServiceDescriptor> resolutionScope)
         {
             var ctors = type.GetConstructors();
 
