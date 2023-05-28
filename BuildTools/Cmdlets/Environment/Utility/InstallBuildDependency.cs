@@ -2,8 +2,8 @@
 
 namespace BuildTools.Cmdlets
 {
-    [CommandCategory(CommandCategory.Utility)]
     [Cmdlet(VerbsLifecycle.Install, "Dependency")]
+    [BuildCommand(CommandKind.InstallDependency, CommandCategory.Utility)]
     public abstract class InstallBuildDependency<TEnvironment> : BuildCmdlet<TEnvironment>
     {
         [Parameter(Mandatory = false, Position = 0)]

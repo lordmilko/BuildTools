@@ -3,12 +3,15 @@
 namespace BuildTools
 {
     [AttributeUsage(AttributeTargets.Class)]
-    class CommandCategoryAttribute : Attribute
+    class BuildCommandAttribute : Attribute
     {
+        public CommandKind Kind { get; }
+
         public CommandCategory Category { get; }
 
-        public CommandCategoryAttribute(CommandCategory category)
+        public BuildCommandAttribute(CommandKind kind, CommandCategory category)
         {
+            Kind = kind;
             Category = category;
         }
     }

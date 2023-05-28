@@ -1,7 +1,12 @@
 ﻿namespace BuildTools
 {
-    enum CommandCategory
+    public enum CommandCategory
     {
-        Utility
+        Build,
+        CI,
+        Help,
+        Test,
+        Utility,
+        Version
     }
 }
