@@ -6,4 +6,7 @@
 	SolutionName = 'CSharpProject'
 	
 	CmdletPrefix = 'Foo'
+
+	CopyrightAuthor = 'lordmilko'
+	CopyrightYear = '2023'
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
@@ -16,6 +17,17 @@ namespace BuildTools.Dynamic
 
         public List<Type> CmdletTypes { get; } = new List<Type>();
 
+        private static Type[] baseCmdletTypes;
+
+        static DynamicAssemblyBuilder()
+        {
+            baseCmdletTypes = typeof(BuildCommand).Assembly.GetTypes().Where(t =>
+                t.IsGenericTypeDefinition &&
+                t.GetCustomAttribute<BuildCommandAttribute>() != null
+                && t != typeof(StartModule<>)
+            ).ToArray();
+        }
+
         public DynamicAssemblyBuilder(ProjectConfig config)
         {
             this.config = config;
@@ -25,10 +37,13 @@ namespace BuildTools.Dynamic
         {
             EnvironmentId = DynamicAssembly.Instance.DefineEnvironment(config.Name);
 
-            DefineCmdlet(typeof(InstallBuildDependency<>));
+            foreach (var type in baseCmdletTypes)
+                DefineCmdlet(type);
+
+            DefineCmdlet(typeof(StartModule<>), config.Name);
         }
 
-        private void DefineCmdlet(Type baseType)
+        private void DefineCmdlet(Type baseType, string noun = null)
         {
             if (!baseType.IsGenericTypeDefinition)
                 throw new ArgumentException($"Cannot define cmdlet proxy for type '{baseType.Name}': type is not a generic type definition.");
@@ -44,10 +59,10 @@ namespace BuildTools.Dynamic
 
             var ctor = typeof(CmdletAttribute).GetConstructors().Single();
             var cmdletAttrib = genericBaseType.GetCustomAttribute<CmdletAttribute>();
-            var attributeBuilder = new CustomAttributeBuilder(ctor, new object[] {cmdletAttrib.VerbName, $"{config.CmdletPrefix}{cmdletAttrib.NounName}"});
+            var attributeBuilder = new CustomAttributeBuilder(ctor, new object[] {cmdletAttrib.VerbName, noun ?? $"{config.CmdletPrefix}{cmdletAttrib.NounName}"});
             typeBuilder.SetCustomAttribute(attributeBuilder);
 
-            typeBuilder.SetCustomAttribute(CloneAttribute<CommandCategoryAttribute>(genericBaseType));
+            typeBuilder.SetCustomAttribute(CloneAttribute<BuildCommandAttribute>(genericBaseType));
 
             CloneParameters(typeBuilder, genericBaseType);
 
@@ -140,6 +155,9 @@ namespace BuildTools.Dynamic
 
                     if (value is Type t && t.IsGenericTypeDefinition)
                         return t.MakeGenericType(EnvironmentId);
+
+                    if (value is ReadOnlyCollection<CustomAttributeTypedArgument> r)
+                        return r.Select(v => v.Value).ToArray();
 
                     return value;
                 }).ToArray(),

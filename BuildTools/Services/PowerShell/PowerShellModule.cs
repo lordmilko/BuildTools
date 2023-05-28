@@ -12,15 +12,15 @@ namespace BuildTools.PowerShell
 
     class PowerShellModule : IPowerShellModule
     {
-        private readonly PSModuleInfo module;
+        public PSModuleInfo Module { get; }
 
-        public string Name => module.Name;
+        public string Name => Module.Name;
 
-        public Version Version => module.Version;
+        public Version Version => Module.Version;
 
         public PowerShellModule(PSModuleInfo module)
         {
-            this.module = module;
+            Module = module;
         }
     }
 }

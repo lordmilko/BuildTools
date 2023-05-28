@@ -72,7 +72,7 @@ namespace BuildTools
                 if (attrib != null)
                 {
                     if (string.IsNullOrWhiteSpace(value?.ToString()))
-                        throw new InvalidOperationException("Property '' is required however no value was specified");
+                        throw new InvalidOperationException($"Property '{prop.Name}' is required however no value was specified");
                 }
                 else
                 {

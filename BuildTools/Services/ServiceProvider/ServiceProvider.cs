@@ -24,11 +24,21 @@ namespace BuildTools
         {
             foreach (var service in serviceDescriptors)
                 services[service.ServiceType] = service;
+
+            AddSingleton<IServiceProvider>(this);
         }
 
         public void AddSingleton<TService>() => AddSingleton<TService, TService>();
 
         public void AddSingleton<TService, TImplementation>() => AddSingleton(typeof(TService), typeof(TImplementation));
+
+        public void AddSingleton<TService>(TService implementation)
+        {
+            if (implementation == null)
+                throw new ArgumentNullException(nameof(implementation));
+
+            services[typeof(TService)] = new ServiceDescriptor(typeof(TService), implementation.GetType(), implementation: implementation);
+        }
 
         public void AddSingleton(Type serviceType, Type implementationType)
         {
@@ -51,7 +61,7 @@ namespace BuildTools
                 {
                     var factory = MakeLazyFactory(serviceType);
 
-                    descriptor = new ServiceDescriptor(serviceType, serviceType, factory);
+                    descriptor = new ServiceDescriptor(serviceType, serviceType, factory: factory);
 
                     services[serviceType] = descriptor;
                 }
@@ -76,7 +86,10 @@ namespace BuildTools
                 if (descriptor.Factory != null)
                     descriptor.Value = descriptor.Factory(this);
                 else
-                    descriptor.Value = ResolveService(descriptor.ImplementationType, resolutionScope);
+                {
+                    if (descriptor.Value == null)
+                        descriptor.Value = ResolveService(descriptor.ImplementationType, resolutionScope);
+                }
 
                 return descriptor.Value;
             }

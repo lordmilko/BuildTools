@@ -28,6 +28,11 @@ namespace BuildTools.Tests
             throw new InvalidOperationException($"Existence of command '{name}' has not been specified.");
         }
 
+        public void WriteColor(string message, ConsoleColor? color = null, bool newLine = true)
+        {
+            throw new NotImplementedException();
+        }
+
         public void WriteVerbose(string message)
         {
             throw new NotImplementedException();

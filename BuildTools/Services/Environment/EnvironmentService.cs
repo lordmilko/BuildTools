@@ -15,6 +15,10 @@ namespace BuildTools
         {
             this.envProvider = envProvider;
             this.powerShell = powerShell;
+
+            //DotnetDependencyInstaller depends on EnvironmentService, so we know this environment variable
+            //will get initialized before we start invoking dotnet commands
+            DotnetSkipFirstTimeExperience = "1";
         }
 
         public bool IsAppveyor => !string.IsNullOrEmpty(Get(Env.Appveyor));
@@ -33,6 +37,12 @@ namespace BuildTools
         public string ProgramFilesx86 => Get(Env.ProgramFilesx86);
 
         public string ChocolateyInstall => Get(Env.ChocolateyInstall);
+
+        public string DotnetSkipFirstTimeExperience
+        {
+            get => Get(Env.DotnetSkipFirstTimeExperience);
+            set => Set(Env.DotnetSkipFirstTimeExperience, value);
+        }
 
         private string Get(string variable) => envProvider.GetValue(variable);
 

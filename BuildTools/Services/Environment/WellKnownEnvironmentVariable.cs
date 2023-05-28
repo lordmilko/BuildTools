@@ -14,5 +14,7 @@
         public const string ProgramFilesx86 = "ProgramFiles(x86)";
 
         public const string ChocolateyInstall = "ChocolateyInstall";
+
+        public const string DotnetSkipFirstTimeExperience = "DOTNET_SKIP_FIRST_TIME_EXPERIENCE";
     }
 }

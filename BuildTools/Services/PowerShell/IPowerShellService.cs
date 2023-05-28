@@ -15,6 +15,8 @@ namespace BuildTools.PowerShell
 
         IPowerShellCommand GetCommand(string name);
 
+        void WriteColor(string message, ConsoleColor? color = null, bool newLine = true);
+
         void WriteVerbose(string message);
 
         void WriteProgress(string message);
@@ -32,5 +34,7 @@ namespace BuildTools.PowerShell
         IPackageProvider InstallPackageProvider(string name, Version minimumVersion = null);
 
         object Invoke(string script, params object[] input);
+
+        void InitializePrompt(ProjectConfig config);
     }
 }
