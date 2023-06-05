@@ -65,6 +65,9 @@ namespace BuildTools
                 typeof(HelpBuilder),
                 typeof(Logger),
 
+                //Cmdlet Services
+                typeof(ClearBuildService),
+
                 typeof(DotnetDependencyInstaller),
                 typeof(ChocolateyDependencyInstaller),
                 typeof(PSPackageDependencyInstaller),
@@ -81,6 +84,7 @@ namespace BuildTools
                 { typeof(IHelpService), typeof(HelpService) },
                 { typeof(IPowerShellService), typeof(PowerShellService) },
                 { typeof(IProcessService), typeof(ProcessService) },
+                { typeof(IVsProductLocator), typeof(VsProductLocator) },
                 { typeof(IWebClient), typeof(WebClient) }
             };
 

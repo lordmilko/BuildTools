@@ -1,16 +1,15 @@
-﻿using System;
-using System.Management.Automation;
+﻿using System.Management.Automation;
 
 namespace BuildTools.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Clear, "Build")]
+    [Cmdlet(VerbsCommon.Clear, "Build", DefaultParameterSetName = ParameterSet.Default)]
     [BuildCommand(CommandKind.ClearBuild, CommandCategory.Build)]
     public abstract class ClearBuild<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
-        [Parameter(Mandatory = false)]
+        [Parameter(Mandatory = false, ParameterSetName = ParameterSet.Default)]
         public BuildConfiguration Configuration { get; set; } = BuildConfiguration.Debug;
 
-        [Parameter(Mandatory = false)]
+        [Parameter(Mandatory = true, ParameterSetName = ParameterSet.Full)] //todo: make sure nothing else is in this set including -legacy
         public SwitchParameter Full { get; set; }
 
         public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
@@ -39,7 +38,12 @@ namespace BuildTools.Cmdlets
 
         protected override void ProcessRecordEx()
         {
-            throw new NotImplementedException();
+            var clearService = GetService<ClearBuildService>();
+
+            if (Full)
+                clearService.ClearFull();
+            else
+                clearService.ClearMSBuild(Configuration, IsLegacyMode); //todo: pass config and -legacy
         }
     }
 }

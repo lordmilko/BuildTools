@@ -14,5 +14,10 @@
                 CmdletPrefix = "Foo"
             };
         }
+
+        public string GetSolutionPath()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

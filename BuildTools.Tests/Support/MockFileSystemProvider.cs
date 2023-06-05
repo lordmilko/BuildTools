@@ -26,6 +26,28 @@ namespace BuildTools.Tests
             throw new InvalidOperationException($"Existence of file '{path}' has not been set");
         }
 
+        public void DeleteDirectory(string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeleteFile(string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<string> EnumerateDirectories(string path, string searchPattern = "*",
+            SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<string> EnumerateFiles(string path, string searchPattern = "*",
+            SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<string> EnumerateFiles(string path)
         {
             if (DirectoryFiles.TryGetValue(path, out var files))

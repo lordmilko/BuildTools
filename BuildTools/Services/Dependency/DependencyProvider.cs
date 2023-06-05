@@ -51,19 +51,19 @@ namespace BuildTools
 
             dependencies = new Dependency[]
             {
-                new ChocolateyDependency(                                   minimumVersion: "0.10.5.0"),
+                new ChocolateyDependency(                                    minimumVersion: "0.10.5.0"),
                 new DotnetDependency(),
                 new ChocolateyPackageDependency("codecov"),
-                new ChocolateyPackageDependency("opencover.portable",       minimumVersion: "4.7.922.0", commandName: "opencover.console", displayName: "OpenCover"),
-                new ChocolateyPackageDependency("reportgenerator.portable", minimumVersion: "3.0.0.0",   commandName: "reportgenerator",   displayName: "ReportGenerator"),
-                new ChocolateyPackageDependency("vswhere",                  minimumVersion: "2.6.7"),
-                new ChocolateyPackageDependency("NuGet.CommandLine",        minimumVersion: "5.2.0",     commandName: "nuget",             displayName: "NuGet"),
-                new PSPackageProviderDependency  ("NuGetProvider",            minimumVersion: "2.8.5.201"),
-                new PSPackageDependency ("PowerShellGet",            minimumVersion: "2.0.0"),
+                new ChocolateyPackageDependency("opencover.portable",        minimumVersion: "4.7.922.0", commandName: "opencover.console", displayName: "OpenCover"),
+                new ChocolateyPackageDependency("reportgenerator.portable",  minimumVersion: "3.0.0.0",   commandName: "reportgenerator",   displayName: "ReportGenerator"),
+                new ChocolateyPackageDependency(WellKnownDependency.vswhere, minimumVersion: "2.6.7"),
+                new ChocolateyPackageDependency("NuGet.CommandLine",         minimumVersion: "5.2.0",     commandName: "nuget",             displayName: "NuGet"),
+                new PSPackageProviderDependency  ("NuGetProvider",           minimumVersion: "2.8.5.201"),
+                new PSPackageDependency ("PowerShellGet",                    minimumVersion: "2.0.0"),
                 Pester(),
                 new PSPackageDependency ("PSScriptAnalyzer"),
-                new TargetingPackDependency    ("net452",                   version: "4.5.2"),
-                new TargetingPackDependency    ("net461",                   version: "4.6.1"),
+                new TargetingPackDependency    ("net452",                    version: "4.5.2"),
+                new TargetingPackDependency    ("net461",                    version: "4.6.1"),
             };
         }
 
@@ -118,14 +118,14 @@ namespace BuildTools
             return matches;
         }
 
-        public DependencyResult Install(string name, bool log, bool logSkipped = false)
+        public DependencyResult Install(string name, bool log = true, bool logSkipped = false)
         {
             var dependency = GetDependency(name);
 
             return Install(dependency, log, logSkipped);
         }
 
-        public DependencyResult Install(Dependency dependency, bool log, bool logSkipped = false)
+        public DependencyResult Install(Dependency dependency, bool log = true, bool logSkipped = false)
         {
             if (dependency == null)
                 throw new ArgumentNullException(nameof(dependency));

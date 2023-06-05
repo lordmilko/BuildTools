@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using BuildTools.PowerShell;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -19,16 +18,11 @@ namespace BuildTools.Tests
 
         public List<string> Executed { get; } = new List<string>();
 
-        public void Execute(string fileName, string arguments = null, string errorFormat = null)
+        public string Execute(string fileName, ArgList arguments = default, string errorFormat = null, bool writeHost = false)
         {
+            var argList = arguments.Arguments;
+
             Executed.Add($"{fileName} {arguments}");
-        }
-
-        public void Execute(string fileName, IEnumerable<string> arguments = null, string errorFormat = null)
-        {
-            var argList = arguments?.ToArray();
-
-            Execute(fileName, arguments == null ? null : string.Join(" ", argList), errorFormat);
 
             if (fileName == "choco" && argList != null && argList.Length >= 2 && argList[0] == "install")
             {
@@ -38,6 +32,13 @@ namespace BuildTools.Tests
                 Assert.IsNull(command);
                 powerShell.KnownCommands[dependency.CommandName] = new MockPowerShellCommand(dependency.Name);
             }
+
+            return string.Empty;
+        }
+
+        public bool IsRunning(string processName)
+        {
+            throw new NotImplementedException();
         }
 
         public void AssertExecuted(string fileNameAndArgs)

@@ -2,7 +2,7 @@
 {
     class DotnetDependency : Dependency
     {
-        public DotnetDependency() : base("dotnet", DependencyType.Dotnet)
+        public DotnetDependency() : base(WellKnownDependency.Dotnet, DependencyType.Dotnet)
         {
         }
     }

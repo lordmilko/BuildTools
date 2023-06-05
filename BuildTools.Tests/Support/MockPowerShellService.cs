@@ -33,6 +33,11 @@ namespace BuildTools.Tests
             throw new NotImplementedException();
         }
 
+        public void WriteError(ErrorRecord errorRecord)
+        {
+            throw new NotImplementedException();
+        }
+
         public void WriteVerbose(string message)
         {
             throw new NotImplementedException();
@@ -84,6 +89,11 @@ namespace BuildTools.Tests
         {
             InvokedCommands.Add(script);
             return null;
+        }
+
+        public void InitializePrompt(ProjectConfig config)
+        {
+            throw new NotImplementedException();
         }
 
         public void AssertInvoked(string script)

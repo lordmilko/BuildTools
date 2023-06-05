@@ -3,7 +3,7 @@
     public static class ParameterSet
     {
         public const string Default = "DefaultSet";
-
+        public const string Full = "FullSet";
         public const string ListAvailable = "ListAvailableSet";
 
         public const string Integration = "IntegrationSet";

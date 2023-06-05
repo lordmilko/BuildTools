@@ -114,7 +114,7 @@ namespace BuildTools
             if (!isManager || action == "upgrade")
             {
                 if (!isManager)
-                    provider.Install("chocolatey", log, logSkipped);
+                    provider.Install(WellKnownDependency.Chocolatey, log, logSkipped);
 
                 process.Execute("choco", chocoArgs);
             }
@@ -130,7 +130,7 @@ namespace BuildTools
             return new DependencyResult(dependency, command.Version, DependencyAction.Success);
         }
 
-        private string GetChocolateyCommand(string commandName, bool allowPath = true)
+        public string GetChocolateyCommand(string commandName, bool allowPath = true)
         {
             if (!commandName.EndsWith(".exe"))
                 commandName += ".exe";

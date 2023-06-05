@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Management.Automation;
 
 namespace BuildTools.PowerShell
 {
@@ -16,6 +17,8 @@ namespace BuildTools.PowerShell
         IPowerShellCommand GetCommand(string name);
 
         void WriteColor(string message, ConsoleColor? color = null, bool newLine = true);
+
+        void WriteError(ErrorRecord errorRecord);
 
         void WriteVerbose(string message);
 
