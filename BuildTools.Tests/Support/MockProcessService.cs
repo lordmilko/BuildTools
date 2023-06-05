@@ -18,7 +18,7 @@ namespace BuildTools.Tests
 
         public List<string> Executed { get; } = new List<string>();
 
-        public string Execute(string fileName, ArgList arguments = default, string errorFormat = null, bool writeHost = false)
+        public string[] Execute(string fileName, ArgList arguments = default, string errorFormat = null, bool writeHost = false)
         {
             var argList = arguments.Arguments;
 
@@ -33,7 +33,7 @@ namespace BuildTools.Tests
                 powerShell.KnownCommands[dependency.CommandName] = new MockPowerShellCommand(dependency.Name);
             }
 
-            return string.Empty;
+            return new string[0];
         }
 
         public bool IsRunning(string processName)

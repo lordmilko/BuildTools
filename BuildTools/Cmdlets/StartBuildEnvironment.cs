@@ -9,13 +9,16 @@ namespace BuildTools.Cmdlets
     public class StartBuildEnvironment : BuildCmdlet<object>
     {
         [Parameter(Mandatory = true, Position = 0)]
-        public string Root { get; set; }
+        public string BuildRoot { get; set; }
+
+        [Parameter(Mandatory = false, Position = 1)]
+        public string File { get; set; }
 
         protected override void ProcessRecordEx()
         {
             var factory = GetService<IProjectConfigProviderFactory>();
 
-            var configProvider = factory.CreateProvider(Root);
+            var configProvider = factory.CreateProvider(BuildRoot, File);
 
             //Build dynamic cmdlet types based on the configuration file
             var dynamicAssemblyBuilder = new DynamicAssemblyBuilder(configProvider.Config);

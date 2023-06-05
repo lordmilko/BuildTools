@@ -15,7 +15,7 @@
             };
         }
 
-        public string GetSolutionPath()
+        public string GetSolutionPath(bool isLegacy)
         {
             throw new System.NotImplementedException();
         }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Management.Automation;
 using System.Reflection;
 using BuildTools.PowerShell;
 
@@ -23,9 +24,17 @@ namespace BuildTools
             this.powerShell = powerShell;
         }
 
-        public IProjectConfigProvider CreateProvider(string root)
+        public IProjectConfigProvider CreateProvider(string buildRoot, string file)
         {
-            var configFile = Path.Combine(root, "Config.psd1");
+            if (file == null)
+                file = "Config.psd1";
+            else
+            {
+                if (!file.EndsWith(".psd1", StringComparison.OrdinalIgnoreCase))
+                    file += ".psd1";
+            }
+
+            var configFile = Path.Combine(buildRoot, file);
 
             if (!fileSystem.FileExists(configFile))
                 throw new FileNotFoundException($"Could not find build environment config file '{configFile}'", configFile);
@@ -38,7 +47,7 @@ namespace BuildTools
 
             ValidateConfig(config);
 
-            return new ProjectConfigProvider(config);
+            return new ProjectConfigProvider(config, buildRoot, fileSystem);
         }
 
         private ProjectConfig BuildConfig(Hashtable hashTable)
@@ -59,6 +68,31 @@ namespace BuildTools
 
                 if (!string.IsNullOrWhiteSpace(value?.ToString()))
                 {
+                    if (value is ScriptBlock sb)
+                    {
+                        Func<ProjectConfigResolutionContext, string> func = ctx =>
+                        {
+                            var result = sb.InvokeWithContext(null,
+                                new List<PSVariable>
+                                {
+                                    new PSVariable("_", ctx)
+                                }
+                            );
+
+                            var str = result?.FirstOrDefault()?.BaseObject.ToString();
+
+                            if (str == null)
+                                throw new InvalidOperationException($"Expected {nameof(ScriptBlock)} '{sb}' to return a value.");
+
+                            return str;
+                        };
+
+                        value = func;
+                    }
+
+                    if (value.GetType() != prop.PropertyType)
+                        value = LanguagePrimitives.ConvertTo(value, prop.PropertyType);
+
                     prop.SetValue(config, value);
                 }
             }

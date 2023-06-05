@@ -102,7 +102,7 @@ namespace BuildTools
 
                 if (!WriteHost)
                 {
-                    errorMsg = $"{errorMsg} {writer}";
+                    errorMsg = $"{errorMsg}{Environment.NewLine}{Environment.NewLine}{writer}";
                 }
 
                 throw new InvalidOperationException(

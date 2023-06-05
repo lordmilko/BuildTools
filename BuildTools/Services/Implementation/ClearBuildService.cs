@@ -86,7 +86,7 @@ namespace BuildTools
 
         private void ClearNetFramework(BuildConfiguration configuration)
         {
-            var solutionPath = configProvider.GetSolutionPath();
+            var solutionPath = configProvider.GetSolutionPath(true);
 
             var msbuild = vsProductLocator.GetMSBuild();
 
@@ -106,7 +106,7 @@ namespace BuildTools
         {
             dependencyProvider.Install(WellKnownDependency.Dotnet);
 
-            var solutionPath = configProvider.GetSolutionPath();
+            var solutionPath = configProvider.GetSolutionPath(false);
 
             if (!powerShell.IsWindows)
             {
