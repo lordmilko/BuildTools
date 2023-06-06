@@ -54,7 +54,7 @@ namespace BuildTools
 
                 if (fileSystem.DirectoryExists(bin))
                 {
-                    logger.LogError($"\tRemoving {bin}");
+                    logger.LogAttention($"\tRemoving {bin}");
                     RemoveItems(bin);
                 }
 
@@ -62,7 +62,7 @@ namespace BuildTools
                 {
                     //obj will be automatically recreated and removed each time Clear-PrtgBuild is run,
                     //due to dotnet/msbuild clean recreating it
-                    logger.LogError($"\tRemoving {obj}");
+                    logger.LogAttention($"\tRemoving {obj}");
                     RemoveItems(bin);
                 }
 
@@ -132,7 +132,7 @@ namespace BuildTools
         private void ClearCommon()
         {
             if (processService.IsRunning("devenv"))
-                logger.LogError("Warning: Visual Studio is currently running. Some items may not be able to be removed");
+                logger.LogAttention("Warning: Visual Studio is currently running. Some items may not be able to be removed");
 
             var root = configProvider.SolutionRoot;
 
@@ -148,7 +148,7 @@ namespace BuildTools
 
             foreach (var file in files)
             {
-                logger.LogError($"\t\tRemoving '{file}'");
+                logger.LogAttention($"\t\tRemoving '{file}'");
 
                 fileSystem.DeleteFile(file);
             }
@@ -159,7 +159,7 @@ namespace BuildTools
             {
                 if (fileSystem.DirectoryExists(folder))
                 {
-                    logger.LogError($"\t\tRemoving '{folder}'");
+                    logger.LogAttention($"\t\tRemoving '{folder}'");
 
                     fileSystem.DeleteDirectory(folder);
                 }
@@ -180,7 +180,7 @@ namespace BuildTools
 
             foreach (var file in files)
             {
-                logger.LogError($"\tRemoving {file}");
+                logger.LogAttention($"\tRemoving {file}");
                 fileSystem.DeleteFile(file);
             }
         }
