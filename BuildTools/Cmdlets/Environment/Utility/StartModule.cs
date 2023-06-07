@@ -44,5 +44,10 @@ If -Legacy is true, {help.Command} will skip enumerating target frameworks and i
         {
             throw new System.NotImplementedException();
         }
+
+        public string[] GetLegacyParameterSets()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

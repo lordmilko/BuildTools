@@ -47,5 +47,10 @@ Note that if {help.Command} detects that the .git folder is missing from the rep
         {
             throw new NotImplementedException();
         }
+
+        public string[] GetLegacyParameterSets()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -15,6 +15,48 @@ namespace BuildTools
         private IPowerShellService powerShell;
         private HelpBuilder helpBuilder;
 
+        static HelpService()
+        {
+            InitializeHelpCommentsParser();
+        }
+
+        #region Reflection
+
+        private static MethodInfo HelpCommentsParser_GetHelpCommentTokens;
+        private static MethodInfo HelpCommentsParser_CreateFromComments;
+
+        //Instance Fields
+        private static FieldInfo HelpCommentsParser_ScriptBlock;
+        private static FieldInfo HelpCommentsParser_CommandName;
+
+        //Instance Methods
+        private static ConstructorInfo HelpCommentsParser_Ctor;
+        private static MethodInfo HelpCommentsParser_AnalyzeCommentBlock;
+
+        private static void InitializeHelpCommentsParser()
+        {
+            var typeName = "System.Management.Automation.HelpCommentsParser";
+
+            var helpCommentsParserType = typeof(PSCmdlet).Assembly.GetType(typeName);
+
+            if (helpCommentsParserType == null)
+                throw new InvalidOperationException($"Failed to find type '{typeName}'.");
+
+            //Static Methods
+            HelpCommentsParser_GetHelpCommentTokens = helpCommentsParserType.GetStaticInternalMethod("GetHelpCommentTokens");
+            HelpCommentsParser_CreateFromComments = helpCommentsParserType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(m => m.Name == "CreateFromComments" && m.GetParameters().Length == 4);
+
+            //Instance Fields
+            HelpCommentsParser_ScriptBlock = helpCommentsParserType.GetInternalFieldInfo("scriptBlock");
+            HelpCommentsParser_CommandName = helpCommentsParserType.GetInternalFieldInfo("commandName");
+
+            //Instance Methods
+            HelpCommentsParser_Ctor = helpCommentsParserType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).Single(c => c.GetParameters().Length == 2);
+            HelpCommentsParser_AnalyzeCommentBlock = helpCommentsParserType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic).Single(m => m.Name == "AnalyzeCommentBlock" && m.GetParameters().Single().ParameterType == typeof(List<Token>));
+        }
+
+        #endregion
+
         public HelpService(
             IPowerShellService powerShell,
             HelpBuilder helpBuilder)
@@ -35,51 +77,35 @@ namespace BuildTools
             var scriptBlockTokenCache = new Dictionary<Ast, Token[]>();
             var commands = ((PowerShellModule)module).Module.ExportedCmdlets.Values;
 
-            foreach (var commandInfo in commands.Take(1))
+            foreach (var commandInfo in commands)
             {
-                var helpBlock = helpBuilder.CreateBlock(commandInfo);
-                var helpInfo = GetHelpInfo(commandInfo, context, helpBlock, scriptBlockTokenCache);
+                using (new HelpMetadataHolder(commandInfo))
+                {
+                    var helpBlock = helpBuilder.CreateBlock(commandInfo);
+                    var helpInfo = GetHelpInfo(commandInfo, context, helpBlock, scriptBlockTokenCache);
 
-                addToCommandCache.Invoke(
-                    provider,
-                    new[] { commandInfo.ModuleName, commandInfo.Name, helpInfo }
-                );
+                    addToCommandCache.Invoke(
+                        provider,
+                        new[] { commandInfo.ModuleName, commandInfo.Name, helpInfo }
+                    );
+                }
             }
         }
 
         private object GetHelpInfo(CommandInfo commandInfo, object context, ScriptBlock sb, Dictionary<Ast, Token[]> scriptBlockTokenCache)
         {
-            var typeName = "System.Management.Automation.HelpCommentsParser";
-
-            var helpCommentsParserType = typeof(PSCmdlet).Assembly.GetType(typeName);
-
-            if (helpCommentsParserType == null)
-                throw new InvalidOperationException($"Failed to find type '{typeName}'.");
-
-            //Static Methods
-            var getHelpCommentTokensMethod = helpCommentsParserType.GetStaticInternalMethod("GetHelpCommentTokens");
-            var createFromCommentsMethod = helpCommentsParserType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(m => m.Name == "CreateFromComments" && m.GetParameters().Length == 4);
-
-            //Instance Fields
-            var helpCommentsParserScriptBlock = helpCommentsParserType.GetInternalFieldInfo("scriptBlock");
-            var helpCommentsParserCommandName = helpCommentsParserType.GetInternalFieldInfo("commandName");
-
-            //Instance Methods
-            var helpCommentsParserCtor = helpCommentsParserType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).Single(c => c.GetParameters().Length == 2);
-            var analyzeCommentBlockMethod = helpCommentsParserType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic).Single(m => m.Name == "AnalyzeCommentBlock" && m.GetParameters().Single().ParameterType == typeof(List<Token>));
-
             var ast = sb.Ast;
 
-            var commentTokens = (Tuple<List<Token>, List<string>>) getHelpCommentTokensMethod.Invoke(null, new object[]{ast, scriptBlockTokenCache});
+            var commentTokens = (Tuple<List<Token>, List<string>>) HelpCommentsParser_GetHelpCommentTokens.Invoke(null, new object[]{ast, scriptBlockTokenCache});
             var comments = commentTokens.Item1;
             var parameterDescriptions = commentTokens.Item2;
 
-            var helpCommentsParser = helpCommentsParserCtor.Invoke(new object[] {commandInfo, parameterDescriptions});
-            helpCommentsParserScriptBlock.SetValue(helpCommentsParser, sb);
-            helpCommentsParserCommandName.SetValue(helpCommentsParser, commandInfo.Name);
-            analyzeCommentBlockMethod.Invoke(helpCommentsParser, new object[] {comments});
+            var helpCommentsParser = HelpCommentsParser_Ctor.Invoke(new object[] {commandInfo, parameterDescriptions});
+            HelpCommentsParser_ScriptBlock.SetValue(helpCommentsParser, sb);
+            HelpCommentsParser_CommandName.SetValue(helpCommentsParser, commandInfo.Name);
+            HelpCommentsParser_AnalyzeCommentBlock.Invoke(helpCommentsParser, new object[] {comments});
 
-            var helpInfo = createFromCommentsMethod.Invoke(
+            var helpInfo = HelpCommentsParser_CreateFromComments.Invoke(
                 null,
                 new[]
                 {

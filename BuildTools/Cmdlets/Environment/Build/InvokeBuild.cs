@@ -65,5 +65,10 @@ In the event you wish to debug your build, the -Dbg parameter can be specified. 
         {
             throw new NotImplementedException();
         }
+
+        public string[] GetLegacyParameterSets()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

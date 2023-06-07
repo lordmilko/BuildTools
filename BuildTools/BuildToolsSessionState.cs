@@ -11,6 +11,8 @@ namespace BuildTools
         internal static IServiceProvider ServiceProvider<TEnvironment>() =>
             ServiceProvider(typeof(TEnvironment));
 
+        internal static bool HeadlessUI { get; set; }
+
         internal static IServiceProvider ServiceProvider(Type environment)
         {
             if (environment == null)

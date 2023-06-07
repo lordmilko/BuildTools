@@ -41,5 +41,10 @@ For more information on the version components that may be processed, please see
         {
             throw new NotImplementedException();
         }
+
+        public string[] GetLegacyParameterSets()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

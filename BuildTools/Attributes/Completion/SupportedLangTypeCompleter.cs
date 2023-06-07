@@ -32,14 +32,14 @@ namespace BuildTools
         }
     }
 
-    class SupportedPackageTypeCompleter<TEnvironment> : SupportedLangTypeValidator<TEnvironment>
+    class SupportedPackageTypeCompleter<TEnvironment> : SupportedLangTypeCompleter<TEnvironment>
     {
         public SupportedPackageTypeCompleter() : base(c => c.PackageTypes)
         {
         }
     }
 
-    class SupportedTestTypeCompleter<TEnvironment> : SupportedLangTypeValidator<TEnvironment>
+    class SupportedTestTypeCompleter<TEnvironment> : SupportedLangTypeCompleter<TEnvironment>
     {
         public SupportedTestTypeCompleter() : base(c => c.TestTypes)
         {

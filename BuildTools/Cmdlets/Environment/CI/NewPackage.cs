@@ -47,5 +47,10 @@ Unlike packaging done in CI builds, {help.Command} does not verify that the cont
         {
             throw new NotImplementedException();
         }
+
+        public string[] GetLegacyParameterSets()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

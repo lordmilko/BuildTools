@@ -38,5 +38,10 @@ namespace BuildTools.Cmdlets
         {
             throw new NotImplementedException();
         }
+
+        public string[] GetLegacyParameterSets()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

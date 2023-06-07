@@ -45,7 +45,7 @@ namespace BuildTools.PowerShell
         {
             var ui = ActiveCmdlet.Host.UI;
 
-            if (color == null)
+            if (color == null || BuildToolsSessionState.HeadlessUI)
             {
                 if (newline)
                     ui.WriteLine(message);
@@ -83,6 +83,38 @@ namespace BuildTools.PowerShell
 
             return results.Select(r => (IPowerShellModule) new PowerShellModule((PSModuleInfo) UnwrapPSObject(r))).ToArray();
         }
+
+        public IPowerShellModule RegisterModule(string name, IList<Type> cmdletTypes)
+        {
+            if (cmdletTypes == null)
+                throw new ArgumentNullException(nameof(cmdletTypes));
+
+            if (cmdletTypes.Count == 0)
+                throw new InvalidOperationException("At least one cmdlet type should be specified");
+
+            var module = (PSModuleInfo) Invoke($"New-Module {name}.Build {{}}");
+
+            var cmdletInfoModule = typeof(CmdletInfo).GetProperty(nameof(CmdletInfo.Module));
+
+            foreach (var type in cmdletTypes)
+            {
+                var attrib = type.GetCustomAttribute<CmdletAttribute>();
+
+                var cmdletName = $"{attrib.VerbName}-{attrib.NounName}";
+                var info = new CmdletInfo(cmdletName, type);
+
+                addExportedCmdletMethod.Invoke(module, new object[] {info});
+                cmdletInfoModule.GetSetMethod(true).Invoke(info, new object[] {module});
+            }
+
+            var result = (PSModuleInfo) Invoke("$input | Import-Module -PassThru", module);
+
+            if (result == null)
+                throw new InvalidOperationException("Dynamic module could not be created.");
+
+            return new PowerShellModule(result);
+        }
+
         public IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null, bool skipPublisherCheck = false)
         {
             var args = new List<string>
@@ -152,6 +184,9 @@ namespace BuildTools.PowerShell
 
         public void InitializePrompt(ProjectConfig config)
         {
+            if (BuildToolsSessionState.HeadlessUI)
+                return;
+
             ActiveCmdlet.Host.UI.RawUI.WindowTitle = $"{config.Name} Build Environment";
 
             if (!IsISE)

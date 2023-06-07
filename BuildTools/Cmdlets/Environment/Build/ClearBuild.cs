@@ -9,7 +9,7 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false, ParameterSetName = ParameterSet.Default)]
         public BuildConfiguration Configuration { get; set; } = BuildConfiguration.Debug;
 
-        [Parameter(Mandatory = true, ParameterSetName = ParameterSet.Full)] //todo: make sure nothing else is in this set including -legacy
+        [Parameter(Mandatory = true, ParameterSetName = ParameterSet.Full)]
         public SwitchParameter Full { get; set; }
 
         public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
@@ -44,6 +44,11 @@ namespace BuildTools.Cmdlets
                 clearService.ClearFull();
             else
                 clearService.ClearMSBuild(Configuration, IsLegacyMode); //todo: pass config and -legacy
+        }
+
+        public string[] GetLegacyParameterSets()
+        {
+            return new[] {ParameterSet.Default};
         }
     }
 }

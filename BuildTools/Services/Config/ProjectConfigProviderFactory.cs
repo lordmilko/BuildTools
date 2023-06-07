@@ -30,7 +30,9 @@ namespace BuildTools
                 file = "Config.psd1";
             else
             {
-                if (!file.EndsWith(".psd1", StringComparison.OrdinalIgnoreCase))
+                var ext = Path.GetExtension(file);
+
+                if (!file.EndsWith(".psd1", StringComparison.OrdinalIgnoreCase) && ext.Length <= 3)
                     file += ".psd1";
             }
 
@@ -52,6 +54,9 @@ namespace BuildTools
 
         private ProjectConfig BuildConfig(Hashtable hashTable)
         {
+            if (hashTable == null)
+                throw new InvalidOperationException($"Config file did not contain a {nameof(hashTable)}");
+
             var config = new ProjectConfig();
             var props = typeof(ProjectConfig).GetProperties().ToDictionary(p => p.Name, p => p);
 
@@ -105,7 +110,7 @@ namespace BuildTools
 
                 if (attrib != null)
                 {
-                    if (string.IsNullOrWhiteSpace(value?.ToString()))
+                    if (IsMissingValue(value))
                         throw new InvalidOperationException($"Property '{prop.Name}' is required however no value was specified");
                 }
                 else
@@ -119,6 +124,23 @@ namespace BuildTools
             }
 
             return config;
+        }
+
+        private bool IsMissingValue(object value)
+        {
+            if (value == null)
+                return true;
+
+            var type = value.GetType();
+
+            if (type.IsValueType)
+            {
+                var @default = Activator.CreateInstance(type);
+
+                return value.Equals(@default);
+            }
+
+            return string.IsNullOrWhiteSpace(value.ToString());
         }
 
         private void ValidateConfig(ProjectConfig config)

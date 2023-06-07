@@ -1,6 +1,9 @@
-﻿namespace BuildTools.Cmdlets
+﻿using System.Management.Automation;
+
+namespace BuildTools.Cmdlets
 {
-    interface ILegacyProvider
+    interface ILegacyProvider : IDynamicParameters
     {
+        string[] GetLegacyParameterSets();
     }
 }

@@ -15,12 +15,15 @@ namespace BuildTools.Reflection
             return fieldInfo;
         }
 
-        public static PropertyInfo GetInternalPropertyInfo(this object obj, string name)
+        public static PropertyInfo GetInternalPropertyInfo(this object obj, string name) =>
+            GetInternalPropertyInfo(obj.GetType(), name);
+
+        public static PropertyInfo GetInternalPropertyInfo(this Type type, string name)
         {
-            var propertyInfo = obj.GetType().GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            var propertyInfo = type.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
 
             if (propertyInfo == null)
-                throw new MissingMemberException(obj.GetType().Name, name);
+                throw new MissingMemberException(type.Name, name);
 
             return propertyInfo;
         }

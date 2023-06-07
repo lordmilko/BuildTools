@@ -58,10 +58,21 @@ namespace BuildTools.Cmdlets
             {
                 if (NeedLegacyParameterInternal(this is ILegacyProvider, powerShell))
                 {
-                    dict.Add(LegacyParameterName, new RuntimeDefinedParameter(LegacyParameterName, typeof(SwitchParameter), new Collection<Attribute>
+                    var provider = (ILegacyProvider) this;
+
+                    var sets = provider.GetLegacyParameterSets();
+
+                    //Setting the ParameterSetName to null or empty causes the set to revert to AllParameterSets
+                    if (sets == null || sets.Length == 0)
+                        sets = new string[] {null};
+
+                    foreach (var set in sets)
                     {
-                        new ParameterAttribute { Mandatory = false }
-                    }));
+                        dict.Add(LegacyParameterName, new RuntimeDefinedParameter(LegacyParameterName, typeof(SwitchParameter), new Collection<Attribute>
+                        {
+                            new ParameterAttribute { Mandatory = false, ParameterSetName = set }
+                        }));
+                    }
                 }
             });
 

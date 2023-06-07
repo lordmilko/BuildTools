@@ -58,5 +58,10 @@ When the coverage analysis has completed, a HTML report detailing the results of
         {
             throw new NotImplementedException();
         }
+
+        public string[] GetLegacyParameterSets()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
