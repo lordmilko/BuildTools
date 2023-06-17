@@ -40,6 +40,9 @@ namespace BuildTools
             set => prompt = value;
         }
 
+        [Optional]
+        public Either<Func<ProjectConfigResolutionContext, string>, string> BuildFilter { get; set; }
+
         #endregion
         #region TestTypes
 

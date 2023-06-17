@@ -89,14 +89,31 @@ namespace BuildTools
             }
         }
 
+        /// <summary>
+        /// Gets the filename of the solution.
+        /// </summary>
+        /// <param name="isLegacy">Whether to get the legacy filename or not.</param>
+        /// <returns>The name of the solution file.</returns>
         public string GetSolutionName(bool isLegacy)
         {
-            if (Config.SolutionName.IsLeft)
-                return Config.SolutionName.Left(new ProjectConfigResolutionContext { IsLegacy = isLegacy });
+            string name;
 
-            return Config.SolutionName.Right;
+            if (Config.SolutionName.IsLeft)
+                name = Config.SolutionName.Left(new ProjectConfigResolutionContext { IsLegacy = isLegacy });
+            else
+                name = Config.SolutionName.Right;
+
+            if (!name.EndsWith(".sln", StringComparison.OrdinalIgnoreCase))
+                name += ".sln";
+
+            return name;
         }
 
         public string GetSolutionPath(bool isLegacy) => Path.Combine(SolutionRoot, GetSolutionName(isLegacy));
+
+        public BuildProject[] GetProjects(bool isLegacy)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

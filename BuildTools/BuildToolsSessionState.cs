@@ -69,6 +69,7 @@ namespace BuildTools
 
                 //Cmdlet Services
                 typeof(ClearBuildService),
+                typeof(InvokeBuildService),
 
                 typeof(DotnetDependencyInstaller),
                 typeof(ChocolateyDependencyInstaller),

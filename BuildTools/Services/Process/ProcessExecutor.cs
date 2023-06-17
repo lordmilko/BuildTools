@@ -105,7 +105,7 @@ namespace BuildTools
                     errorMsg = $"{errorMsg}{Environment.NewLine}{Environment.NewLine}{writer}";
                 }
 
-                throw new InvalidOperationException(
+                throw new ProcessException(
                     string.Format(
                         errorMsg,
                         process.ExitCode

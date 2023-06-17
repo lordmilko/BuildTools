@@ -26,6 +26,8 @@ namespace BuildTools
 
         public IProjectConfigProvider CreateProvider(string buildRoot, string file)
         {
+            buildRoot = Path.GetFullPath(buildRoot);
+
             if (file == null)
                 file = "Config.psd1";
             else

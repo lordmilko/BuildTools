@@ -84,7 +84,7 @@ namespace BuildTools
                     if (chocolateyDependency.Version != null)
                         versionStr = $" version {chocolateyDependency.Version}";
 
-                    if (log && !logSkipped)
+                    if (log && logSkipped)
                         logger.LogInformation($"\tSkipping installing package '{dependency}'{versionStr} as it is already installed");
 
                     return new DependencyResult(dependency, existingVersion, DependencyAction.Skipped);

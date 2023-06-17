@@ -19,5 +19,10 @@
         {
             throw new System.NotImplementedException();
         }
+
+        public BuildProject[] GetProjects(bool isLegacy)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

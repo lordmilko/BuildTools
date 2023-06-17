@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Management.Automation;
+using BuildTools.PowerShell;
 
 namespace BuildTools.Cmdlets
 {
@@ -8,24 +9,46 @@ namespace BuildTools.Cmdlets
     public abstract class InvokeBuild<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
         [Parameter(Mandatory = false, Position = 0)]
-        public string Name { get; set; }
+        public string Name
+        {
+            get => buildConfig.Name;
+            set => buildConfig.Name = value;
+        }
 
         [Alias("Args")]
         [Parameter(Mandatory = false, Position = 1)]
-        public string[] ArgumentList { get; set; }
+        public string[] ArgumentList
+        {
+            get => buildConfig.ArgumentList;
+            set => buildConfig.ArgumentList = value;
+        }
 
         [Parameter(Mandatory = false)]
-        public BuildConfiguration Configuration { get; set; } = BuildConfiguration.Debug;
+        public BuildConfiguration Configuration
+        {
+            get => buildConfig.Configuration;
+            set => buildConfig.Configuration = value;
+        }
 
         [Alias("Dbg", "DebugMode")]
         [Parameter(Mandatory = false)]
-        public SwitchParameter DebugBuild { get; set; }
+        public SwitchParameter DebugBuild
+        {
+            get => buildConfig.DebugBuild;
+            set => buildConfig.DebugBuild = value;
+        }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter SourceLink { get; set; }
+        public SwitchParameter SourceLink
+        {
+            get => buildConfig.SourceLink ?? false;
+            set => buildConfig.SourceLink = value;
+        }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter ViewLog { get; set; } = true;
+
+        private BuildConfig buildConfig = new BuildConfig();
 
         public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
         {
@@ -63,7 +86,9 @@ In the event you wish to debug your build, the -Dbg parameter can be specified. 
 
         protected override void ProcessRecordEx()
         {
-            throw new NotImplementedException();
+            var buildService = GetService<InvokeBuildService>();
+
+            buildService.Build(buildConfig, IsLegacyMode);
         }
 
         public string[] GetLegacyParameterSets()

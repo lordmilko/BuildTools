@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,11 +16,28 @@ namespace BuildTools
 
         public void Add(object argument)
         {
+            if (argument == null)
+                throw new ArgumentNullException(nameof(argument));
+
             if (arguments == null)
                 arguments = new List<string>();
 
             arguments.Add(argument.ToString());
         }
+
+        public void AddRange(IEnumerable args)
+        {
+            if (args == null)
+                return;
+
+            if (arguments == null)
+                arguments = new List<string>();
+
+            foreach (var arg in args)
+                arguments.Add(arg.ToString());
+        }
+
+        public void AddRange(params object[] args) => AddRange((IEnumerable) args);
 
         public static implicit operator ArgList(string value)
         {
@@ -31,10 +49,31 @@ namespace BuildTools
         {
             var result = new ArgList();
 
-            foreach (var item in values)
-                result.Add(item);
+            if (values != null)
+            {
+                foreach (var item in values)
+                    result.Add(item);
+            }
 
             return result;
+        }
+
+        public static implicit operator ArgList(string[] values)
+        {
+            var result = new ArgList();
+
+            if (values != null)
+            {
+                foreach (var item in values)
+                    result.Add(item);
+            }
+
+            return result;
+        }
+
+        public static implicit operator string[](ArgList argList)
+        {
+            return argList.arguments?.ToArray();
         }
 
         public static implicit operator string(ArgList args)
