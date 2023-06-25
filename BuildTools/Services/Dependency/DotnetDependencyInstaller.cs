@@ -43,11 +43,11 @@ namespace BuildTools
             if (environmentService.IsCI)
             {
                 //dotnet SDK should be managed by CI system, not by us
-                return new DependencyResult(dependency, null, DependencyAction.Skipped);
+                return new DependencyResult(dependency, WellKnownDependency.Dotnet, null, DependencyAction.Skipped);
             }
 
-            if (IsInstalled())
-                return new DependencyResult(dependency, null, DependencyAction.Skipped);
+            if (TryGetExecutable(out var path))
+                return new DependencyResult(dependency, path, null, DependencyAction.Skipped);
 
             var baseUrl = "https://dot.net/v1/";
 
@@ -85,16 +85,17 @@ namespace BuildTools
 
             environmentService.AppendPath(installDir);
 
-            return new DependencyResult(dependency, null, DependencyAction.Success);
+            return new DependencyResult(dependency, WellKnownDependency.Dotnet, null, DependencyAction.Success);
         }
 
-        private bool IsInstalled()
+        private bool TryGetExecutable(out string path)
         {
             var command = powerShell.GetCommand("dotnet");
 
             if (command != null)
             {
                 logger.LogVerbose($"Using 'dotnet' executable on PATH from '{command.Source}'");
+                path = command.Source;
                 return true;
             }
             else
@@ -105,10 +106,12 @@ namespace BuildTools
 
                     environmentService.AppendPath(installDir);
 
+                    path = WellKnownDependency.Dotnet;
                     return true;
                 }
             }
 
+            path = null;
             return false;
         }
     }

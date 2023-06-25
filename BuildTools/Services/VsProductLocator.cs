@@ -16,7 +16,6 @@ namespace BuildTools
     class VsProductLocator : IVsProductLocator
     {
         private DependencyProvider dependencyProvider;
-        private ChocolateyDependencyInstaller chocolateyDependencyInstaller;
         private IFileSystemProvider fileSystem;
         private IProcessService processService;
 
@@ -25,16 +24,14 @@ namespace BuildTools
 
         public VsProductLocator(
             DependencyProvider dependencyProvider,
-            ChocolateyDependencyInstaller chocolateyDependencyInstaller,
             IFileSystemProvider fileSystem,
             IProcessService processService)
         {
             this.dependencyProvider = dependencyProvider;
-            this.chocolateyDependencyInstaller = chocolateyDependencyInstaller;
             this.fileSystem = fileSystem;
             this.processService = processService;
 
-            vswhere = GetVSWhere();
+            vswhere = dependencyProvider.Install(WellKnownDependency.vswhere).Path;
         }
 
         public string GetMSBuild()
@@ -92,14 +89,6 @@ namespace BuildTools
                 throw new FileNotFoundException($"Expected to find {vsTestFileName} at path '{vstest}' however this was not the case.");
 
             return vstest;
-        }
-
-        private string GetVSWhere()
-        {
-            dependencyProvider.Install(WellKnownDependency.vswhere);
-            var path = chocolateyDependencyInstaller.GetChocolateyCommand(WellKnownDependency.vswhere);
-
-            return path;
         }
     }
 }

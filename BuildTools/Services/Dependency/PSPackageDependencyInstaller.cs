@@ -53,14 +53,14 @@ namespace BuildTools
 
                 var result = powerShell.InstallPackage(dependency.Name, requiredVersion, minimumVersion, skipPublisherCheck);
 
-                return new DependencyResult(dependency, result.Version, DependencyAction.Success);
+                return new DependencyResult(dependency, null, result.Version, DependencyAction.Success);
             }
             else
             {
                 if (log && logSkipped)
                     logger.LogInformation($"\tSkipping installing package '{dependency.Name}' as it is already installed");
 
-                return new DependencyResult(dependency, installedModules.First().Version, DependencyAction.Skipped);
+                return new DependencyResult(dependency, null, installedModules.First().Version, DependencyAction.Skipped);
             }
         }
     }

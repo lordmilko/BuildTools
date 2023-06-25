@@ -9,9 +9,9 @@ namespace BuildTools
 {
     abstract class SupportedLangTypeCompleter<TEnvironment> : IArgumentCompleter
     {
-        private Func<ProjectConfig, LangType[]> getItems;
+        private Func<ProjectConfig, string[]> getItems;
 
-        protected SupportedLangTypeCompleter(Func<ProjectConfig, LangType[]> getItems)
+        protected SupportedLangTypeCompleter(Func<ProjectConfig, string[]> getItems)
         {
             this.getItems = getItems;
         }
@@ -23,9 +23,7 @@ namespace BuildTools
 
             var items = getItems(provider.Config);
 
-            var values = items.Select(v => v.ToString()).ToArray();
-
-            return values
+            return items
                 .Where(v => v.StartsWith(wordToComplete, StringComparison.OrdinalIgnoreCase))
                 .Select(m => new CompletionResult(m, m, CompletionResultType.ParameterValue, m))
                 .ToArray();
@@ -34,14 +32,14 @@ namespace BuildTools
 
     class SupportedPackageTypeCompleter<TEnvironment> : SupportedLangTypeCompleter<TEnvironment>
     {
-        public SupportedPackageTypeCompleter() : base(c => c.PackageTypes)
+        public SupportedPackageTypeCompleter() : base(c => c.PackageTypes.Select(t => t.GetDescription(false)).ToArray())
         {
         }
     }
 
     class SupportedTestTypeCompleter<TEnvironment> : SupportedLangTypeCompleter<TEnvironment>
     {
-        public SupportedTestTypeCompleter() : base(c => c.TestTypes)
+        public SupportedTestTypeCompleter() : base(c => c.TestTypes.Select(t => t.GetDescription(false)).ToArray())
         {
         }
     }

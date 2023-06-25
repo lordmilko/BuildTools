@@ -8,15 +8,18 @@ namespace BuildTools
     {
         public string Name { get; }
 
+        public string Path { get; }
+
         public DependencyType Type { get; }
 
         public Version Version { get; }
 
         public DependencyAction Action { get; }
 
-        internal DependencyResult(Dependency dependency, Version version, DependencyAction action)
+        internal DependencyResult(Dependency dependency, string path, Version version, DependencyAction action)
         {
             Name = dependency.Name;
+            Path = path;
             Type = dependency.Type;
             Version = version;
             Action = action;

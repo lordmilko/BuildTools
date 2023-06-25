@@ -87,7 +87,7 @@ namespace BuildTools
                     if (log && logSkipped)
                         logger.LogInformation($"\tSkipping installing package '{dependency}'{versionStr} as it is already installed");
 
-                    return new DependencyResult(dependency, existingVersion, DependencyAction.Skipped);
+                    return new DependencyResult(dependency, existingCommand, existingVersion, DependencyAction.Skipped);
                 }
             }
 
@@ -127,10 +127,10 @@ namespace BuildTools
 
             var command = powerShell.GetCommand(commandName);
 
-            return new DependencyResult(dependency, command.Version, DependencyAction.Success);
+            return new DependencyResult(dependency, command.Source, command.Version, DependencyAction.Success);
         }
 
-        public string GetChocolateyCommand(string commandName, bool allowPath = true)
+        private string GetChocolateyCommand(string commandName, bool allowPath = true)
         {
             if (!commandName.EndsWith(".exe"))
                 commandName += ".exe";

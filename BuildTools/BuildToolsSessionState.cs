@@ -69,13 +69,20 @@ namespace BuildTools
 
                 //Cmdlet Services
                 typeof(ClearBuildService),
+                typeof(GetVersionService),
                 typeof(InvokeBuildService),
+                typeof(NewPackageService),
 
                 typeof(DotnetDependencyInstaller),
                 typeof(ChocolateyDependencyInstaller),
                 typeof(PSPackageDependencyInstaller),
                 typeof(PSPackageProviderDependencyInstaller),
                 typeof(TargetingPackDependencyInstaller),
+
+                typeof(CSharpPackageProvider),
+                typeof(PowerShellPackageProvider),
+                typeof(CSharpPackageSourceService),
+                typeof(PowerShellPackageSourceService),
 
                 { typeof(IConsoleLogger), typeof(ConsoleLogger) },
                 { typeof(IFileLogger), typeof(FileLogger) },

@@ -56,7 +56,7 @@ namespace BuildTools
 
             if (powerShell.IsProgressEnabled)
             {
-                powerShell.WriteProgress(message);
+                powerShell.WriteProgress(currentOperation: message);
             }
             else
             {

@@ -14,7 +14,7 @@ namespace BuildTools.Cmdlets
             get
             {
                 if (MyInvocation.BoundParameters.TryGetValue(LegacyParameterName, out var value))
-                    return (bool)value;
+                    return (SwitchParameter) value;
 
                 return false;
             }

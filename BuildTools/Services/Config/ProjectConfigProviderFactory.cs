@@ -28,6 +28,8 @@ namespace BuildTools
         {
             buildRoot = Path.GetFullPath(buildRoot);
 
+            var originalFile = file;
+
             if (file == null)
                 file = "Config.psd1";
             else
@@ -41,7 +43,23 @@ namespace BuildTools
             var configFile = Path.Combine(buildRoot, file);
 
             if (!fileSystem.FileExists(configFile))
-                throw new FileNotFoundException($"Could not find build environment config file '{configFile}'", configFile);
+            {
+                bool found = false;
+
+                if (originalFile == null)
+                {
+                    var candidates = fileSystem.EnumerateFiles(buildRoot, "*.psd1").ToArray();
+
+                    if (candidates.Length == 1)
+                    {
+                        configFile = candidates[0];
+                        found = true;
+                    }
+                }
+
+                if (!found)
+                    throw new FileNotFoundException($"Could not find build environment config file '{configFile}'", configFile);
+            }
 
             var contents = fileSystem.GetFileText(configFile);
 

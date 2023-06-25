@@ -38,14 +38,14 @@ namespace BuildTools
 
                 var result = powerShell.InstallPackageProvider(name, minimumVersion);
 
-                return new DependencyResult(dependency, result.Version, DependencyAction.Success);
+                return new DependencyResult(dependency, null, result.Version, DependencyAction.Success);
             }
             else
             {
                 if (log && logSkipped)
                     logger.LogInformation("\tSkipping installing '$PackageName' package provider as it is already installed");
 
-                return new DependencyResult(dependency, provider.Version, DependencyAction.Skipped);
+                return new DependencyResult(dependency, null, provider.Version, DependencyAction.Skipped);
             }
         }
     }

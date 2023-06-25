@@ -68,20 +68,56 @@ namespace BuildTools.PowerShell
 
         public void WriteVerbose(string message) =>
             ActiveCmdlet.WriteVerbose(message);
+
+        public void WriteProgress(
+            string activity = null,
+            string status = null,
+            string currentOperation = null,
+            int? percentComplete = null)
         {
+            activity = activity?.Trim();
+            status = status?.Trim();
+            currentOperation = currentOperation?.Trim();
+
+            if (progressRecord == null)
+                progressRecord = new ProgressRecord(1, activity, status);
+            else
+            {
+                if (activity != null)
+                    progressRecord.Activity = activity;
+
+                if (status != null)
+                    progressRecord.StatusDescription = status;
+            }
+
+            if (currentOperation != null)
+                progressRecord.CurrentOperation = currentOperation;
+
+            if (percentComplete != null)
+                progressRecord.PercentComplete = percentComplete.Value;
+
+            ActiveCmdlet.WriteProgress(progressRecord);
         }
 
         public void WriteWarning(string message) =>
             ActiveCmdlet.WriteWarning(message);
 
+        public void CompleteProgress()
+        {
+            if (progressRecord == null)
+                return;
+
+            progressRecord.RecordType = ProgressRecordType.Completed;
+            ActiveCmdlet.WriteProgress(progressRecord);
+            progressRecord = null;
+        }
+
         public IPowerShellModule[] GetInstalledModules(string name)
         {
-            var results = ActiveCmdlet.InvokeCommand.InvokeScript($"Get-Module -ListAvailable '{name}'");
-
-            if (results == null || results.Count == 0)
-                return new IPowerShellModule[0];
-
-            return results.Select(r => (IPowerShellModule) new PowerShellModule((PSModuleInfo) UnwrapPSObject(r))).ToArray();
+            return Invoke<IPowerShellModule>(
+                $"Get-Module -ListAvailable '{name}'",
+                o => new PowerShellModule((PSModuleInfo)UnwrapPSObject(o))
+            );
         }
 
         public IPowerShellModule RegisterModule(string name, IList<Type> cmdletTypes)
@@ -115,6 +151,25 @@ namespace BuildTools.PowerShell
             return new PowerShellModule(result);
         }
 
+        public void PublishModule(string path)
+        {
+            var script = $@"
+$original = $global:ProgressPreference
+
+$global:ProgressPreference = 'SilentlyContinue'
+
+try
+{{
+    Publish-Module -Path '{path}' -Repository '{PackageSourceService.RepoName}' -WarningAction SilentlyContinue
+}}
+finally
+{{
+    $global:ProgressPreference = $original
+}}";
+
+            Invoke(script);
+        }
+
         public IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null, bool skipPublisherCheck = false)
         {
             var args = new List<string>
@@ -122,6 +177,7 @@ namespace BuildTools.PowerShell
                 $"-Name {name}",
                 "-Force",
                 "-ForceBootstrap",
+                "-AllowClobber",
                 "-ProviderName PowerShellGet"
             };
 
@@ -134,21 +190,16 @@ namespace BuildTools.PowerShell
             if (skipPublisherCheck)
                 args.Add("-SkipPublisherCheck");
 
-            var result = ActiveCmdlet.InvokeCommand.InvokeScript($"Install-Package {string.Join(" ", args)}").First();
-
-            return new PowerShellPackage(result);
+            return Invoke("Install-Package", args, o => new PowerShellPackage(o)).First();
         }
+
+        #region PackageProvider
 
         public IPackageProvider GetPackageProvider(string name)
         {
             //It's faster to filter all package providers for the one we're after than ask for
             //the target provider directly. If it doesn't exist, Get-PackageProvider will hang!
-            var result = ActiveCmdlet.InvokeCommand.InvokeScript($"Get-PackageProvider | where Name -eq '{name}'").FirstOrDefault();
-
-            if (result == null)
-                return null;
-
-            return new PackageProvider(result);
+            return Invoke($"Get-PackageProvider | where Name -eq '{name}'", o => new PackageProvider(o)).FirstOrDefault();
         }
 
         public IPackageProvider InstallPackageProvider(string name, Version minimumVersion = null)
@@ -162,10 +213,70 @@ namespace BuildTools.PowerShell
             if (minimumVersion != null)
                 args.Add($"-MinimumVersion {minimumVersion}");
 
-            var result = ActiveCmdlet.InvokeCommand.InvokeScript($"Install-PackageProvider {string.Join(" ", args)}").First();
-
-            return new PackageProvider(result);
+            return Invoke("Install-PackageProvider", args, o => new PackageProvider(o)).First();
         }
+
+        #endregion
+        #region PackageSource
+
+        public IPackageSource[] GetPackageSource()
+        {
+            return Invoke<IPackageSource>("Get-PackageSource", o => new PackageSource(o));
+        }
+
+        public void RegisterPackageSource()
+        {
+            var args = new[]
+            {
+                $"-Name '{PackageSourceService.RepoName}'",
+                $"-Location '{PackageSourceService.RepoLocation}'",
+                "-ProviderName 'NuGet'",
+                "-Trusted"
+            };
+
+            InvokeVoid("Register-PackageSource", args);
+        }
+
+        public void UnregisterPackageSource()
+        {
+            var args = new[]
+            {
+                $"-Name '{PackageSourceService.RepoName}'",
+                $"-Location '{PackageSourceService.RepoLocation}'",
+                $"-ProviderName 'NuGet'",
+                "-Force"
+            };
+
+            InvokeVoid("Unregister-PackageSource", args);
+        }
+
+        #endregion
+        #region PSRepository
+
+        public IPSRepository[] GetPSRepository()
+        {
+            return Invoke<IPSRepository>("Get-PSRepository", o => new PSRepository(o));
+        }
+
+        public void RegisterPSRepository()
+        {
+            var args = new[]
+            {
+                $"-Name '{PackageSourceService.RepoName}'",
+                $"-SourceLocation '{PackageSourceService.RepoLocation}'",
+                $"-PublishLocation '{PackageSourceService.RepoLocation}'",
+                "-InstallationPolicy 'Trusted'"
+            };
+
+            InvokeVoid("Register-PSRepository", args);
+        }
+
+        public void UnregisterPSRepository()
+        {
+            InvokeVoid("Unregister-PSRepository", PackageSourceService.RepoName);
+        }
+
+        #endregion
 
         public object Invoke(string script, params object[] input)
         {
@@ -180,6 +291,35 @@ namespace BuildTools.PowerShell
                 return arr[0];
 
             return arr;
+        }
+
+        public void InvokeVoid(string cmdlet, params string[] args) =>
+            Invoke<object>(cmdlet, args, null);
+
+        public T[] Invoke<T>(string cmdlet, Func<PSObject, T> makeResult) =>
+            Invoke<T>(cmdlet, null, makeResult);
+
+        public T[] Invoke<T>(string cmdlet, IList<string> args, Func<PSObject, T> makeResult)
+        {
+            var script = cmdlet;
+
+            if (args != null && args.Count > 0)
+                script += $" {string.Join(" ", args)}";
+
+            var raw = ActiveCmdlet.InvokeCommand.InvokeScript(script);
+
+            if (raw == null || raw.Count == 0 || makeResult == null)
+                return new T[0];
+
+            var results = raw.Select(r =>
+            {
+                if (Equals(r, default(T)))
+                    return default(T);
+
+                return makeResult(r);
+            }).ToArray();
+
+            return results;
         }
 
         public void InitializePrompt(ProjectConfig config)

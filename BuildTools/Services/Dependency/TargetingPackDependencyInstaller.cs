@@ -80,14 +80,14 @@ namespace BuildTools
                     errorFormat: "Process $filePath exited with error code {0}. A reboot may be required from a Windows Update. Please run executable manually to confirm error."
                 );
 
-                return new DependencyResult(dependency, dependency.Version, DependencyAction.Success);
+                return new DependencyResult(dependency, null, dependency.Version, DependencyAction.Success);
             }
             else
             {
                 if (log && logSkipped)
                     logger.LogInformation($"\tSkipping installing '{dependency.Name}' targeting pack as it is already installed");
 
-                return new DependencyResult(dependency, dependency.Version, DependencyAction.Skipped);
+                return new DependencyResult(dependency, null, dependency.Version, DependencyAction.Skipped);
             }
         }
     }

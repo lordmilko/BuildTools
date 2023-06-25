@@ -5,9 +5,9 @@ namespace BuildTools
 {
     abstract class SupportedLangTypeValidator<TEnvironment> : IValidateSetValuesGenerator
     {
-        private Func<ProjectConfig, LangType[]> getItems;
+        private Func<ProjectConfig, string[]> getItems;
 
-        protected SupportedLangTypeValidator(Func<ProjectConfig, LangType[]> getItems)
+        protected SupportedLangTypeValidator(Func<ProjectConfig, string[]> getItems)
         {
             this.getItems = getItems;
         }
@@ -24,14 +24,14 @@ namespace BuildTools
 
     class SupportedPackageTypeValidator<TEnvironment> : SupportedLangTypeValidator<TEnvironment>
     {
-        public SupportedPackageTypeValidator() : base(c => c.PackageTypes)
+        public SupportedPackageTypeValidator() : base(c => c.PackageTypes.Select(t => t.GetDescription(false)).ToArray())
         {
         }
     }
 
     class SupportedTestTypeValidator<TEnvironment> : SupportedLangTypeValidator<TEnvironment>
     {
-        public SupportedTestTypeValidator() : base(c => c.TestTypes)
+        public SupportedTestTypeValidator() : base(c => c.TestTypes.Select(t => t.GetDescription(false)).ToArray())
         {
         }
     }

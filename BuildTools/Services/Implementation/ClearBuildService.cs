@@ -63,13 +63,13 @@ namespace BuildTools
                     //obj will be automatically recreated and removed each time Clear-PrtgBuild is run,
                     //due to dotnet/msbuild clean recreating it
                     logger.LogAttention($"\tRemoving {obj}");
-                    RemoveItems(bin);
+                    RemoveItems(obj);
                 }
-
-                logger.LogInformation("Processing Redistributable Packages");
-
-                ClearRedist();
             }
+
+            logger.LogInformation("Processing Redistributable Packages");
+
+            ClearRedist();
         }
 
         public void ClearMSBuild(BuildConfiguration configuration, bool isLegacy)

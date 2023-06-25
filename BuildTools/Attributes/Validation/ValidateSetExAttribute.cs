@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace BuildTools
 {
-    class ValidateSetExAttribute : ValidateEnumeratedArgumentsAttribute
+    public class ValidateSetExAttribute : ValidateEnumeratedArgumentsAttribute
     {
         private static ConstructorInfo exCtor;
 
@@ -114,7 +114,7 @@ namespace BuildTools
                     "ValidateSetFailure",
                     null,
                     errorMessageFormat,
-                    element.ToString(), SetAsString()
+                    new object[]{element.ToString(), SetAsString()}
                 }
             );
         }

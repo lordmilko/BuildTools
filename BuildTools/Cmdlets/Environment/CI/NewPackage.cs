@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Management.Automation;
 
 namespace BuildTools.Cmdlets
@@ -7,7 +8,7 @@ namespace BuildTools.Cmdlets
     [BuildCommand(CommandKind.NewPackage, CommandCategory.CI)]
     public abstract class NewPackage<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
-        [Parameter(Mandatory = false)]
+        [Parameter(Mandatory = false, Position = 0)]
         [ArgumentCompleter(typeof(SupportedPackageTypeCompleter<>))]
         [ValidateSetEx(typeof(SupportedPackageTypeValidator<>))]
         public string[] Type { get; set; }
@@ -45,7 +46,24 @@ Unlike packaging done in CI builds, {help.Command} does not verify that the cont
 
         protected override void ProcessRecordEx()
         {
-            throw new NotImplementedException();
+            var configProvider = GetService<IProjectConfigProvider>();
+
+            //If no type was specified, 
+            if (Type == null)
+                Type = configProvider.Config.PackageTypes.Select(t => t.ToString()).ToArray();
+            else
+                Type = Type.Select(t => t.DescriptionToEnum<PackageType>().ToString()).ToArray();
+
+            var packageService = GetService<NewPackageService>();
+
+            var results = packageService.Execute(
+                Type.Select(t => (PackageType) Enum.Parse(typeof(PackageType), t)).ToArray(),
+                Configuration,
+                IsLegacyMode
+            );
+
+            foreach (var result in results)
+                WriteObject(result);
         }
 
         public string[] GetLegacyParameterSets()

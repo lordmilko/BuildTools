@@ -68,7 +68,7 @@ namespace BuildTools
                 if (projects.Length > 1)
                     throw new InvalidOperationException($"Can only specify one project at a time, however wildcard '{buildConfig.Name}' matched multiple projects: {string.Join(", ", candidates.Select(c => c.Name))}");
 
-                buildConfig.Target = projects[0].Path;
+                buildConfig.Target = projects[0].FilePath;
             }
 
             var root = configProvider.SolutionRoot;
@@ -130,7 +130,7 @@ namespace BuildTools
 
             argList.AddRange(buildConfig.ArgumentList);
 
-            dependencyProvider.Install(WellKnownDependency.Dotnet);
+            var dotnet = dependencyProvider.Install(WellKnownDependency.Dotnet);
 
             if (powerShell.IsWindows)
             {
@@ -140,14 +140,12 @@ namespace BuildTools
 
             logger.LogVerbose($"Executing command 'dotnet {argList}'");
 
-            processService.Execute("dotnet", argList, writeHost: true);
+            processService.Execute(dotnet.Path, argList, writeHost: true);
         }
 
         private void RestoreNuGetPackages()
         {
-            dependencyProvider.Install(WellKnownDependency.NuGet);
-
-            var nuget = chocolateyDependencyInstaller.GetChocolateyCommand(WellKnownDependency.NuGet.ToLower());
+            var nuget = dependencyProvider.Install(WellKnownDependency.NuGet).Path;
 
             var sln = configProvider.GetSolutionPath(true);
 
