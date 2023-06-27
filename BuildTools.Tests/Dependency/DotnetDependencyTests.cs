@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using BuildTools.PowerShell;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -8,25 +9,27 @@ namespace BuildTools.Tests.Dependency
     public class DotnetDependencyTests : BaseTest
     {
         private const string DotnetCommand = "dotnet";
-        private const string LocalDotnet = "C:\\packages\\dotnet-sdk";
+        private const string LocalDotnet = "C:\\Root\\packages\\dotnet-sdk";
 
         private static string WindowsDotnetInstall => Path.Combine(Path.GetTempPath(), "dotnet-install.ps1");
 
         [TestMethod]
         public void DotnetDependency_Install_NotInstalled()
         {
-            Test((DotnetDependencyInstaller installer, MockPowerShellService powerShell, MockFileSystemProvider fileSystem, MockEnvironmentVariableProvider envProvider) =>
+            Test((Lazy<DotnetDependencyInstaller> installer, MockPowerShellService powerShell, MockFileSystemProvider fileSystem, MockEnvironmentVariableProvider envProvider) =>
             {
                 powerShell.IsWindows = true;
                 powerShell.KnownCommands[DotnetCommand] = null;
 
-                fileSystem.DirectoryMap[LocalDotnet] = false;
+                fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
+                fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
+                fileSystem.DirectoryExistsMap[LocalDotnet] = false;
                 envProvider.SetValue(WellKnownEnvironmentVariable.CI, string.Empty);
                 envProvider.SetValue(WellKnownEnvironmentVariable.Path, string.Empty);
 
                 var dep = new DotnetDependency();
 
-                var result = installer.Install(dep, true);
+                var result = installer.Value.Install(dep, true);
 
                 Verify(
                     result,
@@ -43,14 +46,18 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void DotnetDependency_Install_GloballyInstalled()
         {
-            Test((DotnetDependencyInstaller installer, MockPowerShellService powerShell, MockEnvironmentVariableProvider envProvider) =>
+            Test((Lazy<DotnetDependencyInstaller> installer, MockPowerShellService powerShell, MockFileSystemProvider fileSystem, MockEnvironmentVariableProvider envProvider) =>
             {
                 powerShell.KnownCommands[DotnetCommand] = new MockPowerShellCommand(DotnetCommand);
+
+                fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
+                fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
+
                 envProvider.SetValue(WellKnownEnvironmentVariable.CI, string.Empty);
 
                 var dep = new DotnetDependency();
 
-                var result = installer.Install(dep, true);
+                var result = installer.Value.Install(dep, true);
 
                 Verify(
                     result,
@@ -65,19 +72,21 @@ namespace BuildTools.Tests.Dependency
         [TestMethod]
         public void DotnetDependency_Install_LocallyInstalled()
         {
-            Test((DotnetDependencyInstaller installer, MockPowerShellService powerShell, MockFileSystemProvider fileSystem, MockEnvironmentVariableProvider envProvider) =>
+            Test((Lazy<DotnetDependencyInstaller> installer, MockPowerShellService powerShell, MockFileSystemProvider fileSystem, MockEnvironmentVariableProvider envProvider) =>
             {
                 powerShell.IsWindows = true;
                 powerShell.KnownCommands[DotnetCommand] = null;
 
-                fileSystem.DirectoryMap[LocalDotnet] = true;
-                fileSystem.DirectoryFiles[LocalDotnet] = new[] {"dotnet.exe"};
+                fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
+                fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
+                fileSystem.DirectoryExistsMap[LocalDotnet] = true;
+                fileSystem.EnumerateFilesMap[(LocalDotnet, "*", SearchOption.TopDirectoryOnly)] = new[] {"dotnet.exe"};
                 envProvider.SetValue(WellKnownEnvironmentVariable.CI, string.Empty);
                 envProvider.SetValue(WellKnownEnvironmentVariable.Path, string.Empty);
 
                 var dep = new DotnetDependency();
 
-                var result = installer.Install(dep, true);
+                var result = installer.Value.Install(dep, true);
 
                 Verify(
                     result,
@@ -104,7 +113,7 @@ namespace BuildTools.Tests.Dependency
                 { typeof(IConsoleLogger), typeof(MockConsoleLogger) },
                 { typeof(IFileLogger), typeof(MockFileLogger) },
                 { typeof(IPowerShellService), typeof(MockPowerShellService) },
-                { typeof(IProjectConfigProvider), typeof(MockProjectConfigProvider) }
+                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>())
             };
         }
 

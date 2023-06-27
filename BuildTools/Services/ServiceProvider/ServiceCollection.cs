@@ -24,7 +24,7 @@ namespace BuildTools
         {
             var type = factory.Method.ReturnType;
 
-            Validate(type, type);
+            Validate(type, null);
 
             services[type] = new ServiceDescriptor(type, type, factory: factory);
         }
@@ -47,7 +47,7 @@ namespace BuildTools
 
         private void Validate(Type serviceType, Type implementationType)
         {
-            if (implementationType.IsInterface)
+            if (implementationType != null && implementationType.IsInterface)
                 throw new ArgumentException($"Cannot create service using implementation type '{implementationType.Name}': type is an interface.", nameof(implementationType));
 
             if (services.TryGetValue(serviceType, out _))

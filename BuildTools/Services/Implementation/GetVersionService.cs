@@ -96,7 +96,9 @@ namespace BuildTools
                 if (!fileSystem.FileExists(versionPath))
                     throw new FileNotFoundException($"Could not find version file '{versionPath}'", versionPath);
 
-                var versionProps = XDocument.Load(versionPath).Element("Project")?.Element("PropertyGroup");
+                var versionContents = fileSystem.GetFileText(versionPath);
+
+                var versionProps = XDocument.Parse(versionContents).Element("Project")?.Element("PropertyGroup");
 
                 if (versionProps == null)
                     throw new InvalidOperationException($"Could not find XML element Project -> PropertyGroup in file '{versionPath}'");
@@ -155,7 +157,7 @@ namespace BuildTools
             if (matches.Length > 1)
                 throw new InvalidOperationException($"Found more than one version attribute '{attributeName}'");
 
-            var result = Regex.Replace(matches[0], ".+$name\\(\"(.+?)\"\\).+", "$1");
+            var result = Regex.Replace(matches[0], $".+{attributeName}\\(\"(.+?)\"\\).+", "$1");
 
             return result;
         }

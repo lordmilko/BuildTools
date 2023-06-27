@@ -1,18 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BuildTools.Tests
 {
     class MockFileSystemProvider : IFileSystemProvider, IMock<IFileSystemProvider>
     {
-        public Dictionary<string, bool> DirectoryMap { get; } = new Dictionary<string, bool>();
-        public Dictionary<string, bool> FileMap { get; } = new Dictionary<string, bool>();
-        public Dictionary<string, string[]> DirectoryFiles { get; } = new Dictionary<string, string[]>();
+        public Dictionary<string, bool> DirectoryExistsMap { get; } = new Dictionary<string, bool>();
+        public Dictionary<string, bool> FileExistsMap { get; } = new Dictionary<string, bool>();
+        public Dictionary<string, string> GetFileTextMap { get; } = new Dictionary<string, string>();
+        public Dictionary<string, string[]> GetFileLinesMap { get; } = new Dictionary<string, string[]>();
+        public Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]> EnumerateFilesMap { get; } = new Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]>();
+        public Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]> EnumerateDirectoriesMap { get; } = new Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]>();
+        public List<string> DeletedFiles { get; } = new List<string>();
+        public List<string> DeletedDirectories { get; } = new List<string>();
 
         public bool DirectoryExists(string path)
         {
-            if (DirectoryMap.TryGetValue(path, out var exists))
+            if (DirectoryExistsMap.TryGetValue(path, out var exists))
                 return exists;
 
             throw new InvalidOperationException($"Existence of directory '{path}' has not been set");
@@ -20,40 +26,48 @@ namespace BuildTools.Tests
 
         public bool FileExists(string path)
         {
-            if (FileMap.TryGetValue(path, out var exists))
+            if (FileExistsMap.TryGetValue(path, out var exists))
                 return exists;
 
             throw new InvalidOperationException($"Existence of file '{path}' has not been set");
         }
 
-        public void DeleteDirectory(string path)
+        public void CreateDirectory(string path)
         {
             throw new NotImplementedException();
         }
 
+        public void DeleteDirectory(string path)
+        {
+            DeletedDirectories.Add(path);
+        }
+
         public void DeleteFile(string path)
         {
-            throw new NotImplementedException();
+            DeletedFiles.Add(path);
         }
 
         public IEnumerable<string> EnumerateDirectories(string path, string searchPattern = "*",
             SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
-            throw new NotImplementedException();
+            if (EnumerateDirectoriesMap.TryGetValue((path, searchPattern, searchOption), out var directories))
+                return directories;
+
+            throw new InvalidOperationException($"Directories of directory '{path}, {searchPattern} , {searchOption}' have not been set");
         }
 
         public IEnumerable<string> EnumerateFiles(string path, string searchPattern = "*",
             SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> EnumerateFiles(string path)
-        {
-            if (DirectoryFiles.TryGetValue(path, out var files))
+            if (EnumerateFilesMap.TryGetValue((path, searchPattern, searchOption), out var files))
                 return files;
 
-            throw new InvalidOperationException($"Files of directory '{path}' have not been set");
+            throw new InvalidOperationException($"Files of directory '{path}, {searchPattern} , {searchOption}' have not been set");
+        }
+
+        public void MoveFile(string sourceFileName, string destFileName)
+        {
+            throw new NotImplementedException();
         }
 
         public Version GetVersionInfo(string fileName)
@@ -63,7 +77,44 @@ namespace BuildTools.Tests
 
         public string GetFileText(string path)
         {
+            if (GetFileTextMap.TryGetValue(path, out var text))
+                return text;
+
+            throw new InvalidOperationException($"Content of file '{path}' have not been set");
+        }
+
+        public string[] GetFileLines(string path)
+        {
+            if (GetFileLinesMap.TryGetValue(path, out var lines))
+                return lines;
+
+            throw new InvalidOperationException($"Lines of file '{path}' have not been set");
+        }
+
+        public void WriteFileLines(string path, string[] contents)
+        {
             throw new NotImplementedException();
+        }
+
+        public void CopyDirectory(string sourcePath, string destinationPath, bool recursive = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AssertDeletedFiles(params string[] expected)
+        {
+            Assert.AreEqual(expected.Length, DeletedFiles.Count, "Number of deleted files was not correct");
+
+            for (var i = 0; i < expected.Length; i++)
+                Assert.AreEqual(expected[i], DeletedFiles[i], $"Deleted file {i + 1} was not correct");
+        }
+
+        public void AssertDeletedDirectories(params string[] expected)
+        {
+            Assert.AreEqual(expected.Length, DeletedDirectories.Count, "Number of deleted directories was not correct");
+
+            for (var i = 0; i < expected.Length; i++)
+                Assert.AreEqual(expected[i], DeletedDirectories[i], $"Deleted directory {i + 1} was not correct");
         }
     }
 }

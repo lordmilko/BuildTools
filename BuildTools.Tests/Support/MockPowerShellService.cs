@@ -13,6 +13,8 @@ namespace BuildTools.Tests
 
         public Dictionary<string, IPowerShellCommand> KnownCommands { get; } = new Dictionary<string, IPowerShellCommand>();
 
+        public Dictionary<string, object> InvokeScriptMap { get; } = new Dictionary<string, object>();
+
         public List<string> InvokedCommands { get; } = new List<string>();
 
         public bool IsISE { get; }
@@ -40,15 +42,23 @@ namespace BuildTools.Tests
 
         public void WriteVerbose(string message)
         {
-            throw new NotImplementedException();
         }
 
-        public void WriteProgress(string message)
+        public void WriteProgress(
+            string activity = null,
+            string status = null,
+            string currentOperation = null,
+            int? percentComplete = null)
         {
             throw new NotImplementedException();
         }
 
         public void WriteWarning(string message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CompleteProgress()
         {
             throw new NotImplementedException();
         }
@@ -63,6 +73,11 @@ namespace BuildTools.Tests
             throw new NotImplementedException();
         }
 
+        public void PublishModule(string path)
+        {
+            throw new NotImplementedException();
+        }
+
         public IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null,
             bool skipPublisherCheck = false)
         {
@@ -71,6 +86,8 @@ namespace BuildTools.Tests
                 requiredVersion ?? minimumVersion ?? new Version("1.0")
             );
         }
+
+        #region PackageProvider
 
         public IPackageProvider GetPackageProvider(string name)
         {
@@ -85,10 +102,51 @@ namespace BuildTools.Tests
             );
         }
 
+        #endregion
+        #region PackageSource
+
+        public IPackageSource[] GetPackageSource()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RegisterPackageSource()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UnregisterPackageSource()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+        #region PSRepository
+
+        public IPSRepository[] GetPSRepository()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RegisterPSRepository()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UnregisterPSRepository()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
         public object Invoke(string script, params object[] input)
         {
             InvokedCommands.Add(script);
-            return null;
+
+            InvokeScriptMap.TryGetValue(script, out var result);
+
+            return result;
         }
 
         public void InitializePrompt(ProjectConfig config)

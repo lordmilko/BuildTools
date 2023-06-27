@@ -26,10 +26,10 @@ namespace BuildTools.Tests.Dependency
             {
                 powerShell.IsWindows = true;
 
-                fileSystem.DirectoryMap[NETFrameworkReferenceAssemblies] = true;
-                fileSystem.DirectoryMap[NETFrameworkReferenceAssemblies452] = false;
+                fileSystem.DirectoryExistsMap[NETFrameworkReferenceAssemblies] = true;
+                fileSystem.DirectoryExistsMap[NETFrameworkReferenceAssemblies452] = false;
 
-                fileSystem.FileMap[File452] = false;
+                fileSystem.FileExistsMap[File452] = false;
 
                 var dep = new PSPackageDependency("net452", version: "4.5.2");
 
@@ -61,10 +61,10 @@ namespace BuildTools.Tests.Dependency
             {
                 powerShell.IsWindows = true;
 
-                fileSystem.DirectoryMap[NETFrameworkReferenceAssemblies] = true;
-                fileSystem.DirectoryMap[NETFrameworkReferenceAssemblies452] = false;
+                fileSystem.DirectoryExistsMap[NETFrameworkReferenceAssemblies] = true;
+                fileSystem.DirectoryExistsMap[NETFrameworkReferenceAssemblies452] = false;
 
-                fileSystem.FileMap[File452] = true;
+                fileSystem.FileExistsMap[File452] = true;
 
                 hasher.Hash = Hash452;
 

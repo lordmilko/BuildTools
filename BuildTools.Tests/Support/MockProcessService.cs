@@ -36,10 +36,7 @@ namespace BuildTools.Tests
             return new string[0];
         }
 
-        public bool IsRunning(string processName)
-        {
-            throw new NotImplementedException();
-        }
+        public bool IsRunning(string processName) => false;
 
         public void AssertExecuted(string fileNameAndArgs)
         {

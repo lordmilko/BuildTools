@@ -1,4 +1,6 @@
-﻿using BuildTools.PowerShell;
+﻿using System;
+using System.IO;
+using BuildTools.PowerShell;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BuildTools.Tests.Dependency
@@ -19,7 +21,7 @@ namespace BuildTools.Tests.Dependency
         public void ChocolateyDependency_Install_Manager()
         {
             Test((
-                ChocolateyDependencyInstaller installer,
+                Lazy<ChocolateyDependencyInstaller> installer,
                 MockPowerShellService powerShell,
                 MockFileSystemProvider fileSystem,
                 MockWebClient webClient,
@@ -28,14 +30,16 @@ namespace BuildTools.Tests.Dependency
                 powerShell.IsWindows = true;
                 powerShell.KnownCommands[ChocolateyCommand] = new MockPowerShellCommand(ChocolateyCommand);
 
-                fileSystem.DirectoryMap[ChocolateyInstall] = true;
-                fileSystem.FileMap[ChocolateyExe] = false;
+                fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
+                fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
+                fileSystem.DirectoryExistsMap[ChocolateyInstall] = true;
+                fileSystem.FileExistsMap[ChocolateyExe] = false;
                 envProvider.SetValue(WellKnownEnvironmentVariable.ChocolateyInstall, null);
                 webClient.DownloadedString[ChocolateyUrl] = ChocoScript;
 
                 var dep = new ChocolateyDependency();
 
-                var result = installer.Install(dep, true);
+                var result = installer.Value.Install(dep, true);
 
                 Verify(
                     result,
@@ -53,7 +57,7 @@ namespace BuildTools.Tests.Dependency
         public void ChocolateyDependency_Install_Manager_AlreadyInstalled()
         {
             Test((
-                ChocolateyDependencyInstaller installer,
+                Lazy<ChocolateyDependencyInstaller> installer,
                 MockPowerShellService powerShell,
                 MockFileSystemProvider fileSystem,
                 MockWebClient webClient,
@@ -62,13 +66,15 @@ namespace BuildTools.Tests.Dependency
                 powerShell.IsWindows = true;
                 powerShell.KnownCommands[ChocolateyCommand] = new MockPowerShellCommand(ChocolateyCommand);
 
-                fileSystem.DirectoryMap[ChocolateyInstall] = true;
-                fileSystem.FileMap[ChocolateyExe] = true;
+                fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
+                fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
+                fileSystem.DirectoryExistsMap[ChocolateyInstall] = true;
+                fileSystem.FileExistsMap[ChocolateyExe] = true;
                 envProvider.SetValue(WellKnownEnvironmentVariable.ChocolateyInstall, null);
 
                 var dep = new ChocolateyDependency();
 
-                var result = installer.Install(dep, true);
+                var result = installer.Value.Install(dep, true);
 
                 Verify(
                     result,
@@ -84,7 +90,7 @@ namespace BuildTools.Tests.Dependency
         public void ChocolateyDependency_Install_Command()
         {
             Test((
-                ChocolateyDependencyInstaller installer,
+                Lazy<ChocolateyDependencyInstaller> installer,
                 MockPowerShellService powerShell,
                 MockFileSystemProvider fileSystem,
                 MockWebClient webClient,
@@ -93,14 +99,16 @@ namespace BuildTools.Tests.Dependency
                 powerShell.IsWindows = true;
                 powerShell.KnownCommands[CodeCovCommand] = null;
 
-                fileSystem.DirectoryMap[ChocolateyInstall] = true;
-                fileSystem.FileMap[CodeCovExe] = false;
-                fileSystem.FileMap[ChocolateyExe] = true;
+                fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
+                fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
+                fileSystem.DirectoryExistsMap[ChocolateyInstall] = true;
+                fileSystem.FileExistsMap[CodeCovExe] = false;
+                fileSystem.FileExistsMap[ChocolateyExe] = true;
                 envProvider.SetValue(WellKnownEnvironmentVariable.ChocolateyInstall, null);
 
                 var dep = new ChocolateyPackageDependency(CodeCovCommand);
 
-                var result = installer.Install(dep, true);
+                var result = installer.Value.Install(dep, true);
 
                 Verify(
                     result,
@@ -116,7 +124,7 @@ namespace BuildTools.Tests.Dependency
         public void ChocolateyDependency_Install_Command_AlreadyInstalled()
         {
             Test((
-                ChocolateyDependencyInstaller installer,
+                Lazy<ChocolateyDependencyInstaller> installer,
                 MockPowerShellService powerShell,
                 MockFileSystemProvider fileSystem,
                 MockWebClient webClient,
@@ -125,13 +133,15 @@ namespace BuildTools.Tests.Dependency
                 powerShell.IsWindows = true;
                 powerShell.KnownCommands[CodeCovCommand] = new MockPowerShellCommand(CodeCovCommand);
 
-                fileSystem.DirectoryMap[ChocolateyInstall] = true;
-                fileSystem.FileMap[CodeCovExe] = true;
+                fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
+                fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
+                fileSystem.DirectoryExistsMap[ChocolateyInstall] = true;
+                fileSystem.FileExistsMap[CodeCovExe] = true;
                 envProvider.SetValue(WellKnownEnvironmentVariable.ChocolateyInstall, null);
 
                 var dep = new ChocolateyPackageDependency(CodeCovCommand);
 
-                var result = installer.Install(dep, true);
+                var result = installer.Value.Install(dep, true);
 
                 Verify(
                     result,
@@ -166,7 +176,7 @@ namespace BuildTools.Tests.Dependency
                 { typeof(IConsoleLogger), typeof(MockConsoleLogger) },
                 { typeof(IFileLogger), typeof(MockFileLogger) },
                 { typeof(IPowerShellService), typeof(MockPowerShellService) },
-                { typeof(IProjectConfigProvider), typeof(MockProjectConfigProvider) }
+                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>())
             };
         }
 
