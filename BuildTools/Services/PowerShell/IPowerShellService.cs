@@ -66,7 +66,9 @@ namespace BuildTools.PowerShell
 
         #endregion
 
-        object Invoke(string script, params object[] input);
+        object InvokeAndUnwrap(string script, params object[] input);
+
+        object[] InvokeWithArgs(string cmdlet, params string[] args);
 
         void InitializePrompt(ProjectConfig config);
     }

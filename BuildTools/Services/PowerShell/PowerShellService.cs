@@ -128,7 +128,7 @@ namespace BuildTools.PowerShell
             if (cmdletTypes.Count == 0)
                 throw new InvalidOperationException("At least one cmdlet type should be specified");
 
-            var module = (PSModuleInfo) Invoke($"New-Module {name}.Build {{}}");
+            var module = (PSModuleInfo) InvokeAndUnwrap($"New-Module {name}.Build {{}}");
 
             var cmdletInfoModule = typeof(CmdletInfo).GetProperty(nameof(CmdletInfo.Module));
 
@@ -143,7 +143,7 @@ namespace BuildTools.PowerShell
                 cmdletInfoModule.GetSetMethod(true).Invoke(info, new object[] {module});
             }
 
-            var result = (PSModuleInfo) Invoke("$input | Import-Module -PassThru", module);
+            var result = (PSModuleInfo) InvokeAndUnwrap("$input | Import-Module -PassThru", module);
 
             if (result == null)
                 throw new InvalidOperationException("Dynamic module could not be created.");
@@ -167,7 +167,7 @@ finally
     $global:ProgressPreference = $original
 }}";
 
-            Invoke(script);
+            InvokeWithArgs(script);
         }
 
         public IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null, bool skipPublisherCheck = false)
@@ -234,7 +234,7 @@ finally
                 "-Trusted"
             };
 
-            InvokeVoid("Register-PackageSource", args);
+            InvokeWithArgs("Register-PackageSource", args);
         }
 
         public void UnregisterPackageSource()
@@ -247,7 +247,7 @@ finally
                 "-Force"
             };
 
-            InvokeVoid("Unregister-PackageSource", args);
+            InvokeWithArgs("Unregister-PackageSource", args);
         }
 
         #endregion
@@ -268,17 +268,17 @@ finally
                 "-InstallationPolicy 'Trusted'"
             };
 
-            InvokeVoid("Register-PSRepository", args);
+            InvokeWithArgs("Register-PSRepository", args);
         }
 
         public void UnregisterPSRepository()
         {
-            InvokeVoid("Unregister-PSRepository", PackageSourceService.RepoName);
+            InvokeWithArgs("Unregister-PSRepository", PackageSourceService.RepoName);
         }
 
         #endregion
 
-        public object Invoke(string script, params object[] input)
+        public object InvokeAndUnwrap(string script, params object[] input)
         {
             var result = ActiveCmdlet.InvokeCommand.InvokeScript(script, false, PipelineResultTypes.None, input);
 
@@ -293,13 +293,13 @@ finally
             return arr;
         }
 
-        public void InvokeVoid(string cmdlet, params string[] args) =>
+        public object[] InvokeWithArgs(string cmdlet, params string[] args) =>
             Invoke<object>(cmdlet, args, null);
 
-        public T[] Invoke<T>(string cmdlet, Func<PSObject, T> makeResult) =>
+        private T[] Invoke<T>(string cmdlet, Func<PSObject, T> makeResult) =>
             Invoke<T>(cmdlet, null, makeResult);
 
-        public T[] Invoke<T>(string cmdlet, IList<string> args, Func<PSObject, T> makeResult)
+        private T[] Invoke<T>(string cmdlet, IList<string> args, Func<PSObject, T> makeResult)
         {
             var script = cmdlet;
 
@@ -308,8 +308,11 @@ finally
 
             var raw = ActiveCmdlet.InvokeCommand.InvokeScript(script);
 
-            if (raw == null || raw.Count == 0 || makeResult == null)
+            if (raw == null || raw.Count == 0)
                 return new T[0];
+
+            if (makeResult == null)
+                return raw.Cast<T>().ToArray();
 
             var results = raw.Select(r =>
             {
@@ -331,7 +334,7 @@ finally
 
             if (!IsISE)
             {
-                Invoke($@"
+                InvokeWithArgs($@"
 function global:Prompt
 {{
     Write-Host ""{config.Prompt} "" -NoNewLine -ForegroundColor Green

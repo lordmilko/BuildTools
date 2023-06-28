@@ -13,6 +13,8 @@ namespace BuildTools
 
         internal static bool HeadlessUI { get; set; }
 
+        internal static bool ScriptAnalyzerRepaired { get; set; }
+
         internal static IServiceProvider ServiceProvider(Type environment)
         {
             if (environment == null)

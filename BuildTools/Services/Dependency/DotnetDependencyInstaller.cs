@@ -74,11 +74,11 @@ namespace BuildTools
                 //if we're mocking being windows we need to mock a stream unblocker too
                 adsService.UnblockFile(outFile);
 
-                powerShell.Invoke($"& '{outFile}' -InstallDir '{installDir}' -NoPath");
+                powerShell.InvokeWithArgs($"& '{outFile}' -InstallDir '{installDir}' -NoPath");
             }
             else
             {
-                powerShell.Invoke($"chmod +x '{outFile}'; & '{outFile}' --install-dir '{installDir}' --no-path");
+                powerShell.InvokeWithArgs($"chmod +x '{outFile}'; & '{outFile}' --install-dir '{installDir}' --no-path");
             }
 
             logger.LogVerbose($"Using 'dotnet' executable from '{installDir}'");

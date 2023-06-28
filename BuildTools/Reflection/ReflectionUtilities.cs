@@ -15,6 +15,13 @@ namespace BuildTools.Reflection
             return fieldInfo;
         }
 
+        public static object GetInternalField(this object obj, string name)
+        {
+            var fieldInfo = GetInternalFieldInfo(obj.GetType(), name);
+
+            return fieldInfo.GetValue(obj);
+        }
+
         public static PropertyInfo GetInternalPropertyInfo(this object obj, string name) =>
             GetInternalPropertyInfo(obj.GetType(), name);
 

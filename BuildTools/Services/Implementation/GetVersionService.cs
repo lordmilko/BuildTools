@@ -111,7 +111,7 @@ namespace BuildTools
 
             var psd1Path = configProvider.GetPowerShellModuleManifest();
             var psd1Contents = fileSystem.GetFileText(psd1Path);
-            var psd1Hashtable = (Hashtable) powerShell.Invoke(psd1Contents);
+            var psd1Hashtable = (Hashtable) powerShell.InvokeAndUnwrap(psd1Contents);
 
             var moduleVersion = (string) psd1Hashtable["ModuleVersion"];
             var releaseTag = GetReleaseTag(psd1Hashtable);

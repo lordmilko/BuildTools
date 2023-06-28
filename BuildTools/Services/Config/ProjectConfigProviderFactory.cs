@@ -63,7 +63,7 @@ namespace BuildTools
 
             var contents = fileSystem.GetFileText(configFile);
 
-            var hashTable = (Hashtable) powerShell.Invoke(contents);
+            var hashTable = (Hashtable) powerShell.InvokeAndUnwrap(contents);
 
             var config = BuildConfig(hashTable);
 

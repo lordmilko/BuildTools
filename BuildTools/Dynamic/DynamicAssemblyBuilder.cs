@@ -57,9 +57,13 @@ namespace BuildTools.Dynamic
 
             var typeBuilder = DynamicAssembly.Instance.DefineCmdlet(config.CmdletPrefix, genericBaseType);
 
-            var ctor = typeof(CmdletAttribute).GetConstructors().Single();
+            //var ctor = typeof(CmdletAttribute).GetConstructors().Single();
             var cmdletAttrib = genericBaseType.GetCustomAttribute<CmdletAttribute>();
-            var attributeBuilder = new CustomAttributeBuilder(ctor, new object[] {cmdletAttrib.VerbName, noun ?? $"{config.CmdletPrefix}{cmdletAttrib.NounName}"});
+            var attributeBuilder = CloneAttribute<CmdletAttribute>(
+                genericBaseType,
+                new object[] { cmdletAttrib.VerbName, noun ?? $"{config.CmdletPrefix}{cmdletAttrib.NounName}" }
+            );
+
             typeBuilder.SetCustomAttribute(attributeBuilder);
 
             typeBuilder.SetCustomAttribute(CloneAttribute<BuildCommandAttribute>(genericBaseType));
@@ -118,7 +122,7 @@ namespace BuildTools.Dynamic
             }
         }
 
-        private CustomAttributeBuilder CloneAttribute<TAttribute>(Type originalType)
+        private CustomAttributeBuilder CloneAttribute<TAttribute>(Type originalType, object[] newCtorArgs = null)
         {
             var items = originalType.GetCustomAttributesData();
 
@@ -130,10 +134,10 @@ namespace BuildTools.Dynamic
             if (matches.Length > 1)
                 throw new InvalidOperationException($"Found more than one '{nameof(TAttribute)}' on type '{originalType.Name}'.");
 
-            return CloneAttribute(matches[0]);
+            return CloneAttribute(matches[0], newCtorArgs);
         }
 
-        private CustomAttributeBuilder CloneAttribute(CustomAttributeData data)
+        private CustomAttributeBuilder CloneAttribute(CustomAttributeData data, object[] newCtorArgs = null)
         {
             var propertyNames = new List<PropertyInfo>();
             var propertyValues = new List<object>();
@@ -147,9 +151,9 @@ namespace BuildTools.Dynamic
                 }
             }
 
-            var attribBuilder = new CustomAttributeBuilder(
-                data.Constructor,
-                data.ConstructorArguments.Select(c =>
+            if (newCtorArgs == null)
+            {
+                newCtorArgs = data.ConstructorArguments.Select(c =>
                 {
                     var value = c.Value;
 
@@ -160,7 +164,12 @@ namespace BuildTools.Dynamic
                         return r.Select(v => v.Value).ToArray();
 
                     return value;
-                }).ToArray(),
+                }).ToArray();
+            }
+
+            var attribBuilder = new CustomAttributeBuilder(
+                data.Constructor,
+                newCtorArgs,
                 propertyNames.ToArray(),
                 propertyValues.ToArray()
             );

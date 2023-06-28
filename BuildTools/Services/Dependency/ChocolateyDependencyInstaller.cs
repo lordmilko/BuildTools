@@ -122,7 +122,7 @@ namespace BuildTools
             {
                 var script = webClient.GetString("https://chocolatey.org/install.ps1");
 
-                powerShell.Invoke(script);
+                powerShell.InvokeWithArgs(script);
             }
 
             var command = powerShell.GetCommand(commandName);

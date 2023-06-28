@@ -61,7 +61,7 @@ namespace BuildTools
                 new PSPackageProviderDependency("NuGetProvider",                      minimumVersion: "2.8.5.201"),
                 new PSPackageDependency        ("PowerShellGet",                      minimumVersion: "2.0.0"),
                 Pester(),
-                new PSPackageDependency        ("PSScriptAnalyzer"),
+                new PSPackageDependency        (WellKnownDependency.PSScriptAnalyzer),
                 new TargetingPackDependency    (WellKnownDependency.TargetingPack452, version: "4.5.2"),
                 new TargetingPackDependency    (WellKnownDependency.TargetingPack461, version: "4.6.1"),
             };

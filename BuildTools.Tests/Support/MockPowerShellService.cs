@@ -140,7 +140,7 @@ namespace BuildTools.Tests
 
         #endregion
 
-        public object Invoke(string script, params object[] input)
+        public object InvokeAndUnwrap(string script, params object[] input)
         {
             InvokedCommands.Add(script);
 
@@ -150,6 +150,11 @@ namespace BuildTools.Tests
         }
 
         public void InitializePrompt(ProjectConfig config)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object[] InvokeWithArgs(string cmdlet, params string[] args)
         {
             throw new NotImplementedException();
         }
