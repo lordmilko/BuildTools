@@ -13,6 +13,7 @@ namespace BuildTools.Tests
         public MockPowerShellCommand(string name)
         {
             Name = name;
+            Source = $"C:\\{name}.exe";
         }
     }
 }

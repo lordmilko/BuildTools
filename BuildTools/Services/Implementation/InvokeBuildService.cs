@@ -25,7 +25,6 @@ namespace BuildTools
     {
         private readonly IPowerShellService powerShell;
         private readonly IProjectConfigProvider configProvider;
-        private readonly ChocolateyDependencyInstaller chocolateyDependencyInstaller;
         private readonly DependencyProvider dependencyProvider;
         private readonly Logger logger;
         private readonly IProcessService processService;
@@ -34,7 +33,6 @@ namespace BuildTools
         public InvokeBuildService(
             IPowerShellService powerShell,
             IProjectConfigProvider configProvider,
-            ChocolateyDependencyInstaller chocolateyDependencyInstaller,
             DependencyProvider dependencyProvider,
             Logger logger,
             IProcessService processService,
@@ -42,7 +40,6 @@ namespace BuildTools
         {
             this.powerShell = powerShell;
             this.configProvider = configProvider;
-            this.chocolateyDependencyInstaller = chocolateyDependencyInstaller;
             this.dependencyProvider = dependencyProvider;
             this.logger = logger;
             this.processService = processService;
