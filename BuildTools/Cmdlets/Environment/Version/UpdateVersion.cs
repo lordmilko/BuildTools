@@ -7,7 +7,7 @@ namespace BuildTools.Cmdlets
     [BuildCommand(CommandKind.UpdateVersion, CommandCategory.Version)]
     public abstract class UpdateVersion<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
+        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
             var getVersion = commandService.GetCommand(CommandKind.GetVersion);
             var setVersion = commandService.GetCommand(CommandKind.SetVersion);

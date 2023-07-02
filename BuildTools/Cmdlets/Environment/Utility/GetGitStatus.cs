@@ -7,7 +7,7 @@ namespace BuildTools.Cmdlets
     [BuildCommand(CommandKind.GitStatus, CommandCategory.Utility)]
     public abstract class GetGitStatus<TEnvironment> : BuildCmdlet<TEnvironment>
     {
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
+        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
             help.Synopsis = "Gets the current \"git status\" in a PowerShell friendly format.";
             help.Description = $@"The {help.Command} cmdlet retrieves the current ""git status"" for the {project.Name} working directory, and displays it in a PowerShell friendly format.

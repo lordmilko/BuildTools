@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace BuildTools
 {
-    public class BuildCommand
+    public class BuildCommand : IBuildCommand
     {
         public string Name { get; }
 

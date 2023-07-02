@@ -97,7 +97,8 @@ namespace BuildTools
                 { typeof(IPowerShellService), typeof(PowerShellService) },
                 { typeof(IProcessService), typeof(ProcessService) },
                 { typeof(IVsProductLocator), typeof(VsProductLocator) },
-                { typeof(IWebClient), typeof(WebClient) }
+                { typeof(IWebClient), typeof(WebClient) },
+                { typeof(IZipService), typeof(ZipService) }
             };
 
             var serviceProvider = serviceCollection.Build();

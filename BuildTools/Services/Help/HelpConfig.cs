@@ -12,7 +12,7 @@
 
         public HelpExample[] Examples { get; set; }
 
-        public BuildCommand[] RelatedLinks { get; set; }
+        public IBuildCommand[] RelatedLinks { get; set; }
 
         public HelpConfig(string command)
         {

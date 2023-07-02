@@ -12,7 +12,7 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false)]
         public string TargetFramework { get; set; }
 
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
+        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
             help.Synopsis = $"Starts a new PowerShell console containing the compiled version of {project.Name}.";
             help.Description = $@"

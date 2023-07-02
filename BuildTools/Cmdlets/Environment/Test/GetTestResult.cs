@@ -27,7 +27,7 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false)]
         public SwitchParameter Integration { get; set; }
 
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
+        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
             var invokeTest = commandService.GetCommand(CommandKind.InvokeTest);
 

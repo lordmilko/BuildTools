@@ -35,7 +35,7 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false)]
         public SwitchParameter Fix { get; set; }
 
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
+        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
             help.Synopsis = $"Analyzes best practice rules on {project.Name} PowerShell files";
             help.Description = $@"
@@ -63,7 +63,7 @@ For certain rule violations, {help.Command} can automatically apply the recommen
             var dependencyProvider = GetService<DependencyProvider>();
             var configProvider = GetService<IProjectConfigProvider>();
             var powerShell = GetService<IPowerShellService>();
-            var commandService = GetService<CommandService>();
+            var commandService = GetService<ICommandService>();
             var fileSystem = GetService<IFileSystemProvider>();
             var commandName = commandService.GetCommand(CommandKind.InvokePSAnalyzer).Name;
 

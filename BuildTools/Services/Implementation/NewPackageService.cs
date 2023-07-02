@@ -15,7 +15,7 @@ namespace BuildTools
         private readonly IPowerShellService powerShell;
         private readonly IFileSystemProvider fileSystem;
         private readonly GetVersionService getVersionService;
-        private readonly CommandService commandService;
+        private readonly ICommandService commandService;
         private readonly Logger logger;
 
         public NewPackageService(
@@ -26,7 +26,7 @@ namespace BuildTools
             IPowerShellService powerShell,
             IFileSystemProvider fileSystem,
             GetVersionService getVersionService,
-            CommandService commandService,
+            ICommandService commandService,
             Logger logger)
         {
             this.configProvider = configProvider;
@@ -114,7 +114,7 @@ namespace BuildTools
             return results.ToArray();
         }
 
-        public FileInfo[] MovePackages(
+        private FileInfo[] MovePackages(
             string suffix,
             string destinationFolder)
         {

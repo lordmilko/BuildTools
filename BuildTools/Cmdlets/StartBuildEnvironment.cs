@@ -49,7 +49,7 @@ namespace BuildTools.Cmdlets
             envProvider.AddSingleton(configProvider);
 
             //Register all the cmdlets in the build environment
-            envProvider.AddSingleton(new CommandService(cmdletTypes));
+            envProvider.AddSingleton<ICommandService>(new CommandService(cmdletTypes));
 
             //Note that we can't use WithActiveCmdlet here, because we don't want to use the GlobalServiceProvider!
             var powerShell = (PowerShellService) envProvider.GetService<IPowerShellService>();

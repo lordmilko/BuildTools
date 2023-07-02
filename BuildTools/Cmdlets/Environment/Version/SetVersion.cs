@@ -10,7 +10,7 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = true, Position = 0)]
         public Version Version { get; set; }
 
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
+        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
             help.Synopsis = $"Sets the version of all components used when building {project.Name}";
             help.Description = $"The {help.Command} cmdlet updates the version of {project.Name}. The {help.Command} cmdlet allows the major, minor, build and revision components to be replaced with any arbitrary version. Typically the {help.Command} cmdlet is used to revert mistakes made when utilizing the {commandService.GetCommand(CommandKind.UpdateVersion).Name} cmdlet as part of a normal release, or to reset the version when updating the major or minor version components.";

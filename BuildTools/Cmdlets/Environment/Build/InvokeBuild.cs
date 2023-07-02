@@ -50,7 +50,7 @@ namespace BuildTools.Cmdlets
 
         private BuildConfig buildConfig = new BuildConfig();
 
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
+        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
             help.Synopsis = $"Compiles {project.Name} from source";
             help.Description = $@"

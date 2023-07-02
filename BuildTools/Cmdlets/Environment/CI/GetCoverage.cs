@@ -24,7 +24,7 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false)]
         public SwitchParameter SkipReport { get; set; }
 
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
+        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
             help.Synopsis = $"Generates a code coverage report for {project.Name}";
             help.Description = $@"

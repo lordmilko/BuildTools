@@ -12,7 +12,7 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = true, ParameterSetName = ParameterSet.Full)]
         public SwitchParameter Full { get; set; }
 
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
+        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
             help.Synopsis = $"Clears the output of one or more previous {project.Name} builds.";
             help.Description = $"The {help.Command} cmdlet clears the output of previous builds of {project.Name}. By default, {help.Command} will attempt to use the appropriate build tool (msbuild or dotnet.exe) to clear the previous build. If If -Full is specified, {help.Command} will will instead force remove the bin and obj folders of each project in the solution.";

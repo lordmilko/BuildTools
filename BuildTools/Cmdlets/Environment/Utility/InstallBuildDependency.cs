@@ -11,7 +11,7 @@ namespace BuildTools.Cmdlets
         [ValidateSetEx(typeof(DependencyValidator<>))]
         public string[] Name { get; set; }
 
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
+        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
             help.Synopsis = $"Installs dependencies required to use the {project.Name} Build Environment";
             help.Description = $"The {help.Command} cmdlet installs dependencies required to utilize the {project.Name} Build Environment. By default, {help.Command} will install all dependencies that are required. A specific dependency can be installed by specifying a value to the -Name parameter. If dependencies are not installed, the {project.Name} Build Environment will automatically install a given dependency for you when attempting to execute a command that requires it.";

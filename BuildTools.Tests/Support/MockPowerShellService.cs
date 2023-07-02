@@ -50,7 +50,6 @@ namespace BuildTools.Tests
             string currentOperation = null,
             int? percentComplete = null)
         {
-            throw new NotImplementedException();
         }
 
         public void WriteWarning(string message)
@@ -60,7 +59,6 @@ namespace BuildTools.Tests
 
         public void CompleteProgress()
         {
-            throw new NotImplementedException();
         }
 
         public IPowerShellModule[] GetInstalledModules(string name)
@@ -75,7 +73,6 @@ namespace BuildTools.Tests
 
         public void PublishModule(string path)
         {
-            throw new NotImplementedException();
         }
 
         public IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null,
@@ -123,19 +120,14 @@ namespace BuildTools.Tests
         #endregion
         #region PSRepository
 
-        public IPSRepository[] GetPSRepository()
-        {
-            throw new NotImplementedException();
-        }
+        public IPSRepository[] GetPSRepository() => new[] {new MockPSRepository()};
 
         public void RegisterPSRepository()
         {
-            throw new NotImplementedException();
         }
 
         public void UnregisterPSRepository()
         {
-            throw new NotImplementedException();
         }
 
         #endregion

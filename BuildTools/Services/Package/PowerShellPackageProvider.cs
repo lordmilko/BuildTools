@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using BuildTools.PowerShell;
 
 namespace BuildTools
@@ -12,17 +13,20 @@ namespace BuildTools
         private IProjectConfigProvider configProvider;
         private IFileSystemProvider fileSystem;
         private IPowerShellService powerShell;
+        private IZipService zip;
         private Logger logger;
 
         public PowerShellPackageProvider(
             IProjectConfigProvider configProvider,
             IFileSystemProvider fileSystem,
             IPowerShellService powerShell,
+            IZipService zip,
             Logger logger)
         {
             this.configProvider = configProvider;
             this.fileSystem = fileSystem;
             this.powerShell = powerShell;
+            this.zip = zip;
             this.logger = logger;
         }
 
@@ -123,7 +127,7 @@ else # Desktop
                 if (fileSystem.FileExists(zipFile))
                     fileSystem.DeleteFile(zipFile);
 
-                ZipFile.CreateFromDirectory(packageDir, zipFile);
+                zip.CreateFromDirectory(packageDir, zipFile);
             }
         }
 

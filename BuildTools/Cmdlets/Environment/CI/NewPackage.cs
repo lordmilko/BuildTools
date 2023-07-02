@@ -16,7 +16,7 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false)]
         public BuildConfiguration Configuration { get; set; } = BuildConfiguration.Debug;
 
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, CommandService commandService)
+        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
             help.Synopsis = $"Creates NuGet packages from {project.Name} for distribution";
             help.Description = $@"

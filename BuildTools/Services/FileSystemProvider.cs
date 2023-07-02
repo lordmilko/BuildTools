@@ -17,9 +17,15 @@ namespace BuildTools
 
         void DeleteFile(string path);
 
+        Stream ReadFile(string path);
+
+        Stream WriteFile(string path, FileMode mode);
+
         IEnumerable<string> EnumerateDirectories(string path, string searchPattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly);
 
         IEnumerable<string> EnumerateFiles(string path, string searchPattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly);
+
+        IEnumerable<string> EnumerateDirectoryFileSystemEntries(string path, string searchPattern, SearchOption searchOption);
 
         void MoveFile(string sourceFileName, string destFileName);
 
@@ -46,11 +52,18 @@ namespace BuildTools
 
         public void DeleteFile(string path) => File.Delete(path);
 
+        public Stream ReadFile(string path) => File.OpenRead(path);
+
+        public Stream WriteFile(string path, FileMode mode) => File.Open(path, mode, FileAccess.Write, FileShare.None);
+
         public IEnumerable<string> EnumerateDirectories(string path, string searchPattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly) =>
             Directory.EnumerateDirectories(path, searchPattern, searchOption);
 
         public IEnumerable<string> EnumerateFiles(string path, string searchPattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly) =>
             Directory.EnumerateFiles(path, searchPattern, searchOption);
+
+        public IEnumerable<string> EnumerateDirectoryFileSystemEntries(string path, string searchPattern, SearchOption searchOption) =>
+            Directory.EnumerateFileSystemEntries(path, searchPattern, searchOption);
 
         public void MoveFile(string sourceFileName, string destFileName)
         {

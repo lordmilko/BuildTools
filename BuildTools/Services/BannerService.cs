@@ -21,14 +21,14 @@ namespace BuildTools
     class BannerService
     {
         private IProjectConfigProvider configProvider;
-        private CommandService commandService;
+        private ICommandService commandService;
         private IPowerShellService powerShell;
 
         private List<CommandLine> lines = new List<CommandLine>();
 
         public BannerService(
             IProjectConfigProvider configProvider,
-            CommandService commandService,
+            ICommandService commandService,
             IPowerShellService powerShell)
         {
             this.configProvider = configProvider;

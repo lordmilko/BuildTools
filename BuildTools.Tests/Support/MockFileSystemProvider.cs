@@ -12,9 +12,13 @@ namespace BuildTools.Tests
         public Dictionary<string, string> GetFileTextMap { get; } = new Dictionary<string, string>();
         public Dictionary<string, string[]> GetFileLinesMap { get; } = new Dictionary<string, string[]>();
         public Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]> EnumerateFilesMap { get; } = new Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]>();
+        public Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]> EnumerateDirectoryFileSystemEntriesMap { get; } = new Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]>();
         public Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]> EnumerateDirectoriesMap { get; } = new Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]>();
         public List<string> DeletedFiles { get; } = new List<string>();
         public List<string> DeletedDirectories { get; } = new List<string>();
+        public List<string> CreatedDirectories { get; } = new List<string>();
+        public List<(string source, string destination)> MovedFiles { get; } = new List<(string source, string destination)>();
+        public Dictionary<string, Stream> WriteFileMap { get; } = new Dictionary<string, Stream>();
 
         public bool DirectoryExists(string path)
         {
@@ -34,7 +38,7 @@ namespace BuildTools.Tests
 
         public void CreateDirectory(string path)
         {
-            throw new NotImplementedException();
+            CreatedDirectories.Add(path);
         }
 
         public void DeleteDirectory(string path)
@@ -45,6 +49,20 @@ namespace BuildTools.Tests
         public void DeleteFile(string path)
         {
             DeletedFiles.Add(path);
+        }
+
+        public Stream ReadFile(string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Stream WriteFile(string path, FileMode mode)
+        {
+            var stream = new MemoryStream();
+
+            WriteFileMap[path] = stream;
+
+            return stream;
         }
 
         public IEnumerable<string> EnumerateDirectories(string path, string searchPattern = "*",
@@ -65,9 +83,17 @@ namespace BuildTools.Tests
             throw new InvalidOperationException($"Files of directory '{path}, {searchPattern} , {searchOption}' have not been set");
         }
 
+        public IEnumerable<string> EnumerateDirectoryFileSystemEntries(string path, string searchPattern, SearchOption searchOption)
+        {
+            if (EnumerateDirectoryFileSystemEntriesMap.TryGetValue((path, searchPattern, searchOption), out var files))
+                return files;
+
+            throw new InvalidOperationException($"Filesystem entries of directory '{path}, {searchPattern} , {searchOption}' have not been set");
+        }
+
         public void MoveFile(string sourceFileName, string destFileName)
         {
-            throw new NotImplementedException();
+            MovedFiles.Add((sourceFileName, destFileName));
         }
 
         public Version GetVersionInfo(string fileName)
@@ -98,7 +124,6 @@ namespace BuildTools.Tests
 
         public void CopyDirectory(string sourcePath, string destinationPath, bool recursive = false)
         {
-            throw new NotImplementedException();
         }
 
         public void AssertDeletedFiles(params string[] expected)
@@ -115,6 +140,11 @@ namespace BuildTools.Tests
 
             for (var i = 0; i < expected.Length; i++)
                 Assert.AreEqual(expected[i], DeletedDirectories[i], $"Deleted directory {i + 1} was not correct");
+        }
+
+        public void AssertMovedFile(string source, string destination)
+        {
+            Assert.IsTrue(MovedFiles.Contains((source, destination)), $"Did not have {source} -> {destination}");
         }
     }
 }

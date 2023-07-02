@@ -3,16 +3,16 @@ using System.Linq;
 
 namespace BuildTools
 {
-    public class CommandService
+    public class CommandService : ICommandService
     {
-        private readonly BuildCommand[] commands;
+        private readonly IBuildCommand[] commands;
 
         public CommandService(Type[] cmdletTypes)
         {
-            commands = cmdletTypes.Select(t => new BuildCommand(t)).ToArray();
+            commands = cmdletTypes.Select(t => (IBuildCommand) new BuildCommand(t)).ToArray();
         }
 
-        public BuildCommand GetCommand(CommandKind kind)
+        public IBuildCommand GetCommand(CommandKind kind)
         {
             var matches = commands.Where(c => c.Kind == kind).ToArray();
 
