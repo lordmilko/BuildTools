@@ -42,7 +42,12 @@ If -Legacy is true, {help.Command} will skip enumerating target frameworks and i
 
         protected override void ProcessRecordEx()
         {
-            throw new System.NotImplementedException();
+            var service = GetService<StartModuleService>();
+
+            var module = service.Execute(Configuration, IsLegacyMode, TargetFramework);
+
+            if (module != null)
+                WriteObject(module);
         }
 
         public string[] GetLegacyParameterSets()

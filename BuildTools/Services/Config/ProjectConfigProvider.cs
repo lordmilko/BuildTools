@@ -226,7 +226,7 @@ namespace BuildTools
             return results.ToArray();
         }
 
-        public string GetPowerShellOutputDirectory(BuildConfiguration buildConfiguration, bool isLegacy)
+        public string GetPowerShellConfigurationDirectory(BuildConfiguration buildConfiguration)
         {
             var powerShellProjectName = GetPowerShellProjectName();
 
@@ -244,6 +244,13 @@ namespace BuildTools
 
             if (!fileSystem.DirectoryExists(configDir))
                 throw new DirectoryNotFoundException($"Could not find PowerShell Project {buildConfiguration} directory '{configDir}'");
+
+            return configDir;
+        }
+
+        public string GetPowerShellOutputDirectory(BuildConfiguration buildConfiguration, bool isLegacy)
+        {
+            var configDir = GetPowerShellConfigurationDirectory(buildConfiguration);
 
             string baseDir;
 
@@ -277,7 +284,7 @@ namespace BuildTools
                 }
 
                 if (candidates.Length == 0)
-                    throw new InvalidOperationException($"Couldn't find any Core {buildConfiguration} build candidates for {powerShellProjectName}");
+                    throw new InvalidOperationException($"Couldn't find any Core {buildConfiguration} build candidates for {Config.PowerShellProjectName}");
 
                 baseDir = candidates.First();
             }
@@ -301,7 +308,7 @@ namespace BuildTools
             return name;
         }
 
-        public string GetPowerShellModuleManifest()
+        public string GetSourcePowerShellModuleManifest()
         {
             //It could either be under the PowerShell project root, or a Resources subfolder
 

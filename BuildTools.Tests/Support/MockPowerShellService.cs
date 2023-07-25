@@ -66,6 +66,16 @@ namespace BuildTools.Tests
             return InstalledModules ?? new IPowerShellModule[0];
         }
 
+        public IPowerShellModule GetModule(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IPowerShellModule ImportModule(string name, bool global)
+        {
+            throw new NotImplementedException();
+        }
+
         public IPowerShellModule RegisterModule(string name, IList<Type> cmdletTypes)
         {
             throw new NotImplementedException();

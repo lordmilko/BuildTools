@@ -74,6 +74,7 @@ namespace BuildTools
                 typeof(GetVersionService),
                 typeof(InvokeBuildService),
                 typeof(NewPackageService),
+                typeof(StartModuleService),
 
                 typeof(DotnetDependencyInstaller),
                 typeof(ChocolateyDependencyInstaller),

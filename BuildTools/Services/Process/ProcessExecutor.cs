@@ -14,6 +14,8 @@ namespace BuildTools
 
         public bool WriteHost { get; }
 
+        private bool shellExecute;
+
         private Process process;
         private ProcessOutputWriter writer;
         private BlockingCollection<ProcessOutputObject> queue = new BlockingCollection<ProcessOutputObject>();
@@ -23,12 +25,14 @@ namespace BuildTools
             ArgList arguments,
             string errorFormat,
             bool writeHost,
+            bool shellExecute,
             ProcessOutputWriter writer)
         {
             FileName = fileName;
             Arguments = arguments;
             ErrorFormat = errorFormat;
             WriteHost = writeHost;
+            this.shellExecute = shellExecute;
 
             this.writer = writer;
         }
@@ -42,19 +46,22 @@ namespace BuildTools
                     FileName = FileName,
                     Arguments = Arguments,
                     CreateNoWindow = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false
+                    RedirectStandardOutput = !shellExecute,
+                    RedirectStandardError = !shellExecute,
+                    UseShellExecute = shellExecute
                 }
             };
 
             if (!process.Start())
                 throw new InvalidOperationException($"Failed to start process '{FileName}'.");
 
-            _ = new ProcessOutputHandler(process, queue);
+            if (!shellExecute)
+            {
+                _ = new ProcessOutputHandler(process, queue);
 
-            ProcessQueue(blocking: false);
-            FinalizeProcess();
+                ProcessQueue(blocking: false);
+                FinalizeProcess();
+            }
         }
 
         private void ProcessQueue(bool blocking)

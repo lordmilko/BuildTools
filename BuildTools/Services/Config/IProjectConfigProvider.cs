@@ -19,6 +19,8 @@
 
         BuildProject GetPrimaryProject(bool isLegacy);
 
+        string GetPowerShellConfigurationDirectory(BuildConfiguration buildConfiguration);
+
         string GetPowerShellOutputDirectory(BuildConfiguration buildConfiguration, bool isLegacy);
 
         string GetPowerShellProjectName();
@@ -28,6 +30,6 @@
         /// This does NOT retrieve the path to the *.psd1 file published to the bin folder.
         /// </summary>
         /// <returns>The path to the *.psd1 file in its original location.</returns>
-        string GetPowerShellModuleManifest();
+        string GetSourcePowerShellModuleManifest();
     }
 }

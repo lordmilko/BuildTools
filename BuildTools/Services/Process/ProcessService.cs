@@ -18,7 +18,8 @@ namespace BuildTools
             string fileName,
             ArgList arguments = default,
             string errorFormat = null,
-            bool writeHost = false)
+            bool writeHost = false,
+            bool shellExecute = false)
         {
             var writer = new ProcessOutputWriter(writeHost, powerShell);
             var executor = new ProcessExecutor(
@@ -26,6 +27,7 @@ namespace BuildTools
                 arguments,
                 errorFormat,
                 writeHost,
+                shellExecute,
                 writer
             );
 

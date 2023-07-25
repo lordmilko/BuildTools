@@ -109,7 +109,7 @@ namespace BuildTools
                 info = GetElementValue(versionProps, "InformationalVersion");
             }
 
-            var psd1Path = configProvider.GetPowerShellModuleManifest();
+            var psd1Path = configProvider.GetSourcePowerShellModuleManifest();
             var psd1Contents = fileSystem.GetFileText(psd1Path);
             var psd1Hashtable = (Hashtable) powerShell.InvokeAndUnwrap(psd1Contents);
 

@@ -120,6 +120,28 @@ namespace BuildTools.PowerShell
             );
         }
 
+        public IPowerShellModule GetModule(string name)
+        {
+            return Invoke(
+                "Get-Module",
+                new[] {$"-Name '{name}'"},
+                o => new PowerShellModule((PSModuleInfo)UnwrapPSObject(o))
+            ).FirstOrDefault();
+        }
+
+        public IPowerShellModule ImportModule(string name, bool global)
+        {
+            var args = new List<string>
+            {
+                $"-Name '{name}'"
+            };
+
+            if (global)
+                args.Add("-Global");
+
+            return Invoke("Import-Module", args, o => new PowerShellModule((PSModuleInfo)UnwrapPSObject(o))).First();
+        }
+
         public IPowerShellModule RegisterModule(string name, IList<Type> cmdletTypes)
         {
             if (cmdletTypes == null)

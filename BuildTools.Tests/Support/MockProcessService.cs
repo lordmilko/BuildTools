@@ -18,7 +18,7 @@ namespace BuildTools.Tests
 
         public List<string> Executed { get; } = new List<string>();
 
-        public string[] Execute(string fileName, ArgList arguments = default, string errorFormat = null, bool writeHost = false)
+        public string[] Execute(string fileName, ArgList arguments = default, string errorFormat = null, bool writeHost = false, bool shellExecute = false)
         {
             var argList = arguments.Arguments;
 

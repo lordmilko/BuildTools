@@ -34,6 +34,10 @@ namespace BuildTools.PowerShell
 
         IPowerShellModule[] GetInstalledModules(string name);
 
+        IPowerShellModule GetModule(string name);
+
+        IPowerShellModule ImportModule(string name, bool global);
+
         IPowerShellModule RegisterModule(string name, IList<Type> cmdletTypes);
 
         void PublishModule(string path);
