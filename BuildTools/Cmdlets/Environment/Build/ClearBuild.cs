@@ -43,7 +43,7 @@ namespace BuildTools.Cmdlets
             if (Full)
                 clearService.ClearFull();
             else
-                clearService.ClearMSBuild(Configuration, IsLegacyMode); //todo: pass config and -legacy
+                clearService.ClearMSBuild(Configuration, IsLegacyMode);
         }
 
         public string[] GetLegacyParameterSets()

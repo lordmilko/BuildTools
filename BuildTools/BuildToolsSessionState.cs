@@ -92,6 +92,7 @@ namespace BuildTools
                 { typeof(IFileLogger), typeof(FileLogger) },
 
                 { typeof(IAlternateDataStreamService), typeof(AlternateDataStreamService) },
+                { typeof(ICommandService), typeof(CommandService) },
                 { typeof(IEnvironmentVariableProvider), typeof(EnvironmentVariableProvider) },
                 { typeof(IFileSystemProvider), typeof(FileSystemProvider) },
                 { typeof(IHasher), typeof(Hasher) },

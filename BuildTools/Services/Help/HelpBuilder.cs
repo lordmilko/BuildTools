@@ -12,10 +12,12 @@ namespace BuildTools
         private const string CreateHelpMethodName = "CreateHelp";
 
         private IServiceProvider serviceProvider;
+        private ICommandService commandService;
 
-        public HelpBuilder(IServiceProvider serviceProvider)
+        public HelpBuilder(IServiceProvider serviceProvider, ICommandService commandService)
         {
             this.serviceProvider = serviceProvider;
+            this.commandService = commandService;
         }
 
         public ScriptBlock CreateBlock(CmdletInfo cmdletInfo)
@@ -28,6 +30,9 @@ namespace BuildTools
             var helpConfig = InvokeCreateHelp(cmdletInfo, createHelp);
 
             ValidateHelp(helpConfig);
+
+            var command = commandService.GetCommand(cmdletInfo.ImplementingType);
+            commandService.SetDescription(command, helpConfig.Synopsis.Trim());
 
             var comment = BuildComment(helpConfig);
 

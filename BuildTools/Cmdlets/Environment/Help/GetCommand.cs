@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Management.Automation;
 
 namespace BuildTools.Cmdlets
@@ -29,7 +30,26 @@ namespace BuildTools.Cmdlets
 
         protected override void ProcessRecordEx()
         {
-            throw new NotImplementedException();
+            var service = GetService<ICommandService>();
+
+            var commands = service.GetCommands();
+
+            if (MyInvocation.BoundParameters.ContainsKey(nameof(Name)))
+            {
+                var wildcard = new WildcardPattern(Name, WildcardOptions.IgnoreCase);
+
+                commands = commands.Where(v => wildcard.IsMatch(v.Name)).ToArray();
+            }
+
+            foreach (var command in commands.OrderBy(c => c.Category).ThenBy(c => c.Name))
+            {
+                var pso = new PSObject();
+                pso.Properties.Add(new PSNoteProperty("Name", command.Name));
+                pso.Properties.Add(new PSNoteProperty("Category", command.Category.ToString())); //If this is an enum it will be right aligned
+                pso.Properties.Add(new PSNoteProperty("Description", command.Description));
+
+                WriteObject(pso);
+            }
         }
     }
 }

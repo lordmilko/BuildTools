@@ -14,6 +14,8 @@ namespace BuildTools
 
         public CommandCategory Category { get; }
 
+        public string Description { get; internal set; }
+
         public BuildCommand(Type type)
         {
             Type = type;

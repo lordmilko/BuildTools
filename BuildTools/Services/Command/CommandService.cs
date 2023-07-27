@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace BuildTools
 {
-    public class CommandService : ICommandService
+    internal class CommandService : ICommandService
     {
         private readonly IBuildCommand[] commands;
 
@@ -23,6 +23,23 @@ namespace BuildTools
                 throw new InvalidOperationException($"More than one command of type '{kind}' was found.");
 
             return matches[0];
+        }
+
+        public IBuildCommand GetCommand(Type type)
+        {
+            var match = commands.SingleOrDefault(c => c.Type == type);
+
+            if (match == null)
+                throw new InvalidOperationException($"A command implementing type '{type.Name}' was not found.");
+
+            return match;
+        }
+
+        public IBuildCommand[] GetCommands() => commands;
+
+        public void SetDescription(IBuildCommand command, string description)
+        {
+            ((BuildCommand)command).Description = description;
         }
     }
 }
