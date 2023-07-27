@@ -308,7 +308,7 @@ namespace BuildTools
             return name;
         }
 
-        public string GetSourcePowerShellModuleManifest()
+        public string GetSourcePowerShellModuleManifest(bool relativePath = false)
         {
             //It could either be under the PowerShell project root, or a Resources subfolder
 
@@ -330,7 +330,55 @@ namespace BuildTools
             if (psd1.Length > 1)
                 throw new InvalidOperationException("More than one *.psd1 file was found");
 
+            if (relativePath)
+                return GetSolutionRelativePath(psd1[0]);
+
             return psd1[0];
+        }
+
+        public string GetVersionAttibPath()
+        {
+            var primaryProject = Path.Combine(SourceRoot, Config.Name);
+
+            if (!fileSystem.DirectoryExists(primaryProject))
+                throw new DirectoryNotFoundException($"Could not find primary project directory '{primaryProject}'.");
+
+            var versionFile = Path.Combine(primaryProject, "Properties", "Version.cs");
+
+            if (!fileSystem.FileExists(versionFile))
+                throw new FileNotFoundException($"Could not find legacy version file '{versionFile}'", versionFile);
+
+            return versionFile;
+        }
+
+        public string GetVersionPropsPath(bool relativePath = false)
+        {
+            var versionPath = Path.Combine(SolutionRoot, "build", "Version.props");
+
+            if (!fileSystem.FileExists(versionPath))
+                throw new FileNotFoundException($"Could not find version file '{versionPath}'", versionPath);
+
+            if (relativePath)
+                return GetSolutionRelativePath(versionPath);
+
+            return versionPath;
+        }
+
+        private string GetSolutionRelativePath(string path)
+        {
+            string root;
+
+            if (path.StartsWith(SourceRoot))
+                root = SourceRoot;
+            else
+                root = SolutionRoot;
+
+            var length = root.Length;
+
+            if (!root.EndsWith(Path.DirectorySeparatorChar.ToString()) && !root.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
+                length++;
+
+            return path.Substring(length);
         }
     }
 }

@@ -39,7 +39,11 @@ For more information on the version components that may be processed, please see
 
         protected override void ProcessRecordEx()
         {
-            throw new NotImplementedException();
+            var service = GetService<SetVersionService>();
+
+            var result = service.UpdateVersion(IsLegacyMode);
+
+            WriteObject(result);
         }
 
         public string[] GetLegacyParameterSets()

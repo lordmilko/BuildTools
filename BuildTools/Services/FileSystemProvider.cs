@@ -35,6 +35,8 @@ namespace BuildTools
 
         string[] GetFileLines(string path);
 
+        void WriteFileText(string path, string contents);
+
         void WriteFileLines(string path, string[] contents);
 
         void CopyDirectory(string sourcePath, string destinationPath, bool recursive = false);
@@ -85,6 +87,8 @@ namespace BuildTools
         public string GetFileText(string path) => File.ReadAllText(path);
 
         public string[] GetFileLines(string path) => File.ReadAllLines(path);
+
+        public void WriteFileText(string path, string contents) => File.WriteAllText(path, contents);
 
         public void WriteFileLines(string path, string[] contents) => File.WriteAllLines(path, contents);
 

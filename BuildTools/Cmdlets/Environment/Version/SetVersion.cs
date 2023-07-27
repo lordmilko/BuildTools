@@ -36,7 +36,11 @@ namespace BuildTools.Cmdlets
 
         protected override void ProcessRecordEx()
         {
-            throw new NotImplementedException();
+            var service = GetService<SetVersionService>();
+
+            var result = service.SetVersion(Version, IsLegacyMode, null);
+
+            WriteObject(result);
         }
 
         public string[] GetLegacyParameterSets()

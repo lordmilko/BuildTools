@@ -19,6 +19,8 @@ namespace BuildTools.Tests
         public List<string> CreatedDirectories { get; } = new List<string>();
         public List<(string source, string destination)> MovedFiles { get; } = new List<(string source, string destination)>();
         public Dictionary<string, Stream> WriteFileMap { get; } = new Dictionary<string, Stream>();
+        public Dictionary<string, Action<string, string>> OnWriteFileText { get; } = new Dictionary<string, Action<string, string>>();
+        public Dictionary<string, Action<string, string[]>> OnWriteFileLines { get; } = new Dictionary<string, Action<string, string[]>>();
 
         public bool DirectoryExists(string path)
         {
@@ -117,9 +119,20 @@ namespace BuildTools.Tests
             throw new InvalidOperationException($"Lines of file '{path}' have not been set");
         }
 
+        public void WriteFileText(string path, string contents)
+        {
+            if (OnWriteFileText.TryGetValue(path, out var action))
+                action(path, contents);
+            else
+                throw new InvalidOperationException($"{nameof(OnWriteFileText)} for '{path}' is not set");
+        }
+
         public void WriteFileLines(string path, string[] contents)
         {
-            throw new NotImplementedException();
+            if (OnWriteFileLines.TryGetValue(path, out var action))
+                action(path, contents);
+            else
+                throw new InvalidOperationException($"{nameof(OnWriteFileLines)} for '{path}' is not set");
         }
 
         public void CopyDirectory(string sourcePath, string destinationPath, bool recursive = false)

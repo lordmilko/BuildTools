@@ -72,6 +72,7 @@ namespace BuildTools
                 //Cmdlet Services
                 typeof(ClearBuildService),
                 typeof(GetVersionService),
+                typeof(SetVersionService),
                 typeof(InvokeBuildService),
                 typeof(NewPackageService),
                 typeof(StartModuleService),

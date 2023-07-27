@@ -72,15 +72,7 @@ namespace BuildTools
 
             if (isLegacy)
             {
-                var primaryProject = Path.Combine(configProvider.SourceRoot, configProvider.Config.Name);
-
-                if (!fileSystem.DirectoryExists(primaryProject))
-                    throw new DirectoryNotFoundException($"Could not find primary project directory '{primaryProject}'.");
-
-                var versionFile = Path.Combine(primaryProject, "Properties\\Version.cs");
-
-                if (!fileSystem.FileExists(versionFile))
-                    throw new FileNotFoundException($"Could not find legacy version file '{versionFile}'", versionFile);
+                var versionFile = configProvider.GetVersionAttibPath();
 
                 var versionContents = fileSystem.GetFileLines(versionFile);
 
@@ -91,10 +83,7 @@ namespace BuildTools
             }
             else
             {
-                var versionPath = Path.Combine(configProvider.SolutionRoot, "build", "Version.props");
-
-                if (!fileSystem.FileExists(versionPath))
-                    throw new FileNotFoundException($"Could not find version file '{versionPath}'", versionPath);
+                var versionPath = configProvider.GetVersionPropsPath();
 
                 var versionContents = fileSystem.GetFileText(versionPath);
 

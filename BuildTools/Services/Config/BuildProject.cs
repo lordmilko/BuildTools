@@ -4,7 +4,7 @@ using System.IO;
 namespace BuildTools
 {
     [Flags]
-    enum ProjectKind
+    public enum ProjectKind
     {
         Normal = 0,
         PowerShell = 1,
@@ -14,7 +14,7 @@ namespace BuildTools
         Tool = 16
     }
 
-    class BuildProject
+    public class BuildProject
     {
         /// <summary>
         /// Gets the name of the project file (without file extension).

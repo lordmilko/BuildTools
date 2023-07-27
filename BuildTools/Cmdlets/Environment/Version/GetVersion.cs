@@ -7,8 +7,10 @@ namespace BuildTools.Cmdlets
     [BuildCommand(CommandKind.GetVersion, CommandCategory.Version)]
     public abstract class GetVersion<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
+        public static void CreateHelp(HelpConfig help, IProjectConfigProvider configProvider, ICommandService commandService)
         {
+            var project = configProvider.Config;
+
             var setVersion = commandService.GetCommand(CommandKind.SetVersion);
             var updateVersion = commandService.GetCommand(CommandKind.UpdateVersion);
 
@@ -16,7 +18,7 @@ namespace BuildTools.Cmdlets
             help.Description = $@"
 The {help.Command} cmdlet retrieves version details found in various locations in the {project.Name} project. Version details can be updated using the {setVersion.Name} and {updateVersion.Name} cmdlet. The following table details the version details that can be retrieved:
 
-{GetVersionTable()}
+{GetVersionTable(configProvider)}
 
 Note that if {help.Command} detects that the .git folder is missing from the repo or that the ""git"" command is not installed on your system, the PreviousTag property will be omitted from results.
 ";
@@ -40,12 +42,29 @@ Note that if {help.Command} detects that the .git folder is missing from the rep
 
         protected override void ProcessRecordEx()
         {
-            throw new NotImplementedException();
+            var service = GetService<GetVersionService>();
+
+            var result = service.GetVersion(IsLegacyMode);
+
+            WriteObject(result);
         }
 
-        private static string GetVersionTable()
+        private static string GetVersionTable(IProjectConfigProvider configProvider)
         {
-            throw new NotImplementedException();
+            var props = configProvider.GetVersionPropsPath(true);
+            var psd1 = configProvider.GetSourcePowerShellModuleManifest(true);
+
+            var table = new VersionTableBuilder
+            {
+                { VersionType.Package, props },
+                { VersionType.Assembly, props },
+                { VersionType.File, props },
+                { VersionType.Module, psd1 },
+                { VersionType.ModuleTag, psd1 },
+                { VersionType.PreviousTag, "Git" },
+            };
+
+            return table.ToString();
         }
 
         public string[] GetLegacyParameterSets()

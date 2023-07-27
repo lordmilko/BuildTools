@@ -1,6 +1,6 @@
 ﻿namespace BuildTools
 {
-    interface IProjectConfigProvider
+    public interface IProjectConfigProvider
     {
         ProjectConfig Config { get; }
 
@@ -30,6 +30,10 @@
         /// This does NOT retrieve the path to the *.psd1 file published to the bin folder.
         /// </summary>
         /// <returns>The path to the *.psd1 file in its original location.</returns>
-        string GetSourcePowerShellModuleManifest();
+        string GetSourcePowerShellModuleManifest(bool relativePath = false);
+
+        string GetVersionAttibPath();
+
+        string GetVersionPropsPath(bool relativePath = false);
     }
 }
