@@ -23,6 +23,8 @@ namespace BuildTools
 
         BuildProject GetUnitTestProject(bool isLegacy);
 
+        BuildProject GetIntegrationTestProject(bool isLegacy);
+
         string GetUnitTestDll(BuildConfiguration buildConfiguration, bool isLegacy);
 
         /// <summary>

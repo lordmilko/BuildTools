@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Linq;
 using System.Management.Automation;
 
 namespace BuildTools.Cmdlets
@@ -8,24 +10,46 @@ namespace BuildTools.Cmdlets
     public abstract class GetTestResult<TEnvironment> : BuildCmdlet<TEnvironment>
     {
         [Parameter(Mandatory = false, Position = 0)]
-        public string Name { get; set; }
+        public string Name
+        {
+            get => testResultConfig.Name;
+            set => testResultConfig.Name = value;
+        }
 
         [Parameter(Mandatory = false, ParameterSetName = ParameterSet.Default, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
-        public string[] Path { get; set; }
+        public string[] Path
+        {
+            get => testResultConfig.Path;
+            set => testResultConfig.Path = value;
+        }
 
         [ArgumentCompleter(typeof(SupportedTestTypeCompleter<>))]
         [ValidateSetEx(typeof(SupportedTestTypeValidator<>))]
         [Parameter(Mandatory = false, ParameterSetName = ParameterSet.Default)]
-        public string[] Type { get; set; }
+        public string[] Type
+        {
+            get => testResultConfig.Type?.Select(v => v.ToString()).ToArray();
+            set => testResultConfig.Type = value?.Select(v => v.DescriptionToEnum<TestType>()).ToArray();
+        }
 
         [Parameter(Mandatory = false, ParameterSetName = ParameterSet.Default)]
-        public TestOutcome Outcome { get; set; }
+        public TestOutcome Outcome
+        {
+            get => testResultConfig.Outcome ?? default;
+            set => testResultConfig.Outcome = value;
+        }
 
         [Parameter(Mandatory = false, ParameterSetName = ParameterSet.ListAvailable)]
         public SwitchParameter ListAvailable { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter Integration { get; set; }
+        public SwitchParameter Integration
+        {
+            get => testResultConfig.Integration;
+            set => testResultConfig.Integration = value;
+        }
+
+        private TestResultConfig testResultConfig = new TestResultConfig();
 
         public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
@@ -67,7 +91,26 @@ Note that whenever the PrtgAPI.Tests.UnitTests and PrtgAPI.Tests.IntegrationTest
 
         protected override void ProcessRecordEx()
         {
-            throw new NotImplementedException();
+            var service = GetService<GetTestResultService>();
+
+            IEnumerable results;
+
+            switch (ParameterSetName)
+            {
+                case ParameterSet.Default:
+                    results = service.Execute(testResultConfig);
+                    break;
+
+                case ParameterSet.ListAvailable:
+                    results = service.List(Name, Integration);
+                    break;
+
+                default:
+                    throw new NotImplementedException($"Don't know how to handle parameter set '{ParameterSetName}'.");
+            }
+
+            foreach (var item in results)
+                WriteObject(item);
         }
     }
 }

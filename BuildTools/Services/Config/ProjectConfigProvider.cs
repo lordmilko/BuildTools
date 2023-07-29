@@ -213,7 +213,22 @@ namespace BuildTools
 
             throw new InvalidOperationException($"Multiple unit test projects were found: {string.Join(", ", candidates.Select(v => v.Name))}");
         }
-        
+
+        public BuildProject GetIntegrationTestProject(bool isLegacy)
+        {
+            EnsureProjects();
+
+            var candidates = projects.Where(p => (p.Kind & ProjectKind.IntegrationTest) != 0 && p.IsLegacy == isLegacy).ToArray();
+
+            if (candidates.Length == 1)
+                return candidates[0];
+
+            if (candidates.Length == 0)
+                throw new InvalidOperationException("Could not find any integration test projects");
+
+            throw new InvalidOperationException($"Multiple integration test projects were found: {string.Join(", ", candidates.Select(v => v.Name))}");
+        }
+
         public string GetUnitTestDll(BuildConfiguration buildConfiguration, bool isLegacy)
         {
             EnsureProjects();
@@ -452,7 +467,7 @@ namespace BuildTools
 
         public string GetProjectConfigurationDirectory(BuildProject project, BuildConfiguration buildConfiguration)
         {
-            var projectDir = Path.GetDirectoryName(project.FilePath);
+            var projectDir = project.DirectoryName;
 
             if (!fileSystem.DirectoryExists(projectDir))
                 throw new DirectoryNotFoundException($"Could not find project directory '{projectDir}'.");

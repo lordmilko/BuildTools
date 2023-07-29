@@ -31,6 +31,8 @@ namespace BuildTools
         /// </summary>
         public string FilePath { get; }
 
+        public string DirectoryName { get; }
+
         /// <summary>
         /// Gets the name of the project file (excluding directory).
         /// </summary>
@@ -45,6 +47,7 @@ namespace BuildTools
             Name = Path.GetFileNameWithoutExtension(filePath);
             NormalizedName = normalizedName;
             FilePath = filePath;
+            DirectoryName = Path.GetDirectoryName(filePath);
             FileName = Path.GetFileName(filePath);
             Kind = GetProjectKind();
             IsLegacy = isLegacy;

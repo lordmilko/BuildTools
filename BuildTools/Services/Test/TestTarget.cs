@@ -15,6 +15,6 @@ namespace BuildTools
             this.types = types;
         }
 
-        private bool HasType(TestType type) => types.Length == 0 || types.Contains(type);
+        private bool HasType(TestType type) => types == null || types.Length == 0 || types.Contains(type);
     }
 }

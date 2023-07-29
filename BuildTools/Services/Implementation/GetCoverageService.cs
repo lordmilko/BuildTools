@@ -211,7 +211,7 @@ namespace BuildTools
 
                 if (netFramework == null)
                 {
-                    var projectDir = Path.GetDirectoryName(unitTestProject.FilePath);
+                    var projectDir = unitTestProject.DirectoryName;
                     var relativePaths = candidates.Select(v => $"'{v.Substring(projectDir.Length).TrimStart(Path.DirectorySeparatorChar)}'").ToArray();
 
                     throw new InvalidOperationException($"Cannot run PowerShell tests as test project has not been compiled for PowerShell Desktop. Found {string.Join(", ", relativePaths)}");
@@ -268,7 +268,7 @@ namespace BuildTools
         private string[] GetPowerShellTests(CoverageConfig coverageConfig, bool isLegacy)
         {
             var project = configProvider.GetUnitTestProject(isLegacy);
-            var projectDir = Path.GetDirectoryName(project.FilePath);
+            var projectDir = project.DirectoryName;
 
             var powerShellDir = Path.Combine(projectDir, "PowerShell");
 

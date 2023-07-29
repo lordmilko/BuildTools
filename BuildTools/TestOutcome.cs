@@ -3,6 +3,7 @@
     public enum TestOutcome
     {
         Success,
-        Failed
+        Failed,
+        Skipped
     }
 }
