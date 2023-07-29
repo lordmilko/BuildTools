@@ -91,9 +91,6 @@ In the event you wish to debug your build, the -Dbg parameter can be specified. 
             buildService.Build(buildConfig, IsLegacyMode);
         }
 
-        public string[] GetLegacyParameterSets()
-        {
-            throw new NotImplementedException();
-        }
+        public string[] GetLegacyParameterSets() => null;
     }
 }

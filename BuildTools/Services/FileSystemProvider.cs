@@ -40,6 +40,8 @@ namespace BuildTools
         void WriteFileLines(string path, string[] contents);
 
         void CopyDirectory(string sourcePath, string destinationPath, bool recursive = false);
+
+        void WithCurrentDirectory(string path, Action action);
     }
 
     class FileSystemProvider : IFileSystemProvider
@@ -113,6 +115,26 @@ namespace BuildTools
                 var destinationFile = Path.Combine(destinationPath, relativePath);
 
                 File.Copy(file, destinationFile, true);
+            }
+        }
+
+        public void WithCurrentDirectory(string path, Action action)
+        {
+            //Legacy vstest.console stores the test results in the TestResults folder under the current directory.
+            //Change into the project directory whole we execute vstest to ensure the results get stored
+            //in the right folder
+
+            var original = Directory.GetCurrentDirectory();
+
+            try
+            {
+                Directory.SetCurrentDirectory(path);
+
+                action();
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(original);
             }
         }
     }

@@ -300,6 +300,20 @@ finally
 
         #endregion
 
+        public PesterResult[] InvokePester(string path, string[] additionalArgs)
+        {
+            var args = new List<string>
+            {
+                $"-Script '{path}'",
+                "-PassThru"
+            };
+
+            if (additionalArgs != null)
+                args.AddRange(additionalArgs);
+
+            return Invoke("Invoke-Pester", args, o => new PesterResult(o));
+        }
+
         public object InvokeAndUnwrap(string script, params object[] input)
         {
             var result = ActiveCmdlet.InvokeCommand.InvokeScript(script, false, PipelineResultTypes.None, input);

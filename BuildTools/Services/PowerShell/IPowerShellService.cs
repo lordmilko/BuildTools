@@ -70,6 +70,8 @@ namespace BuildTools.PowerShell
 
         #endregion
 
+        PesterResult[] InvokePester(string path, string[] additionalArgs);
+
         object InvokeAndUnwrap(string script, params object[] input);
 
         object[] InvokeWithArgs(string cmdlet, params string[] args);

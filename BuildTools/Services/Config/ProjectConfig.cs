@@ -101,6 +101,15 @@ namespace BuildTools
         public string UnitTestProjectName { get; set; }
 
         [Optional]
+        public bool PowerShellMultiTargeted { get; set; }
+
+        [Optional]
         public Func<FileInfo, bool> UnitTestPowerShellFilter { get; set; }
+
+        [Optional]
+        public CommandKind[] ExcludedCommands { get; set; }
+
+        [Optional]
+        public string[] CSharpLegacyPackageExcludes { get; set; }
     }
 }

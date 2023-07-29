@@ -84,10 +84,9 @@ namespace BuildTools
         public static void WithTempCopy(
             string sourcePath,
             IFileSystemProvider fileSystem,
-            Action<string> action,
-            string folderName = null)
+            Action<string> action)
         {
-            folderName ??= Path.GetDirectoryName(sourcePath);
+            var folderName = Path.GetFileName(sourcePath);
 
             var tempPath = Path.Combine(RepoLocation, "TempOutput", folderName);
 

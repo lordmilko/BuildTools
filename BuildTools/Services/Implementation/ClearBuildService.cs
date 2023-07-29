@@ -60,7 +60,7 @@ namespace BuildTools
 
                 if (fileSystem.DirectoryExists(obj))
                 {
-                    //obj will be automatically recreated and removed each time Clear-PrtgBuild is run,
+                    //obj will be automatically recreated and removed each time Clear-Build is run,
                     //due to dotnet/msbuild clean recreating it
                     logger.LogAttention($"\tRemoving {obj}");
                     RemoveItems(obj);
@@ -104,7 +104,7 @@ namespace BuildTools
 
         private void ClearNetCore(BuildConfiguration configuration)
         {
-            dependencyProvider.Install(WellKnownDependency.Dotnet);
+            var dotnet = dependencyProvider.Install(WellKnownDependency.Dotnet);
 
             var solutionPath = configProvider.GetSolutionPath(false);
 
@@ -113,7 +113,7 @@ namespace BuildTools
                 //Running dotnet clean on Linux can result in ResolvePackageAsserts
                 //unexpectedly failing due to something to do with the NuGet fallback cache.
                 //Executing a package restore resolves this problem.
-                processService.Execute("dotnet", $"restore {solutionPath}");
+                processService.Execute(dotnet.Path, $"restore {solutionPath}");
             }
 
             var cleanArgs = new ArgList
@@ -126,7 +126,7 @@ namespace BuildTools
 
             logger.LogVerbose($"Executing command 'dotnet {cleanArgs}'");
 
-            processService.Execute("dotnet", cleanArgs);
+            processService.Execute(dotnet.Path, cleanArgs);
         }
 
         private void ClearCommon()

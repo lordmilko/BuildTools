@@ -58,13 +58,15 @@ namespace BuildTools
         {
             ClearCoverage();
 
-            GetPowerShellCoverage(coverageConfig, isLegacy);
-            GetCSharpCoverage(coverageConfig, isLegacy);
+            var unitTestProject = configProvider.GetUnitTestProject(isLegacy);
+
+            GetPowerShellCoverage(coverageConfig, unitTestProject, isLegacy);
+            GetCSharpCoverage(coverageConfig, unitTestProject, isLegacy);
         }
 
         #region C#
 
-        private void GetCSharpCoverage(CoverageConfig coverageConfig, bool isLegacy)
+        private void GetCSharpCoverage(CoverageConfig coverageConfig, BuildProject unitTestProject, bool isLegacy)
         {
             if (!coverageConfig.Target.CSharp)
                 return;
@@ -72,18 +74,21 @@ namespace BuildTools
             var testRunner = GetCSharpTestRunner(isLegacy);
             var testParams = GetCSharpTestParams(coverageConfig, isLegacy);
 
-            if (coverageConfig.TestOnly)
+            fileSystem.WithCurrentDirectory(unitTestProject.DirectoryName, () =>
             {
-                logger.LogInformation($"\t\tExecuting {testRunner} {testParams}");
-                processService.Execute(testRunner, testParams, writeHost: true);
-            }
-            else
-            {
-                var openCoverParams = GetCSharpOpenCoverParams(testRunner, testParams, isLegacy);
+                if (coverageConfig.TestOnly)
+                {
+                    logger.LogInformation($"\t\tExecuting {testRunner} {testParams}");
+                    processService.Execute(testRunner, testParams, writeHost: true);
+                }
+                else
+                {
+                    var openCoverParams = GetCSharpOpenCoverParams(testRunner, testParams, isLegacy);
 
-                logger.LogInformation($"\t\tExecuting '{openCover} {openCoverParams}'");
-                processService.Execute(openCover, openCoverParams, writeHost: true);
-            }
+                    logger.LogInformation($"\t\tExecuting '{openCover} {openCoverParams}'");
+                    processService.Execute(openCover, openCoverParams, writeHost: true);
+                }
+            });
         }
 
         private string GetCSharpTestRunner(bool isLegacy)
@@ -164,7 +169,7 @@ namespace BuildTools
         #endregion
         #region PowerShell
 
-        private void GetPowerShellCoverage(CoverageConfig coverageConfig, bool isLegacy)
+        private void GetPowerShellCoverage(CoverageConfig coverageConfig, BuildProject unitTestProject, bool isLegacy)
         {
             if (!coverageConfig.Target.PowerShell)
                 return;
@@ -177,28 +182,33 @@ namespace BuildTools
                 return;
             }
 
-            AssertHasPowerShellDll(coverageConfig, isLegacy);
+            AssertHasPowerShellDll(coverageConfig, unitTestProject, isLegacy);
 
             var testRunner = vsProductLocator.GetVSTest();
             var testParams = GetPowerShellTestParams(coverageConfig, tests);
 
-            if (coverageConfig.TestOnly)
-            {
-                logger.LogInformation($"\t\tExecuting {testRunner} {testParams}");
-                processService.Execute(testRunner, testParams, writeHost: true);
-            }
-            else
-            {
-                var openCoverParams = GetCommonOpenCoverParams(testRunner, testParams, isLegacy);
+            fileSystem.WithCurrentDirectory(
+                unitTestProject.DirectoryName,
+                () =>
+                {
+                    if (coverageConfig.TestOnly)
+                    {
+                        logger.LogInformation($"\t\tExecuting {testRunner} {testParams}");
+                        processService.Execute(testRunner, testParams, writeHost: true);
+                    }
+                    else
+                    {
+                        var openCoverParams = GetCommonOpenCoverParams(testRunner, testParams, isLegacy);
 
-                logger.LogInformation($"\t\tExecuting {openCover} {openCoverParams}");
-                processService.Execute(openCover, openCoverParams, writeHost: true);
-            }
+                        logger.LogInformation($"\t\tExecuting {openCover} {openCoverParams}");
+                        processService.Execute(openCover, openCoverParams, writeHost: true);
+                    }
+                }
+            );
         }
 
-        private void AssertHasPowerShellDll(CoverageConfig coverageConfig, bool isLegacy)
+        private void AssertHasPowerShellDll(CoverageConfig coverageConfig, BuildProject unitTestProject, bool isLegacy)
         {
-            var unitTestProject = configProvider.GetUnitTestProject(isLegacy);
             var unitTestBuildDir = configProvider.GetProjectConfigurationDirectory(unitTestProject, coverageConfig.Configuration);
 
             var powerShellName = $"{configProvider.GetPowerShellProjectName()}.dll";
@@ -268,12 +278,8 @@ namespace BuildTools
         private string[] GetPowerShellTests(CoverageConfig coverageConfig, bool isLegacy)
         {
             var project = configProvider.GetUnitTestProject(isLegacy);
-            var projectDir = project.DirectoryName;
 
-            var powerShellDir = Path.Combine(projectDir, "PowerShell");
-
-            if (!fileSystem.DirectoryExists(powerShellDir))
-                powerShellDir = projectDir;
+            var powerShellDir = configProvider.GetTestPowerShellDirectory(project);
 
             var tests = fileSystem.EnumerateFiles(powerShellDir, "*.Tests.ps1", SearchOption.AllDirectories);
 
@@ -340,9 +346,9 @@ namespace BuildTools
 
             var args = new ArgList
             {
-                $"-target:{openCover}",
+                $"\"-reports:{openCoverOutput}\"",
                 $"-reporttypes:{type}",
-                $"-targetdir:{targetDir}",
+                $"\"-targetdir:{targetDir}\"",
                 "-verbosity:off"
             };
 

@@ -34,7 +34,7 @@ namespace BuildTools.Tests
                 //Validation
                 fileSystem.AssertDeletedFiles("foo.nupkg", "foo.zip");
 
-                process.AssertExecuted("dotnet clean \"C:\\Root\\PrtgAPIv17.sln\" -c Debug");
+                process.AssertExecuted("C:\\dotnet.exe clean \"C:\\Root\\PrtgAPIv17.sln\" -c Debug");
             });
         }
 

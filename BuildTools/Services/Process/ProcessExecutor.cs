@@ -78,14 +78,12 @@ namespace BuildTools
             {
                 if (!queue.IsCompleted)
                 {
-                    try
-                    {
-                        //If we call queue.CompleteAdding() after we've started waiting, we'll throw, so we need to catch this
-                        return queue.Take();
-                    }
-                    catch (InvalidOperationException)
-                    {
-                    }
+                    //queue.Take() internally calls TryTake and can throw if it returns false
+                    //when CompleteAdding() is called after we've already started waiting. As we wait
+                    //infinitely here just like Take() does, we achieve the same behavior, without the
+                    //exception when the race occurs
+                    queue.TryTake(out var record, -1);
+                    return record;
                 }
 
                 return null;

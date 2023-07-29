@@ -90,23 +90,9 @@ namespace BuildTools
 
             if (helpConfig.Parameters != null)
             {
-                bool shouldIncludeParameter(HelpParameter hp)
-                {
-                    if (hp is ConditionalHelpParameter c)
-                    {
-                        var predicateParams = c.Predicate.Method.GetParameters().Select(p => serviceProvider.GetService(p.ParameterType)).ToArray();
-
-                        var result = (bool) c.Predicate.DynamicInvoke(predicateParams);
-
-                        return result;
-                    }
-
-                    return true;
-                }
-
                 foreach (var parameter in helpConfig.Parameters)
                 {
-                    if (!shouldIncludeParameter(parameter))
+                    if (!ShouldIncludeParameter(parameter))
                         continue;
 
                     builder.AppendLine();
@@ -119,6 +105,9 @@ namespace BuildTools
             {
                 foreach (var example in helpConfig.Examples)
                 {
+                    if (!ShouldIncludeExample(example))
+                        continue;
+
                     builder.AppendLine();
                     builder.AppendLine(".EXAMPLE");
                     builder.Append("C:\\> ").AppendLine(example.Command);
@@ -138,6 +127,34 @@ namespace BuildTools
             builder.AppendLine("#>");
 
             return builder.ToString();
+        }
+
+        private bool ShouldIncludeParameter(HelpParameter hp)
+        {
+            if (hp is ConditionalHelpParameter c)
+            {
+                var predicateParams = c.Predicate.Method.GetParameters().Select(p => serviceProvider.GetService(p.ParameterType)).ToArray();
+
+                var result = (bool) c.Predicate.DynamicInvoke(predicateParams);
+
+                return result;
+            }
+
+            return true;
+        }
+
+        private bool ShouldIncludeExample(HelpExample he)
+        {
+            if (he is ConditionalHelpExample c)
+            {
+                var predicateParams = c.Predicate.Method.GetParameters().Select(p => serviceProvider.GetService(p.ParameterType)).ToArray();
+
+                var result = (bool) c.Predicate.DynamicInvoke(predicateParams);
+
+                return result;
+            }
+
+            return true;
         }
     }
 }

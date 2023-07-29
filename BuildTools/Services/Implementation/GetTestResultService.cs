@@ -140,7 +140,7 @@ namespace BuildTools
 
         public FileInfo[] List(string name, bool integration, bool warnIfNoResults = false)
         {
-            var projectDir = (integration ? configProvider.GetIntegrationTestProject(false) : configProvider.GetUnitTestProject(false)).DirectoryName;
+            var projectDir = configProvider.GetTestProject(integration, false).DirectoryName;
             var testResultsDir = Path.Combine(projectDir, "TestResults");
 
             if (!fileSystem.DirectoryExists(testResultsDir))

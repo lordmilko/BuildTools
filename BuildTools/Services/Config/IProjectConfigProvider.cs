@@ -21,11 +21,19 @@ namespace BuildTools
 
         BuildProject GetPrimaryProject(bool isLegacy);
 
+        BuildProject GetTestProject(bool integration, bool isLegacy);
         BuildProject GetUnitTestProject(bool isLegacy);
-
         BuildProject GetIntegrationTestProject(bool isLegacy);
 
+        string GetTestDll(bool integration, BuildConfiguration buildConfiguration, bool isLegacy);
         string GetUnitTestDll(BuildConfiguration buildConfiguration, bool isLegacy);
+        string GetIntegrationTestDll(BuildConfiguration buildConfiguration, bool isLegacy);
+
+        /// <summary>
+        /// Gets the directory in a test project containing PowerShell tests.
+        /// </summary>
+        /// <returns>The directory in a test project containing PowerShell tests.</returns>
+        string GetTestPowerShellDirectory(BuildProject project);
 
         /// <summary>
         /// Gets the Debug or Release directory of the PowerShell project.

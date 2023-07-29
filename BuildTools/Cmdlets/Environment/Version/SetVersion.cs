@@ -43,9 +43,6 @@ namespace BuildTools.Cmdlets
             WriteObject(result);
         }
 
-        public string[] GetLegacyParameterSets()
-        {
-            throw new NotImplementedException();
-        }
+        public string[] GetLegacyParameterSets() => null;
     }
 }

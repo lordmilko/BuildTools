@@ -50,9 +50,6 @@ If -Legacy is true, {help.Command} will skip enumerating target frameworks and i
                 WriteObject(module);
         }
 
-        public string[] GetLegacyParameterSets()
-        {
-            throw new System.NotImplementedException();
-        }
+        public string[] GetLegacyParameterSets() => null;
     }
 }

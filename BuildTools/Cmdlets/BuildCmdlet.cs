@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Management.Automation;
+using System.Reflection;
 using BuildTools.PowerShell;
 
 namespace BuildTools.Cmdlets
@@ -8,8 +10,16 @@ namespace BuildTools.Cmdlets
     public abstract class BuildCmdlet<TEnvironment> : PSCmdlet
     {
         protected const string LegacyParameterName = "Legacy";
+        protected const string IntegrationParameterName = "Integration";
 
-        protected bool IsLegacyMode
+        private static readonly MethodInfo getService;
+
+        static BuildCmdlet()
+        {
+            getService = typeof(BuildCmdlet<TEnvironment>).GetMethod(nameof(GetService), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        }
+
+        protected virtual bool IsLegacyMode
         {
             get
             {
@@ -22,11 +32,20 @@ namespace BuildTools.Cmdlets
 
         protected sealed override void ProcessRecord()
         {
-            WithActiveCmdlet(_ =>
+            WithActiveCmdlet(() =>
             {
                 using (new VerboseEnforcer(this))
                     ProcessRecordEx();
             });
+        }
+
+        protected sealed override void BeginProcessing()
+        {
+            if (this is IIntegrationProvider provider)
+            {
+                if (MyInvocation.BoundParameters.TryGetValue(IntegrationParameterName, out var value))
+                    provider.Integration = (SwitchParameter) value;
+            }
         }
 
         protected abstract void ProcessRecordEx();
@@ -47,6 +66,20 @@ namespace BuildTools.Cmdlets
             return false;
         }
 
+        //If you touch this property, implicitly you're a cmdlet that CAN support integration parameters, the only question is WILL you
+        internal static Delegate NeedIntegrationParameter => (Func<IProjectConfigProvider, bool>) (configProvider => NeedIntegrationParameterInternal(true, configProvider));
+
+        private static bool NeedIntegrationParameterInternal(bool isIntegrationProvider, IProjectConfigProvider configProvider)
+        {
+            if (isIntegrationProvider)
+            {
+                if (configProvider.GetProjects(false).Any(a => (a.Kind & ProjectKind.IntegrationTest) != 0))
+                    return true;
+            }
+
+            return false;
+        }
+
         public object GetDynamicParameters()
         {
             if (!typeof(IEnvironmentIdentifier).IsAssignableFrom(typeof(TEnvironment)))
@@ -54,40 +87,52 @@ namespace BuildTools.Cmdlets
 
             var dict = new RuntimeDefinedParameterDictionary();
 
-            WithActiveCmdlet(powerShell =>
+            WithActiveCmdlet((IPowerShellService powerShell, IProjectConfigProvider configProvider) =>
             {
                 if (NeedLegacyParameterInternal(this is ILegacyProvider, powerShell))
-                {
-                    var provider = (ILegacyProvider) this;
+                    AddDynamicParameters(LegacyParameterName, ((ILegacyProvider) this).GetLegacyParameterSets(), dict);
 
-                    var sets = provider.GetLegacyParameterSets();
-
-                    //Setting the ParameterSetName to null or empty causes the set to revert to AllParameterSets
-                    if (sets == null || sets.Length == 0)
-                        sets = new string[] {null};
-
-                    foreach (var set in sets)
-                    {
-                        dict.Add(LegacyParameterName, new RuntimeDefinedParameter(LegacyParameterName, typeof(SwitchParameter), new Collection<Attribute>
-                        {
-                            new ParameterAttribute { Mandatory = false, ParameterSetName = set }
-                        }));
-                    }
-                }
+                if (NeedIntegrationParameterInternal(this is IIntegrationProvider, configProvider))
+                    AddDynamicParameters(IntegrationParameterName, ((IIntegrationProvider) this).GetIntegrationParameterSets(), dict);
             });
 
             return dict;
         }
 
-        internal void WithActiveCmdlet(Action<IPowerShellService> action)
+        private void AddDynamicParameters(string parameterName, string[] parameterSets, RuntimeDefinedParameterDictionary dict)
         {
-            var powerShell = (PowerShellService) GetService<IPowerShellService>();
+            //Setting the ParameterSetName to null or empty causes the set to revert to AllParameterSets
+            if (parameterSets == null || parameterSets.Length == 0)
+                parameterSets = new string[] { null };
+
+            foreach (var set in parameterSets)
+            {
+                dict.Add(parameterName, new RuntimeDefinedParameter(parameterName, typeof(SwitchParameter), new Collection<Attribute>
+                {
+                    new ParameterAttribute { Mandatory = false, ParameterSetName = set }
+                }));
+            }
+        }
+
+        private void WithActiveCmdlet(Action action) => WithActiveCmdlet((IPowerShellService powerShell) => action());
+
+        private void WithActiveCmdlet<T1>(Action<T1> action) => WithActiveCmdlet((Delegate) action);
+
+        private void WithActiveCmdlet<T1, T2>(Action<T1, T2> action) => WithActiveCmdlet((Delegate) action);
+
+        private void WithActiveCmdlet(Delegate action)
+        {
+            var parametersTypes = action.Method.GetParameters();
+
+            var parameters = parametersTypes.Select(p => getService.MakeGenericMethod(p.ParameterType).Invoke(this, Array.Empty<object>())).ToArray();
+
+            var powerShell = (PowerShellService) parameters.Single(p => p is IPowerShellService);
 
             powerShell.Push(this);
 
             try
             {
-                action(powerShell);
+                action.DynamicInvoke(parameters);
             }
             finally
             {

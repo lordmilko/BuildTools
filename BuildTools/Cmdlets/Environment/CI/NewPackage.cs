@@ -66,9 +66,6 @@ Unlike packaging done in CI builds, {help.Command} does not verify that the cont
                 WriteObject(result);
         }
 
-        public string[] GetLegacyParameterSets()
-        {
-            throw new NotImplementedException();
-        }
+        public string[] GetLegacyParameterSets() => null;
     }
 }

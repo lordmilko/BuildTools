@@ -63,30 +63,25 @@ namespace BuildTools.Tests
 
             BuildToolsSessionState.HeadlessUI = true;
 
-            var tempFile = Path.GetTempFileName();
-            var newTempFile = Path.ChangeExtension(tempFile, "sln");
-            File.Move(tempFile, newTempFile);
-            tempFile = newTempFile;
+            var (solutionDir, buildDir, configFile) = CreateTempSolution(methodName);
 
             try
             {
-                File.WriteAllText(tempFile, $@"
+                File.WriteAllText(configFile, $@"
 @{{
     Name = '{methodName}'
     CmdletPrefix = '{methodName}'
     SolutionName = '{methodName}.sln'
     CopyrightAuthor = 'foo'
     CopyrightYear = '2023'
+    ExcludedCommands = 'GetVersion','SetVersion','UpdateVersion'
 }}
 ");
 
-                var dir = Path.GetDirectoryName(tempFile);
-                var file = Path.GetFileName(tempFile);
-
                 invoker.Invoke<object>("Start-BuildEnvironment", new
                 {
-                    BuildRoot = dir,
-                    File = file
+                    BuildRoot = buildDir,
+                    File = configFile
                 });
 
                 dynamic help = invoker.Invoke<PSObject>("Get-Help", $"Clear-{methodName}Build").SingleOrDefault();
@@ -97,8 +92,46 @@ namespace BuildTools.Tests
             }
             finally
             {
-                File.Delete(tempFile);
+                Directory.Delete(solutionDir, true);
             }
+        }
+
+        private (string solutionDir, string buildDir, string configFile) CreateTempSolution(string methodName)
+        {
+            var temp = Path.GetTempPath();
+            string solutionDir;
+
+            var prefix = "BuildToolsHelpTests_{0}";
+
+            var i = 0;
+
+            while (true)
+            {
+                var name = string.Format(prefix, i);
+                i++;
+
+                solutionDir = Path.Combine(temp, name);
+
+                if (!Directory.Exists(solutionDir))
+                    break;
+            }
+
+            Directory.CreateDirectory(solutionDir);
+
+            var solutionFile = Path.Combine(solutionDir, $"{methodName}.sln");
+            File.WriteAllText(solutionFile, string.Empty);
+
+            var unitTestProjectDir = Path.Combine(solutionDir, $"{methodName}.Tests");
+            Directory.CreateDirectory(unitTestProjectDir);
+            var unitTestProjectCsproj = Path.Combine(unitTestProjectDir, $"{methodName}.Tests.csproj");
+            File.Create(unitTestProjectCsproj);
+
+            var buildDir = Path.Combine(solutionDir, "build");
+            Directory.CreateDirectory(buildDir);
+
+            var configFile = Path.Combine(buildDir, "Config.psd1");
+
+            return (solutionDir, buildDir, configFile);
         }
     }
 }

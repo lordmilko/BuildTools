@@ -14,7 +14,15 @@ namespace BuildTools
 
         public string[] Arguments => arguments.ToArray();
 
-        public void Add(object argument)
+        public void Add(BuildConfiguration argument) => Add(argument.ToString());
+        public void Add(Version argument) => Add(argument.ToString());
+        public void Add(ArgList argument)
+        {
+            if (argument.arguments != null)
+                Add(argument.Arguments);
+        }
+
+        public void Add(string argument)
         {
             if (argument == null)
                 throw new ArgumentNullException(nameof(argument));

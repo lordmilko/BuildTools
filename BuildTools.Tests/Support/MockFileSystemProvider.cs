@@ -143,6 +143,8 @@ namespace BuildTools.Tests
         {
         }
 
+        public void WithCurrentDirectory(string path, Action action) => action();
+
         public void AssertDeletedFiles(params string[] expected)
         {
             Assert.AreEqual(expected.Length, DeletedFiles.Count, "Number of deleted files was not correct");

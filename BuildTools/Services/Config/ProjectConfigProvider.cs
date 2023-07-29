@@ -199,44 +199,41 @@ namespace BuildTools
             throw new InvalidOperationException("Could not identify primary project");
         }
 
-        public BuildProject GetUnitTestProject(bool isLegacy)
+        public BuildProject GetTestProject(bool integration, bool isLegacy) =>
+            integration ? GetIntegrationTestProject(isLegacy) : GetUnitTestProject(isLegacy);
+
+        public BuildProject GetUnitTestProject(bool isLegacy) => GetTestProjectInternal(ProjectKind.UnitTest, "unit", isLegacy);
+        public BuildProject GetIntegrationTestProject(bool isLegacy) => GetTestProjectInternal(ProjectKind.IntegrationTest, "integration", isLegacy);
+
+        private BuildProject GetTestProjectInternal(ProjectKind kind, string displayKind, bool isLegacy)
         {
             EnsureProjects();
 
-            var candidates = projects.Where(p => (p.Kind & ProjectKind.UnitTest) != 0 && p.IsLegacy == isLegacy).ToArray();
+            var candidates = projects.Where(p => (p.Kind & kind) != 0 && p.IsLegacy == isLegacy).ToArray();
 
             if (candidates.Length == 1)
                 return candidates[0];
 
             if (candidates.Length == 0)
-                throw new InvalidOperationException("Could not find any unit test projects");
+                throw new InvalidOperationException($"Could not find any {displayKind} test projects");
 
-            throw new InvalidOperationException($"Multiple unit test projects were found: {string.Join(", ", candidates.Select(v => v.Name))}");
+            throw new InvalidOperationException($"Multiple {displayKind} test projects were found: {string.Join(", ", candidates.Select(v => v.Name))}");
         }
 
-        public BuildProject GetIntegrationTestProject(bool isLegacy)
-        {
-            EnsureProjects();
+        public string GetTestDll(bool integration, BuildConfiguration buildConfiguration, bool isLegacy) =>
+            integration ? GetIntegrationTestDll(buildConfiguration, isLegacy) : GetUnitTestDll(buildConfiguration, isLegacy);
 
-            var candidates = projects.Where(p => (p.Kind & ProjectKind.IntegrationTest) != 0 && p.IsLegacy == isLegacy).ToArray();
+        public string GetUnitTestDll(BuildConfiguration buildConfiguration, bool isLegacy) => GetTestDllInternal(ProjectKind.UnitTest, "unit", buildConfiguration, isLegacy);
+        public string GetIntegrationTestDll(BuildConfiguration buildConfiguration, bool isLegacy) => GetTestDllInternal(ProjectKind.IntegrationTest, "integration", buildConfiguration, isLegacy);
 
-            if (candidates.Length == 1)
-                return candidates[0];
-
-            if (candidates.Length == 0)
-                throw new InvalidOperationException("Could not find any integration test projects");
-
-            throw new InvalidOperationException($"Multiple integration test projects were found: {string.Join(", ", candidates.Select(v => v.Name))}");
-        }
-
-        public string GetUnitTestDll(BuildConfiguration buildConfiguration, bool isLegacy)
+        private string GetTestDllInternal(ProjectKind kind, string displayKind, BuildConfiguration buildConfiguration, bool isLegacy)
         {
             EnsureProjects();
 
             if (!isLegacy)
-                throw new NotImplementedException("Retrieving the unit test DLL for non-core projects is not implemented");
+                throw new NotImplementedException($"Retrieving the {displayKind} test DLL for non-core projects is not implemented");
 
-            var candidates = projects.Where(p => (p.Kind & ProjectKind.UnitTest) != 0 && p.IsLegacy == isLegacy).ToArray();
+            var candidates = projects.Where(p => (p.Kind & kind) != 0 && p.IsLegacy == isLegacy).ToArray();
 
             if (candidates.Length == 1)
             {
@@ -245,15 +242,27 @@ namespace BuildTools
                 var dll = Path.Combine(output, $"{candidates[0].NormalizedName}.dll");
 
                 if (!fileSystem.FileExists(dll))
-                    throw new FileNotFoundException($"Could not find unit test DLL '{dll}'", dll);
+                    throw new FileNotFoundException($"Could not find {displayKind} test DLL '{dll}'", dll);
 
                 return dll;
             }
 
             if (candidates.Length == 0)
-                throw new InvalidOperationException("Could not find any unit test projects");
+                throw new InvalidOperationException($"Could not find any {displayKind} test projects");
 
-            throw new InvalidOperationException($"Multiple unit test projects were found: {string.Join(", ", candidates.Select(v => v.Name))}");
+            throw new InvalidOperationException($"Multiple {displayKind} test projects were found: {string.Join(", ", candidates.Select(v => v.Name))}");
+        }
+
+        public string GetTestPowerShellDirectory(BuildProject project)
+        {
+            var projectDir = project.DirectoryName;
+
+            var powerShellDir = Path.Combine(projectDir, "PowerShell");
+
+            if (!fileSystem.DirectoryExists(powerShellDir))
+                throw new DirectoryNotFoundException($"PowerShell unit test directory '{powerShellDir}' was not found.");
+
+            return powerShellDir;
         }
 
         private BuildProject[] GetProjectsInternal()

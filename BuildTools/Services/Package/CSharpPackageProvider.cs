@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace BuildTools
 {
@@ -32,12 +33,20 @@ namespace BuildTools
             {
                 processName = dependencyProvider.Install(WellKnownDependency.NuGet).Path;
 
+                var exclusions = new List<string>
+                {
+                    "**/*.tt"
+                };
+
+                if (configProvider.Config.CSharpLegacyPackageExcludes != null)
+                    exclusions.AddRange(configProvider.Config.CSharpLegacyPackageExcludes);
+
                 args = new ArgList
                 {
                     "pack",
                     configProvider.GetPrimaryProject(true).FilePath,
                     "-Exclude",
-                    "**/*.tt;**/Resources/*.txt;PublicAPI.txt;*PrtgClient.Methods.xml;**/*.json", //todo
+                    string.Join(";", exclusions),
                     "-outputdirectory",
                     $"\"{PackageSourceService.RepoLocation}\"",
                     "-NoPackageAnalysis",

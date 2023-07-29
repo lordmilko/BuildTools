@@ -38,7 +38,7 @@ namespace BuildTools
 
                 if (!powerShell.IsWindows)
                 {
-                    /* We want to be able to test PrtgAPI.Build on Linux, however the advanced mocking
+                    /* We want to be able to test BuildTools on Linux, however the advanced mocking
                      * required by these tests won't work in Pester 3, so when we're actually on Linux
                      * use Pester 4 instead. We go with 4.7.2 because 4.7.3 truncates "Should Be" output
                      * to 5 characters which is useless */
@@ -46,7 +46,7 @@ namespace BuildTools
                     version = "4.7.2";
                 }
 
-                return new PSPackageDependency("Pester", version: version, minimumVersion: minimumVersion, true);
+                return new PSPackageDependency(WellKnownDependency.Pester, version: version, minimumVersion: minimumVersion, true);
             }
 
             dependencies = new Dependency[]

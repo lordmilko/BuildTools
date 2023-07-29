@@ -46,9 +46,6 @@ namespace BuildTools.Cmdlets
                 clearService.ClearMSBuild(Configuration, IsLegacyMode);
         }
 
-        public string[] GetLegacyParameterSets()
-        {
-            return new[] {ParameterSet.Default};
-        }
+        public string[] GetLegacyParameterSets() => new[] { ParameterSet.Default };
     }
 }

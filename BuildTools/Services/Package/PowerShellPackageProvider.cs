@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using BuildTools.PowerShell;
 
 namespace BuildTools
@@ -32,83 +30,86 @@ namespace BuildTools
 
         public void Execute(bool isLegacy, BuildConfiguration configuration, PackageTarget target)
         {
-            var outputDir = configProvider.GetPowerShellOutputDirectory(configuration, isLegacy);
+            var moduleDir = configProvider.GetPowerShellOutputDirectory(configuration, isLegacy);
+            var configDir = configProvider.GetPowerShellConfigurationDirectory(configuration);
+
+            var outputDir = moduleDir;
 
             var dll = Path.Combine(outputDir, configProvider.GetPowerShellProjectName() + ".dll");
 
             if (!fileSystem.FileExists(dll))
-                throw new FileNotFoundException($"Cannot build PowerShell package as PrtgAPI has not been compiled. Could not find file '{dll}'.", dll);
+                throw new FileNotFoundException($"Cannot build PowerShell package as {configProvider.Config.Name} has not been compiled. Could not find file '{dll}'.", dll);
+
+            bool needMultiTargeting = !isLegacy && configuration == BuildConfiguration.Release && configProvider.Config.PowerShellMultiTargeted;
+
+            //We are either in Release\net461 or Release\net461\FooModule. We want to package up both Release\net461 and Release\netstandard2.0.
+            //As such, we must find our way back to the Release folder.
+            if (needMultiTargeting)
+                outputDir = configDir;
 
             PackageSourceService.WithTempCopy(
                 outputDir,
                 fileSystem,
                 tempPath =>
                 {
-                    UpdateRootModule(tempPath, isLegacy, configuration);
-                    CreateRedistributablePackage(tempPath, isLegacy, configuration, target);
+                    string packageDir = tempPath;
+                    string primaryModuleDir = tempPath;
 
-                    if (target.PowerShell)
+                    if (needMultiTargeting)
                     {
-                        var modulePath = tempPath;
-                        if (!isLegacy && configuration == BuildConfiguration.Release)
-                            modulePath = Path.Combine(tempPath, "net452", configProvider.Config.PowerShellModuleName);
+                        //While we may have multiple target frameworks we want to include, for the purposes of publishing we just move everything into whatever the "main" folder is
+                        var relativePath = moduleDir.Substring(configDir.Length).TrimStart(Path.DirectorySeparatorChar);
+                        primaryModuleDir = Path.Combine(tempPath, relativePath);
 
-                        CreatePowerShellPackage(modulePath);
+                        UpdateRootModule_MultiTargetedRelease(primaryModuleDir, isLegacy);
+
+                        packageDir = MovePowerShellAssemblies_MultiTargetedRelease(tempPath, isLegacy, configuration);
                     }
-                },
-                configProvider.Config.PowerShellModuleName
+
+                    CreateRedistributablePackage(packageDir, target);
+                    CreatePowerShellPackage(primaryModuleDir, target);
+                }
             );
         }
 
-        private void UpdateRootModule(string tempPath, bool isLegacy, BuildConfiguration configuration)
+        private void UpdateRootModule_MultiTargetedRelease(string primaryModuleDir, bool isLegacy)
         {
-            if (!isLegacy && configuration == BuildConfiguration.Release)
+            //Cmdlets such as Import-PowerShellDataFile and code inside PSModule.psm1 cannot handle a RootModule being set to a script expression.
+            //As such, we must rewrite these strings directly
+
+            var psd1Path = GetPsd1Path(primaryModuleDir);
+
+            var lines = fileSystem.GetFileLines(psd1Path);
+
+            for (var i = 0; i < lines.Length; i++)
             {
-                //Cmdlets such as Import-PowerShellDataFile and code inside PSModule.psm1 cannot handle a RootModule being set to a script expression.
-                //As such, we must rewrite these strings directly
-
-                var psd1Path = GetPsd1Path(tempPath, isLegacy);
-
-                var lines = fileSystem.GetFileLines(psd1Path);
-
-                for (var i = 0; i < lines.Length; i++)
+                if (lines[i].StartsWith("RootModule ="))
                 {
-                    if (lines[i].StartsWith("RootModule ="))
-                    {
-                        lines[i] = string.Join(Environment.NewLine, $@"
+                    var dllName = configProvider.GetPowerShellProjectName();
+
+                    lines[i] = string.Join(Environment.NewLine, $@"
 RootModule = if($PSEdition -eq 'Core')
 {{
-    'coreclr\PrtgAPI.PowerShell.dll'
+    'coreclr\{dllName}.dll'
 }}
 else # Desktop
 {{
-    'fullclr\PrtgAPI.PowerShell.dll'
-}}".TrimStart().Split(new[]{'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries));
-                    }
-                }
+    'fullclr\{dllName}.dll'
+}}".TrimStart().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
 
-                fileSystem.WriteFileLines(psd1Path, lines);
+                    break;
+                }
             }
+
+            fileSystem.WriteFileLines(psd1Path, lines);
         }
 
-        private string GetPsd1Path(string tempPath, bool isLegacy)
+        private string GetPsd1Path(string primaryModuleDir)
         {
-            string moduleDir = Path.Combine(tempPath, configProvider.Config.PowerShellModuleName);
+            if (!fileSystem.DirectoryExists(primaryModuleDir))
+                throw new DirectoryNotFoundException($"Could not find module directory '{primaryModuleDir}'");
 
-            if (!isLegacy)
-            {
-                var frameworkDir = Path.Combine(tempPath, "net452");
-
-                if (!fileSystem.DirectoryExists(frameworkDir))
-                    throw new DirectoryNotFoundException($"Could not find framework directory '{frameworkDir}'");
-
-                moduleDir = Path.Combine(frameworkDir, configProvider.Config.PowerShellModuleName);
-            }
-
-            if (!fileSystem.DirectoryExists(moduleDir))
-                throw new DirectoryNotFoundException($"Could not find module directory '{moduleDir}'");
-
-            var psd1 = Path.Combine(moduleDir, $"{configProvider.Config.PowerShellModuleName}.psd1");
+            var psd1 = Path.Combine(primaryModuleDir, $"{configProvider.Config.PowerShellModuleName}.psd1");
 
             if (!fileSystem.FileExists(psd1))
                 throw new FileNotFoundException($"Could not find psd1 file '{psd1}'", psd1);
@@ -116,10 +117,8 @@ else # Desktop
             return psd1;
         }
 
-        private void CreateRedistributablePackage(string modulePath, bool isLegacy, BuildConfiguration buildConfiguration, PackageTarget target)
+        private void CreateRedistributablePackage(string packageDir, PackageTarget target)
         {
-            var packageDir = MovePowerShellAssemblies(modulePath, isLegacy, buildConfiguration);
-
             if (target.Redist)
             {
                 var zipFile = Path.Combine(PackageSourceService.RepoLocation, $"{configProvider.Config.PowerShellModuleName}.zip");
@@ -131,56 +130,54 @@ else # Desktop
             }
         }
 
-        private string MovePowerShellAssemblies(string modulePath, bool isLegacy, BuildConfiguration buildConfiguration)
+        private string MovePowerShellAssemblies_MultiTargetedRelease(string modulePath, bool isLegacy, BuildConfiguration buildConfiguration)
         {
-            if (!isLegacy && buildConfiguration == BuildConfiguration.Release)
+            var netStandardOutput = Path.Combine(modulePath, "netstandard2.0", configProvider.Config.PowerShellModuleName);
+            var netFrameworkOutput = Path.Combine(modulePath, "net452", configProvider.Config.PowerShellModuleName); //todo
+
+            var coreclr = Path.Combine(netFrameworkOutput, "coreclr");
+            var fullclr = Path.Combine(netFrameworkOutput, "fullclr");
+
+            var include = new[]
             {
-                var netStandardOutput = Path.Combine(modulePath, "netstandard2.0", configProvider.Config.PowerShellModuleName);
-                var netFrameworkOutput = Path.Combine(modulePath, "net452", configProvider.Config.PowerShellModuleName);
+                "*.dll",
+                "*.json",
+                "*.xml",
+                "*.pdb",
+            };
 
-                var coreclr = Path.Combine(netFrameworkOutput, "coreclr");
-                var fullclr = Path.Combine(netFrameworkOutput, "fullclr");
+            string[] getFiles(string path) => include
+                .SelectMany(i => fileSystem.EnumerateFiles(path, i, SearchOption.AllDirectories))
+                .Where(f => !f.EndsWith("-Help.xml", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
 
-                var include = new[]
-                {
-                    "*.dll",
-                    "*.json",
-                    "*.xml",
-                    "*.pdb",
-                };
+            var standardFiles = getFiles(netStandardOutput);
+            var frameworkFiles = getFiles(netFrameworkOutput);
 
-                string[] getFiles(string path) => include
-                    .SelectMany(i => fileSystem.EnumerateFiles(path, i, SearchOption.AllDirectories))
-                    .Where(f => !f.EndsWith("-Help.xml", StringComparison.OrdinalIgnoreCase))
-                    .ToArray();
+            fileSystem.CreateDirectory(coreclr);
+            fileSystem.CreateDirectory(fullclr);
 
-                var standardFiles = getFiles(netStandardOutput);
-                var frameworkFiles = getFiles(netFrameworkOutput);
+            foreach (var file in standardFiles)
+                fileSystem.MoveFile(file, coreclr);
 
-                fileSystem.CreateDirectory(coreclr);
-                fileSystem.CreateDirectory(fullclr);
+            foreach (var file in frameworkFiles)
+                fileSystem.MoveFile(file, fullclr);
 
-                foreach (var file in standardFiles)
-                    fileSystem.MoveFile(file, coreclr);
-
-                foreach (var file in frameworkFiles)
-                    fileSystem.MoveFile(file, fullclr);
-
-                //The coreclr and fullclr files were created under this folder. Everything that didn't need moving into the fullclr
-                //folder (e.g. *.cmd files, etc) is still in the root
-                return netFrameworkOutput;
-            }
-
-            return modulePath;
+            //The coreclr and fullclr files were created under this folder. Everything that didn't need moving into the fullclr
+            //folder (e.g. *.cmd files, etc) is still in the root
+            return netFrameworkOutput;
         }
 
-        private void CreatePowerShellPackage(string modulePath)
+        private void CreatePowerShellPackage(string modulePath, PackageTarget target)
         {
-            DeleteUnnecessaryFiles(modulePath);
+            if (target.PowerShell)
+            {
+                DeleteUnnecessaryFiles(modulePath);
 
-            logger.LogInformation($"\t\tPublishing module to {PackageSourceService.RepoName}");
+                logger.LogInformation($"\t\tPublishing module to {PackageSourceService.RepoName}");
 
-            powerShell.PublishModule(modulePath);
+                powerShell.PublishModule(modulePath);
+            }
         }
 
         private void DeleteUnnecessaryFiles(string modulePath)

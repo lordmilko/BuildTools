@@ -46,9 +46,6 @@ For more information on the version components that may be processed, please see
             WriteObject(result);
         }
 
-        public string[] GetLegacyParameterSets()
-        {
-            throw new NotImplementedException();
-        }
+        public string[] GetLegacyParameterSets() => null;
     }
 }

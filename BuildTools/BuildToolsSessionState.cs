@@ -76,6 +76,7 @@ namespace BuildTools
                 typeof(GetVersionService),
                 typeof(SetVersionService),
                 typeof(InvokeBuildService),
+                typeof(InvokeTestService),
                 typeof(NewPackageService),
                 typeof(StartModuleService),
 

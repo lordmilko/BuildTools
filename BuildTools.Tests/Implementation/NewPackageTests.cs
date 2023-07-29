@@ -22,13 +22,6 @@ namespace BuildTools.Tests
             fileSystem.EnumerateFilesMap[(SolutionRoot, "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
             fileSystem.DirectoryExistsMap[SourceRoot] = true;
 
-            fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.*nupkg", SearchOption.TopDirectoryOnly)] = redist ? new string[0] : new[] { "C:\\foo.nupkg" };
-
-            fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.zip", SearchOption.TopDirectoryOnly)] = new[] { "C:\\foo.zip" };
-        }
-
-        private void MockFileSystemCSharp(MockFileSystemProvider fileSystem)
-        {
             fileSystem.EnumerateFilesMap[(SolutionRoot, "*.csproj", SearchOption.AllDirectories)] = new[]
             {
                 "C:\\Root\\first\\PrtgAPI.csproj",
@@ -36,6 +29,10 @@ namespace BuildTools.Tests
             };
 
             fileSystem.DirectoryExistsMap[PackageSourceService.RepoLocation] = true;
+
+            fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.*nupkg", SearchOption.TopDirectoryOnly)] = redist ? new string[0] : new[] { "C:\\foo.nupkg" };
+
+            fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.zip", SearchOption.TopDirectoryOnly)] = new[] { "C:\\foo.zip" };
         }
 
         private void MockFileSystemPowerShell(MockFileSystemProvider fileSystem)
@@ -75,7 +72,6 @@ namespace BuildTools.Tests
                 Lazy<NewPackageService> newPackage) =>
             {
                 MockFileSystemCommon(fileSystem);
-                MockFileSystemCSharp(fileSystem);
                 MockFileSystemPowerShell(fileSystem);
                 MockVersion(fileSystem, powerShell);
 
@@ -114,7 +110,6 @@ namespace BuildTools.Tests
                 Lazy<NewPackageService> newPackage) =>
             {
                 MockFileSystemCommon(fileSystem);
-                MockFileSystemCSharp(fileSystem);
                 MockVersion(fileSystem, powerShell);
 
                 powerShell.KnownCommands["dotnet"] = new MockPowerShellCommand("dotnet");

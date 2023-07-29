@@ -14,6 +14,8 @@
         public const string OpenCover = "OpenCover";
         public const string ReportGenerator = "ReportGenerator";
 
+        public const string Pester = "Pester";
+
         public const string vswhere = "vswhere";
     }
 }

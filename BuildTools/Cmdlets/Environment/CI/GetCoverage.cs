@@ -80,6 +80,7 @@ When the coverage analysis has completed, a HTML report detailing the results of
         {
             var service = GetService<GetCoverageService>();
             var powerShell = GetService<IPowerShellService>();
+            var configProvider = GetService<IProjectConfigProvider>();
 
             service.GetCoverage(coverageConfig, IsLegacyMode);
 
@@ -87,7 +88,7 @@ When the coverage analysis has completed, a HTML report detailing the results of
                 return;
 
             var date = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-            var coverageDir = Path.Combine(Path.GetTempPath(), $"PrtgCoverage_{date}");
+            var coverageDir = Path.Combine(Path.GetTempPath(), $"{configProvider.Config.Name}Coverage_{date}");
 
             powerShell.WriteColor("Generating coverage report in $dir", ConsoleColor.Cyan);
 
@@ -96,9 +97,6 @@ When the coverage analysis has completed, a HTML report detailing the results of
             Process.Start(Path.Combine(coverageDir, "index.htm"));
         }
 
-        public string[] GetLegacyParameterSets()
-        {
-            throw new NotImplementedException();
-        }
+        public string[] GetLegacyParameterSets() => null;
     }
 }

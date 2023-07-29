@@ -140,6 +140,11 @@ namespace BuildTools.Tests
         {
         }
 
+        public PesterResult[] InvokePester(string path, string[] additionalArgs)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         public object InvokeAndUnwrap(string script, params object[] input)
@@ -158,7 +163,17 @@ namespace BuildTools.Tests
 
         public object[] InvokeWithArgs(string cmdlet, params string[] args)
         {
-            throw new NotImplementedException();
+            InvokedCommands.Add(cmdlet);
+
+            InvokeScriptMap.TryGetValue(cmdlet, out var result);
+
+            if (result == null)
+                return null;
+
+            if (result is object[])
+                return (object[]) result;
+
+            return new[] { result };
         }
 
         public void AssertInvoked(string script)

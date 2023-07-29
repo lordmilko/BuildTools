@@ -2,12 +2,13 @@
 using System.Collections;
 using System.Linq;
 using System.Management.Automation;
+using System.Text;
 
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "TestResult", DefaultParameterSetName = ParameterSet.Default)]
     [BuildCommand(CommandKind.TestResult, CommandCategory.Version)]
-    public abstract class GetTestResult<TEnvironment> : BuildCmdlet<TEnvironment>
+    public abstract class GetTestResult<TEnvironment> : BuildCmdlet<TEnvironment>, IIntegrationProvider
     {
         [Parameter(Mandatory = false, Position = 0)]
         public string Name
@@ -42,7 +43,7 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false, ParameterSetName = ParameterSet.ListAvailable)]
         public SwitchParameter ListAvailable { get; set; }
 
-        [Parameter(Mandatory = false)]
+        [DynamicParameter]
         public SwitchParameter Integration
         {
             get => testResultConfig.Integration;
@@ -51,17 +52,36 @@ namespace BuildTools.Cmdlets
 
         private TestResultConfig testResultConfig = new TestResultConfig();
 
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
+        public static void CreateHelp(HelpConfig help, IProjectConfigProvider configProvider, ICommandService commandService)
         {
             var invokeTest = commandService.GetCommand(CommandKind.InvokeTest);
 
+            var description = new StringBuilder();
+
+            description.Append(
+                $"The {help.Command} cmdlet retrieves test results from the last invocation of {invokeTest.Name}. By default, test all test results for all languages (e.g. both C# and PowerShell) will be displayed. " +
+                "Results can be limited to either of the two by specifying a value to the -Type parameter. The -Name parameter allows results to be further limited based on a wildcard expression that matches part of the results name. " +
+                "Results can also be filtered to those that had a particular status (such as Failed) using the -Outcome parameter."
+            ).AppendLine().AppendLine();
+
+            description.Append($"To view results from one or more previous test invocations, the -ListAvailable parameter can be used to enumerate all available test files. These files can then be piped into {help.Command} to view their contents.");
+
+            if (configProvider.GetProjects(false).Any(a => (a.Kind & ProjectKind.IntegrationTest) != 0))
+                description.Append(" To view available integration tests, specify the -Integration parameter in conjunction with the -ListAvailable parameter.");
+
+            var testTypes = configProvider.GetProjects(false).Where(v => (v.Kind & ProjectKind.Test) != 0).ToArray();
+
+            if (testTypes.Length > 0)
+            {
+                description.AppendLine().AppendLine();
+
+                var str = string.Join(" and ", testTypes.OrderByDescending(v => (v.Kind & ProjectKind.UnitTest) != 0).Select(v => v.NormalizedName));
+
+                description.Append($"Note that whenever the {str} projects are built, all previous test results will automatically be cleared.");
+            }
+
             help.Synopsis = $"Retrieve test results from the last invocation of {invokeTest.Name}";
-            help.Description = $@"
-The {help.Command} cmdlet retrieves test results from the last invocation of {invokeTest.Name}. By default, test all test results for both C# and PowerShell can be displayed. Results can be limited to either of the two by specifying a value to the -Type parameter. The -Name parameter allows results to be further limited based on a wildcard expression that matches part of the results name. Results can also be filtered to those that had a particular status (such as Failed) using the -Outcome parameter.
-
-To view results from one or more previous test invocations, the -ListAvailable parameter can be used to enumerate all available test files. These files can then be piped into {help.Command} to view their contents. To view available integration tests, specify the -Integration parameter in conjunction with the -ListAvailable parameter.
-
-Note that whenever the PrtgAPI.Tests.UnitTests and PrtgAPI.Tests.IntegrationTests projects are built, all previous test results will automatically be cleared.";
+            help.Description = description.ToString();
 
             help.Parameters = new[]
             {
@@ -70,7 +90,7 @@ Note that whenever the PrtgAPI.Tests.UnitTests and PrtgAPI.Tests.IntegrationTest
                 new HelpParameter(nameof(Type), "Type of test results to view. By default both C# and PowerShell test results will be displayed."),
                 new HelpParameter(nameof(Outcome), "Limits test results to only those with a specified outcome."),
                 new HelpParameter(nameof(ListAvailable), "Lists all test files that are available within the test results directory."),
-                new HelpParameter(nameof(Integration), "Indicates to retrieve test results from the last integration test run rather than unit test run.")
+                new ConditionalHelpParameter(NeedIntegrationParameter, nameof(Integration), "Indicates to retrieve test results from the last integration test run rather than unit test run.")
             };
 
             help.Examples = new[]
@@ -80,7 +100,7 @@ Note that whenever the PrtgAPI.Tests.UnitTests and PrtgAPI.Tests.IntegrationTest
                 new HelpExample($"{help.Command} -Outcome Failed", $"View all tests that failed in the last invocation of {invokeTest.Name}"),
                 new HelpExample($"{help.Command} -ListAvailable", "List all unit test results that are available"),
                 new HelpExample($"{help.Command} *2019* -ListAvailable | {help.Command} *dynamic* -Type C#", "Get all C# test results from 2019 whose test name contains the word \"dynamic\""),
-                new HelpExample($"{help.Command} -Integration", $"View all test results from the last invocation of {invokeTest.Name} -Integration")
+                new ConditionalHelpExample(NeedIntegrationParameter, $"{help.Command} -Integration", $"View all test results from the last invocation of {invokeTest.Name} -Integration") //todo
             };
 
             help.RelatedLinks = new[]
@@ -112,5 +132,7 @@ Note that whenever the PrtgAPI.Tests.UnitTests and PrtgAPI.Tests.IntegrationTest
             foreach (var item in results)
                 WriteObject(item);
         }
+
+        public string[] GetIntegrationParameterSets() => new[] { ParameterSet.Default };
     }
 }

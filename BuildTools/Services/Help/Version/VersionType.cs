@@ -13,10 +13,10 @@ namespace BuildTools
         [Description("Assembly File Version used with assemblies")]
         File,
 
-        [Description("PrtgAPI PowerShell Module version")]
+        [Description("PowerShell Module version")]
         Module,
 
-        [Description("PrtgAPI PowerShell Module Release Tag")]
+        [Description("PowerShell Module Release Tag")]
         ModuleTag,
 
         [Description("Version of previous GitHub Release")]
