@@ -8,6 +8,9 @@ namespace BuildTools.Cmdlets
     [Cmdlet(VerbsLifecycle.Start, "BuildEnvironment")]
     public class StartBuildEnvironment : BuildCmdlet<object>
     {
+        /// <summary>
+        /// The "build" folder containing the config file to read.
+        /// </summary>
         [Parameter(Mandatory = true, Position = 0)]
         public string BuildRoot { get; set; }
 

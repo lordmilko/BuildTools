@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Management.Automation;
+using BuildTools.PowerShell;
 
 namespace BuildTools.Cmdlets
 {
@@ -8,21 +12,39 @@ namespace BuildTools.Cmdlets
     public abstract class GetCoverage<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
         [Parameter(Mandatory = false, Position = 0)]
-        public string Name { get; set; }
+        public string Name
+        {
+            get => coverageConfig.Name;
+            set => coverageConfig.Name = value;
+        }
 
         [ArgumentCompleter(typeof(SupportedTestTypeCompleter<>))]
         [ValidateSetEx(typeof(SupportedTestTypeValidator<>))]
         [Parameter(Mandatory = false)]
-        public string[] Type { get; set; }
+        public string[] Type
+        {
+            get => coverageConfig.Type?.Select(v => v.ToString()).ToArray();
+            set => coverageConfig.Type = value?.Select(v => v.DescriptionToEnum<TestType>()).ToArray();
+        }
 
         [Parameter(Mandatory = false)]
-        public BuildConfiguration Configuration { get; set; } = BuildConfiguration.Debug;
+        public BuildConfiguration Configuration
+        {
+            get => coverageConfig.Configuration;
+            set => coverageConfig.Configuration = value;
+        }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter TestOnly { get; set; }
+        public SwitchParameter TestOnly
+        {
+            get => coverageConfig.TestOnly;
+            set => coverageConfig.TestOnly = value;
+        }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter SkipReport { get; set; }
+
+        private CoverageConfig coverageConfig = new CoverageConfig();
 
         public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
@@ -56,7 +78,22 @@ When the coverage analysis has completed, a HTML report detailing the results of
 
         protected override void ProcessRecordEx()
         {
-            throw new NotImplementedException();
+            var service = GetService<GetCoverageService>();
+            var powerShell = GetService<IPowerShellService>();
+
+            service.GetCoverage(coverageConfig, IsLegacyMode);
+
+            if (TestOnly || SkipReport)
+                return;
+
+            var date = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+            var coverageDir = Path.Combine(Path.GetTempPath(), $"PrtgCoverage_{date}");
+
+            powerShell.WriteColor("Generating coverage report in $dir", ConsoleColor.Cyan);
+
+            service.CreateReport(targetDir: coverageDir);
+
+            Process.Start(Path.Combine(coverageDir, "index.htm"));
         }
 
         public string[] GetLegacyParameterSets()

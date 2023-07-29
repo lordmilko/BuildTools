@@ -1,10 +1,13 @@
-﻿namespace BuildTools
+﻿using System;
+using System.IO;
+
+namespace BuildTools
 {
     public class ProjectConfig
     {
         //We explicitly do not enumerate all known lang types; in the future we may add more, but in that case they won't
         //necessarily exist in all projects and so shouldn't be included in the default!
-        private static readonly LangType[] DefaultTestTypes = new[]{LangType.CSharp, LangType.PowerShell};
+        private static readonly TestType[] DefaultTestTypes = new[]{ TestType.CSharp, TestType.PowerShell};
         private static readonly PackageType[] DefaultPackageTypes = new[] { PackageType.CSharp, PackageType.PowerShell, PackageType.Redistributable };
 
         /// <summary>
@@ -46,10 +49,10 @@
         #endregion
         #region TestTypes
 
-        private LangType[] testTypes;
+        private TestType[] testTypes;
 
         [Optional]
-        public LangType[] TestTypes
+        public TestType[] TestTypes
         {
             get => testTypes ?? DefaultTestTypes;
             set => testTypes = value;
@@ -93,5 +96,11 @@
 
         [Optional]
         public string PowerShellProjectName { get; set; }
+
+        [Optional]
+        public string UnitTestProjectName { get; set; }
+
+        [Optional]
+        public Func<FileInfo, bool> UnitTestPowerShellFilter { get; set; }
     }
 }

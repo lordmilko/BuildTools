@@ -199,6 +199,48 @@ namespace BuildTools
             throw new InvalidOperationException("Could not identify primary project");
         }
 
+        public BuildProject GetUnitTestProject(bool isLegacy)
+        {
+            EnsureProjects();
+
+            var candidates = projects.Where(p => (p.Kind & ProjectKind.UnitTest) != 0 && p.IsLegacy == isLegacy).ToArray();
+
+            if (candidates.Length == 1)
+                return candidates[0];
+
+            if (candidates.Length == 0)
+                throw new InvalidOperationException("Could not find any unit test projects");
+
+            throw new InvalidOperationException($"Multiple unit test projects were found: {string.Join(", ", candidates.Select(v => v.Name))}");
+        }
+        
+        public string GetUnitTestDll(BuildConfiguration buildConfiguration, bool isLegacy)
+        {
+            EnsureProjects();
+
+            if (!isLegacy)
+                throw new NotImplementedException("Retrieving the unit test DLL for non-core projects is not implemented");
+
+            var candidates = projects.Where(p => (p.Kind & ProjectKind.UnitTest) != 0 && p.IsLegacy == isLegacy).ToArray();
+
+            if (candidates.Length == 1)
+            {
+                var output = GetProjectConfigurationDirectory(candidates[0], buildConfiguration);
+
+                var dll = Path.Combine(output, $"{candidates[0].NormalizedName}.dll");
+
+                if (!fileSystem.FileExists(dll))
+                    throw new FileNotFoundException($"Could not find unit test DLL '{dll}'", dll);
+
+                return dll;
+            }
+
+            if (candidates.Length == 0)
+                throw new InvalidOperationException("Could not find any unit test projects");
+
+            throw new InvalidOperationException($"Multiple unit test projects were found: {string.Join(", ", candidates.Select(v => v.Name))}");
+        }
+
         private BuildProject[] GetProjectsInternal()
         {
             var files = fileSystem.EnumerateFiles(SolutionRoot, "*.csproj", SearchOption.AllDirectories);
@@ -215,17 +257,28 @@ namespace BuildTools
             {
                 foreach (var item in items)
                 {
-                    bool isLegacy = !item.Name.EndsWith(ProjectConfig.CoreSuffix, StringComparison.OrdinalIgnoreCase);
+                    var isLegacy = true;
+                    var split = item.Name.Split('.');
+                    var normalized = item.Name;
 
-                    results.Add(new BuildProject(item.Path, isLegacy));
+                    if (split[0].EndsWith(ProjectConfig.CoreSuffix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        isLegacy = false;
+                        split[0] = split[0].Substring(0, split[0].Length - ProjectConfig.CoreSuffix.Length);
+
+                        normalized = string.Join(".", split);
+                    }
+
+                    results.Add(new BuildProject(item.Path, normalized, isLegacy));
                 }
             }
             else
-                results.AddRange(items.Select(i => new BuildProject(i.Path, false)));
+                results.AddRange(items.Select(i => new BuildProject(i.Path, i.Name, false)));
 
             return results.ToArray();
         }
 
+        /// <inheritdoc />
         public string GetPowerShellConfigurationDirectory(BuildConfiguration buildConfiguration)
         {
             var powerShellProjectName = GetPowerShellProjectName();
@@ -248,6 +301,7 @@ namespace BuildTools
             return configDir;
         }
 
+        /// <inheritdoc />
         public string GetPowerShellOutputDirectory(BuildConfiguration buildConfiguration, bool isLegacy)
         {
             var configDir = GetPowerShellConfigurationDirectory(buildConfiguration);
@@ -298,16 +352,14 @@ namespace BuildTools
             return baseDir;
         }
 
-        public string GetPowerShellProjectName()
-        {
-            var name = Config.PowerShellProjectName;
+        /// <inheritdoc />
+        public string GetPowerShellProjectName() =>
+            GetProjectName(ProjectKind.PowerShell, Config.PowerShellProjectName, nameof(Config.PowerShellProjectName));
 
-            if (name == null)
-                throw new InvalidOperationException($"Cannot process PowerShell projects: setting '{nameof(Config.PowerShellProjectName)}' was not specified");
+        public string GetUnitTestProjectName() =>
+            GetProjectName(ProjectKind.UnitTest, Config.UnitTestProjectName, nameof(Config.UnitTestProjectName));
 
-            return name;
-        }
-
+        /// <inheritdoc />
         public string GetSourcePowerShellModuleManifest(bool relativePath = false)
         {
             //It could either be under the PowerShell project root, or a Resources subfolder
@@ -379,6 +431,43 @@ namespace BuildTools
                 length++;
 
             return path.Substring(length);
+        }
+
+        private string GetProjectName(ProjectKind kind, string fallbackSetting, string fallbackSettingName)
+        {
+            EnsureProjects();
+
+            var candidates = projects.Where(p => (p.Kind & kind) != 0 && !p.IsLegacy).ToArray();
+
+            if (candidates.Length == 1)
+                return candidates[0].NormalizedName;
+
+            var name = fallbackSetting;
+
+            if (name == null)
+                throw new InvalidOperationException($"Cannot process PowerShell projects: setting '{fallbackSettingName}' was not specified");
+
+            return name;
+        }
+
+        public string GetProjectConfigurationDirectory(BuildProject project, BuildConfiguration buildConfiguration)
+        {
+            var projectDir = Path.GetDirectoryName(project.FilePath);
+
+            if (!fileSystem.DirectoryExists(projectDir))
+                throw new DirectoryNotFoundException($"Could not find project directory '{projectDir}'.");
+
+            var binDir = Path.Combine(projectDir, "bin");
+
+            if (!fileSystem.DirectoryExists(binDir))
+                throw new DirectoryNotFoundException($"Could not find project bin directory '{binDir}'");
+
+            var configDir = Path.Combine(binDir, buildConfiguration.ToString());
+
+            if (!fileSystem.DirectoryExists(configDir))
+                throw new DirectoryNotFoundException($"Could not find project {buildConfiguration} directory '{configDir}'");
+
+            return configDir;
         }
     }
 }

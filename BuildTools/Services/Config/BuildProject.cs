@@ -22,6 +22,11 @@ namespace BuildTools
         public string Name { get; }
 
         /// <summary>
+        /// Gets the name of the project (after ignoring any potential <see cref="ProjectConfig.CoreSuffix"/>).
+        /// </summary>
+        public string NormalizedName { get; }
+
+        /// <summary>
         /// Gets the full path to the project file.
         /// </summary>
         public string FilePath { get; }
@@ -35,9 +40,10 @@ namespace BuildTools
 
         public bool IsLegacy { get; }
 
-        public BuildProject(string filePath, bool isLegacy)
+        public BuildProject(string filePath, string normalizedName, bool isLegacy)
         {
             Name = Path.GetFileNameWithoutExtension(filePath);
+            NormalizedName = normalizedName;
             FilePath = filePath;
             FileName = Path.GetFileName(filePath);
             Kind = GetProjectKind();
@@ -57,7 +63,8 @@ namespace BuildTools
                 if (Name.Contains("Integration"))
                     return ProjectKind.IntegrationTest | ProjectKind.Test;
 
-                return ProjectKind.Test;
+                //If they didn't say what kind it is, default to assuming unit tests, i.e. Foo.Tests.csproj
+                return ProjectKind.UnitTest | ProjectKind.Test;
             }
 
             return ProjectKind.Normal;

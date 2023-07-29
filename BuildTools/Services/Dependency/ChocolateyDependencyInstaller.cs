@@ -127,6 +127,9 @@ namespace BuildTools
 
             var command = powerShell.GetCommand(commandName);
 
+            if (command == null)
+                throw new InvalidOperationException($"{dependency} did not install correctly: command '{commandName}' was not found.");
+
             return new DependencyResult(dependency, command.Source, command.Version, DependencyAction.Success);
         }
 

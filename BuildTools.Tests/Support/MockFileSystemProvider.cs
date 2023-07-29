@@ -18,6 +18,7 @@ namespace BuildTools.Tests
         public List<string> DeletedDirectories { get; } = new List<string>();
         public List<string> CreatedDirectories { get; } = new List<string>();
         public List<(string source, string destination)> MovedFiles { get; } = new List<(string source, string destination)>();
+        public Dictionary<string, Version> VersionInfoMap { get; } = new Dictionary<string, Version>();
         public Dictionary<string, Stream> WriteFileMap { get; } = new Dictionary<string, Stream>();
         public Dictionary<string, Action<string, string>> OnWriteFileText { get; } = new Dictionary<string, Action<string, string>>();
         public Dictionary<string, Action<string, string[]>> OnWriteFileLines { get; } = new Dictionary<string, Action<string, string[]>>();
@@ -100,6 +101,9 @@ namespace BuildTools.Tests
 
         public Version GetVersionInfo(string fileName)
         {
+            if (VersionInfoMap.TryGetValue(fileName, out var version))
+                return version;
+
             return new Version(1, 0);
         }
 

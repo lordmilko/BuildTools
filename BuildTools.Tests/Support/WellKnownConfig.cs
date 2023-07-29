@@ -2,7 +2,7 @@
 {
     static class WellKnownConfig
     {
-        public static readonly ProjectConfigBuilder PrtgAPI = ProjectConfigBuilder.Empty
+        public static ProjectConfigBuilder PrtgAPI => ProjectConfigBuilder.Empty
             .WithName("PrtgAPI")
 
             .WithSolutionName("PrtgAPI.sln")
@@ -14,7 +14,7 @@
 
             .WithPrompt("PrtgAPI")
 
-            .WithTestTypes(LangType.CSharp)
+            .WithTestTypes(TestType.CSharp)
 
             .WithCopyrightAuthor("lordmilko")
             .WithCopyrightYear("2015");

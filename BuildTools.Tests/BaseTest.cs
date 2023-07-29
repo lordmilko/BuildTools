@@ -18,6 +18,8 @@ namespace BuildTools.Tests
 
         protected void Test<T1, T2, T3, T4, T5, T6>(Action<T1, T2, T3, T4, T5, T6> action) => Test((Delegate)action);
 
+        protected void Test<T1, T2, T3, T4, T5, T6, T7>(Action<T1, T2, T3, T4, T5, T6, T7> action) => Test((Delegate)action);
+
         protected void Test(Delegate action)
         {
             CreateServices(out var serviceCollection);

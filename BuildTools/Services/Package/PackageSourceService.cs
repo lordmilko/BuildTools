@@ -24,10 +24,10 @@ namespace BuildTools
         private IFileSystemProvider fileSystem;
         private Logger logger;
 
-        private LangType langType;
+        private PackageType langType;
 
         protected PackageSourceService(
-            LangType langType,
+            PackageType langType,
             IPowerShellService powerShell,
             IFileSystemProvider fileSystem,
             Logger logger)

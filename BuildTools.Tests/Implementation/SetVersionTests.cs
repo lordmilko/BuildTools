@@ -58,6 +58,12 @@ namespace BuildTools.Tests
             fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
             fileSystem.EnumerateFilesMap[("C:\\Root\\src\\PrtgAPI.PowerShell", "*.psd1", SearchOption.TopDirectoryOnly)] = new[] { "C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1" };
 
+            fileSystem.EnumerateFilesMap[("C:\\Root", "*.csproj", SearchOption.AllDirectories)] = new[]
+            {
+                "C:\\Root\\first\\first.csproj",
+                "C:\\Root\\second\\second.csproj",
+            };
+
             var psd1Contents = @"
 #
 # Module manifest for module 'PrtgAPI'

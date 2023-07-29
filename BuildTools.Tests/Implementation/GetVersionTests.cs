@@ -58,6 +58,12 @@ namespace BuildTools.Tests
             fileSystem.GetFileTextMap["C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1"] = "@{}";
             fileSystem.DirectoryExistsMap["C:\\Root\\.git"] = true;
 
+            fileSystem.EnumerateFilesMap[("C:\\Root", "*.csproj", SearchOption.AllDirectories)] = new[]
+            {
+                "C:\\Root\\first\\first.csproj",
+                "C:\\Root\\second\\second.csproj",
+            };
+
             if (isLegacy)
             {
                 //Get primary project

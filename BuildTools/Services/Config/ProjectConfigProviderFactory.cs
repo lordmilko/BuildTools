@@ -24,7 +24,7 @@ namespace BuildTools
             this.powerShell = powerShell;
         }
 
-        public IProjectConfigProvider CreateProvider(string buildRoot, string file)
+        public IProjectConfigProvider CreateProvider(string buildRoot, string file = null)
         {
             buildRoot = Path.GetFullPath(buildRoot);
 
@@ -95,24 +95,10 @@ namespace BuildTools
                 {
                     if (value is ScriptBlock sb)
                     {
-                        Func<ProjectConfigResolutionContext, string> func = ctx =>
-                        {
-                            var result = sb.InvokeWithContext(null,
-                                new List<PSVariable>
-                                {
-                                    new PSVariable("_", ctx)
-                                }
-                            );
-
-                            var str = result?.FirstOrDefault()?.BaseObject.ToString();
-
-                            if (str == null)
-                                throw new InvalidOperationException($"Expected {nameof(ScriptBlock)} '{sb}' to return a value.");
-
-                            return str;
-                        };
-
-                        value = func;
+                        if (prop.PropertyType == typeof(Func<FileInfo, bool>))
+                            value = ConvertScriptBlockToFunc<FileInfo, bool>(sb);
+                        else
+                            throw new NotImplementedException($"Deserializing a property of type {prop.PropertyType} is not implemented");
                     }
 
                     if (value.GetType() != prop.PropertyType)
@@ -144,6 +130,31 @@ namespace BuildTools
             }
 
             return config;
+        }
+
+        private Func<T, TResult> ConvertScriptBlockToFunc<T, TResult>(ScriptBlock sb)
+        {
+            Func<T, TResult> func = arg =>
+            {
+                var result = sb.InvokeWithContext(null,
+                    new List<PSVariable>
+                    {
+                        new PSVariable("_", arg)
+                    }
+                );
+
+                var val = result?.FirstOrDefault()?.BaseObject;
+
+                if (val == null)
+                    throw new InvalidOperationException($"Expected {nameof(ScriptBlock)} '{sb}' to return a value.");
+
+                if (val is TResult)
+                    return (TResult)val;
+
+                throw new InvalidOperationException($"Expected a return value of type {typeof(TResult).Name} however got return value '{val}' of type {val.GetType().Name}");
+            };
+
+            return func;
         }
 
         private bool IsMissingValue(object value)

@@ -8,7 +8,7 @@ namespace BuildTools
         public PowerShellPackageSourceService(
             IPowerShellService powerShell,
             IFileSystemProvider fileSystem,
-            Logger logger) : base(LangType.PowerShell, powerShell, fileSystem, logger)
+            Logger logger) : base(PackageType.PowerShell, powerShell, fileSystem, logger)
         {
         }
 

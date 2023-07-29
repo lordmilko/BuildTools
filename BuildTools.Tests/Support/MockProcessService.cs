@@ -30,7 +30,7 @@ namespace BuildTools.Tests
                 var dependency = (ChocolateyPackageDependency) provider.Value.GetDependency(dependencyName);
                 var command = powerShell.GetCommand(dependency.CommandName);
                 Assert.IsNull(command);
-                powerShell.KnownCommands[dependency.CommandName] = new MockPowerShellCommand(dependency.Name);
+                powerShell.KnownCommands[dependency.CommandName] = new MockPowerShellCommand(dependency.CommandName);
             }
 
             return new string[0];

@@ -25,6 +25,8 @@ namespace BuildTools
             arguments.Add(argument.ToString());
         }
 
+        public void Add(string[] args) => AddRange(args?.Cast<object>());
+
         public void AddRange(IEnumerable args)
         {
             if (args == null)

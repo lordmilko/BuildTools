@@ -1,4 +1,6 @@
-﻿namespace BuildTools
+﻿using System.IO;
+
+namespace BuildTools
 {
     public interface IProjectConfigProvider
     {
@@ -19,10 +21,32 @@
 
         BuildProject GetPrimaryProject(bool isLegacy);
 
+        BuildProject GetUnitTestProject(bool isLegacy);
+
+        string GetUnitTestDll(BuildConfiguration buildConfiguration, bool isLegacy);
+
+        /// <summary>
+        /// Gets the Debug or Release directory of the PowerShell project.
+        /// </summary>
+        /// <param name="buildConfiguration">The build configuration to get the output directory of.</param>
+        /// <exception cref="DirectoryNotFoundException">The specified <paramref name="buildConfiguration"/> has not been built.</exception>
+        /// <returns>The path to the <paramref name="buildConfiguration"/> build directory.</returns>
         string GetPowerShellConfigurationDirectory(BuildConfiguration buildConfiguration);
 
+        /// <summary>
+        /// Gets the path to the directory containing the built PowerShell module. This may be the raw Debug/Release directory,
+        /// or may be a subfolder underneath this directory containing the PowerShell module.
+        /// </summary>
+        /// <param name="buildConfiguration">The build configuration to get the output directory of.</param>
+        /// <param name="isLegacy">Whether to get the output directory for legacy builds.</param>
+        /// <exception cref="DirectoryNotFoundException">The specified <paramref name="buildConfiguration"/> has not been built.</exception>
+        /// <returns>The path to the directory containing the built PowerShell module.</returns>
         string GetPowerShellOutputDirectory(BuildConfiguration buildConfiguration, bool isLegacy);
 
+        /// <summary>
+        /// Gets the name of the PowerShell project.
+        /// </summary>
+        /// <returns>The name of the PowerShell project.</returns>
         string GetPowerShellProjectName();
 
         /// <summary>
@@ -35,5 +59,7 @@
         string GetVersionAttibPath();
 
         string GetVersionPropsPath(bool relativePath = false);
+
+        string GetProjectConfigurationDirectory(BuildProject project, BuildConfiguration buildConfiguration);
     }
 }

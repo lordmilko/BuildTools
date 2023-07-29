@@ -11,6 +11,8 @@
         public const string TargetingPack461 = "net461";
 
         public const string NuGet = "NuGet";
+        public const string OpenCover = "OpenCover";
+        public const string ReportGenerator = "ReportGenerator";
 
         public const string vswhere = "vswhere";
     }

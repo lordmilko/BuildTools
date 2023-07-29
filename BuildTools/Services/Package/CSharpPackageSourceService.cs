@@ -8,7 +8,7 @@ namespace BuildTools
         public CSharpPackageSourceService(
             IPowerShellService powerShell,
             IFileSystemProvider fileSystem,
-            Logger logger) : base(LangType.CSharp, powerShell, fileSystem, logger)
+            Logger logger) : base(PackageType.CSharp, powerShell, fileSystem, logger)
         {
         }
 

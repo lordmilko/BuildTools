@@ -34,7 +34,7 @@ namespace BuildTools
 
         public ProjectConfigBuilder WithBuildFilter(string value) => With(v => v.BuildFilter = value);
 
-        public ProjectConfigBuilder WithTestTypes(params LangType[] value) => With(v => v.TestTypes = value);
+        public ProjectConfigBuilder WithTestTypes(params TestType[] value) => With(v => v.TestTypes = value);
 
         public ProjectConfigBuilder WithPackageTypes(params PackageType[] value) => With(v => v.PackageTypes = value);
 

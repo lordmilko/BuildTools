@@ -2,6 +2,6 @@
 {
     interface IProjectConfigProviderFactory
     {
-        IProjectConfigProvider CreateProvider(string buildRoot, string file);
+        IProjectConfigProvider CreateProvider(string buildRoot, string file = null);
     }
 }
