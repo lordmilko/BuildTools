@@ -67,7 +67,7 @@ namespace BuildTools
 
             foreach (var item in path)
             {
-                var text = fileSystem.GetFileText(item);
+                var text = fileSystem.ReadFileText(item);
 
                 var xml = XDocument.Parse(text);
 

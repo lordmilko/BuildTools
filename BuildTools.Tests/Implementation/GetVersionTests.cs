@@ -55,7 +55,7 @@ namespace BuildTools.Tests
             fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
             fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
             fileSystem.EnumerateFilesMap[("C:\\Root\\src\\PrtgAPI.PowerShell", "*.psd1", SearchOption.TopDirectoryOnly)] = new[] { "C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1" };
-            fileSystem.GetFileTextMap["C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1"] = "@{}";
+            fileSystem.ReadFileTextMap["C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1"] = "@{}";
             fileSystem.DirectoryExistsMap["C:\\Root\\.git"] = true;
 
             fileSystem.EnumerateFilesMap[("C:\\Root", "*.csproj", SearchOption.AllDirectories)] = new[]
@@ -70,7 +70,7 @@ namespace BuildTools.Tests
                 fileSystem.DirectoryExistsMap["C:\\Root\\src\\PrtgAPI"] = true;
                 fileSystem.FileExistsMap["C:\\Root\\src\\PrtgAPI\\Properties\\Version.cs"] = true;
 
-                fileSystem.GetFileLinesMap["C:\\Root\\src\\PrtgAPI\\Properties\\Version.cs"] = new[]
+                fileSystem.ReadFileLinesMap["C:\\Root\\src\\PrtgAPI\\Properties\\Version.cs"] = new[]
                 {
                     "[assembly: AssemblyVersion(\"0.9.0.0\")]",
                     "[assembly: AssemblyFileVersion(\"0.9.16.0\")]",
@@ -81,7 +81,7 @@ namespace BuildTools.Tests
             {
                 fileSystem.FileExistsMap["C:\\Root\\build\\Version.props"] = true;
 
-                fileSystem.GetFileTextMap["C:\\Root\\build\\Version.props"] = @"
+                fileSystem.ReadFileTextMap["C:\\Root\\build\\Version.props"] = @"
 <Project>
   <PropertyGroup>
     <Version>0.9.16</Version>

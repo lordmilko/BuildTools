@@ -187,9 +187,9 @@ namespace BuildTools.Tests
 
             fileSystem.FileExistsMap["C:\\Root\\build\\Version.props"] = true;
             fileSystem.EnumerateFilesMap[("C:\\Root\\src\\PrtgAPI.PowerShell", "*.psd1", SearchOption.TopDirectoryOnly)] = new[] { "C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1" };
-            fileSystem.GetFileTextMap["C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1"] = "@{}";
+            fileSystem.ReadFileTextMap["C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1"] = "@{}";
 
-            fileSystem.GetFileTextMap["C:\\Root\\build\\Version.props"] = @"
+            fileSystem.ReadFileTextMap["C:\\Root\\build\\Version.props"] = @"
 <Project>
   <PropertyGroup>
     <Version>0.9.16</Version>

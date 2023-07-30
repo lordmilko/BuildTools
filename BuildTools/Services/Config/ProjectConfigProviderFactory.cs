@@ -61,7 +61,7 @@ namespace BuildTools
                     throw new FileNotFoundException($"Could not find build environment config file '{configFile}'", configFile);
             }
 
-            var contents = fileSystem.GetFileText(configFile);
+            var contents = fileSystem.ReadFileText(configFile);
 
             var hashTable = (Hashtable) powerShell.InvokeAndUnwrap(contents);
 

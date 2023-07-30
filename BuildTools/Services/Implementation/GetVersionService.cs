@@ -74,7 +74,7 @@ namespace BuildTools
             {
                 var versionFile = configProvider.GetVersionAttibPath();
 
-                var versionContents = fileSystem.GetFileLines(versionFile);
+                var versionContents = fileSystem.ReadFileLines(versionFile);
 
                 assembly = GetAssemblyAttribute(versionContents, "AssemblyVersion");
                 file = GetAssemblyAttribute(versionContents, "AssemblyFileVersion");
@@ -85,7 +85,7 @@ namespace BuildTools
             {
                 var versionPath = configProvider.GetVersionPropsPath();
 
-                var versionContents = fileSystem.GetFileText(versionPath);
+                var versionContents = fileSystem.ReadFileText(versionPath);
 
                 var versionProps = XDocument.Parse(versionContents).Element("Project")?.Element("PropertyGroup");
 
@@ -99,7 +99,7 @@ namespace BuildTools
             }
 
             var psd1Path = configProvider.GetSourcePowerShellModuleManifest();
-            var psd1Contents = fileSystem.GetFileText(psd1Path);
+            var psd1Contents = fileSystem.ReadFileText(psd1Path);
             var psd1Hashtable = (Hashtable) powerShell.InvokeAndUnwrap(psd1Contents);
 
             var moduleVersion = (string) psd1Hashtable["ModuleVersion"];

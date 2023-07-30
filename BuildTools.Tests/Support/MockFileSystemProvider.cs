@@ -9,8 +9,8 @@ namespace BuildTools.Tests
     {
         public Dictionary<string, bool> DirectoryExistsMap { get; } = new Dictionary<string, bool>();
         public Dictionary<string, bool> FileExistsMap { get; } = new Dictionary<string, bool>();
-        public Dictionary<string, string> GetFileTextMap { get; } = new Dictionary<string, string>();
-        public Dictionary<string, string[]> GetFileLinesMap { get; } = new Dictionary<string, string[]>();
+        public Dictionary<string, string> ReadFileTextMap { get; } = new Dictionary<string, string>();
+        public Dictionary<string, string[]> ReadFileLinesMap { get; } = new Dictionary<string, string[]>();
         public Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]> EnumerateFilesMap { get; } = new Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]>();
         public Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]> EnumerateDirectoryFileSystemEntriesMap { get; } = new Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]>();
         public Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]> EnumerateDirectoriesMap { get; } = new Dictionary<(string path, string searchPattern, SearchOption searchOption), string[]>();
@@ -107,17 +107,17 @@ namespace BuildTools.Tests
             return new Version(1, 0);
         }
 
-        public string GetFileText(string path)
+        public string ReadFileText(string path)
         {
-            if (GetFileTextMap.TryGetValue(path, out var text))
+            if (ReadFileTextMap.TryGetValue(path, out var text))
                 return text;
 
             throw new InvalidOperationException($"Content of file '{path}' have not been set");
         }
 
-        public string[] GetFileLines(string path)
+        public string[] ReadFileLines(string path)
         {
-            if (GetFileLinesMap.TryGetValue(path, out var lines))
+            if (ReadFileLinesMap.TryGetValue(path, out var lines))
                 return lines;
 
             throw new InvalidOperationException($"Lines of file '{path}' have not been set");

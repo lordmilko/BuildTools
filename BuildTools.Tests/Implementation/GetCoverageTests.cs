@@ -522,7 +522,7 @@ namespace BuildTools.Tests
                     Setup(fileSystem, envProvider, powerShell);
 
                     fileSystem.FileExistsMap["C:\\Root\\build\\Config.psd1"] = true;
-                    fileSystem.GetFileTextMap["C:\\Root\\build\\Config.psd1"] = "@{}";
+                    fileSystem.ReadFileTextMap["C:\\Root\\build\\Config.psd1"] = "@{}";
                     powerShell.InvokeScriptMap["@{}"] = new Hashtable
                     {
                         { "Name", "PrtgAPI" },

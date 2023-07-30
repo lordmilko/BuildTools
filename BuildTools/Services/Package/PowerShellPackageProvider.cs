@@ -79,7 +79,7 @@ namespace BuildTools
 
             var psd1Path = GetPsd1Path(primaryModuleDir);
 
-            var lines = fileSystem.GetFileLines(psd1Path);
+            var lines = fileSystem.ReadFileLines(psd1Path);
 
             for (var i = 0; i < lines.Length; i++)
             {

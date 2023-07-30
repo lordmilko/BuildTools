@@ -188,7 +188,7 @@ using System.Reflection;
 
             var psd1Path = configProvider.GetSourcePowerShellModuleManifest();
 
-            var psd1Contents = fileSystem.GetFileLines(psd1Path);
+            var psd1Contents = fileSystem.ReadFileLines(psd1Path);
 
             var newContents = psd1Contents.Select(v =>
             {

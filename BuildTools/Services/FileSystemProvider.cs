@@ -31,9 +31,9 @@ namespace BuildTools
 
         Version GetVersionInfo(string fileName);
 
-        string GetFileText(string path);
+        string ReadFileText(string path);
 
-        string[] GetFileLines(string path);
+        string[] ReadFileLines(string path);
 
         void WriteFileText(string path, string contents);
 
@@ -86,9 +86,9 @@ namespace BuildTools
         public Version GetVersionInfo(string fileName) =>
             new Version(FileVersionInfo.GetVersionInfo(fileName).FileVersion);
 
-        public string GetFileText(string path) => File.ReadAllText(path);
+        public string ReadFileText(string path) => File.ReadAllText(path);
 
-        public string[] GetFileLines(string path) => File.ReadAllLines(path);
+        public string[] ReadFileLines(string path) => File.ReadAllLines(path);
 
         public void WriteFileText(string path, string contents) => File.WriteAllText(path, contents);
 

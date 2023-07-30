@@ -203,15 +203,15 @@ For examples and usage scenarios, please see the Project Site.'
 }
 ";
 
-            fileSystem.GetFileTextMap["C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1"] = psd1Contents;
-            fileSystem.GetFileLinesMap["C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1"] = psd1Contents.Replace("\r", string.Empty).Split('\n');
+            fileSystem.ReadFileTextMap["C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1"] = psd1Contents;
+            fileSystem.ReadFileLinesMap["C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1"] = psd1Contents.Replace("\r", string.Empty).Split('\n');
             fileSystem.DirectoryExistsMap["C:\\Root\\.git"] = true;
 
             //Get primary project
             fileSystem.DirectoryExistsMap["C:\\Root\\src\\PrtgAPI"] = true;
             fileSystem.FileExistsMap["C:\\Root\\src\\PrtgAPI\\Properties\\Version.cs"] = true;
 
-            fileSystem.GetFileLinesMap["C:\\Root\\src\\PrtgAPI\\Properties\\Version.cs"] = new[]
+            fileSystem.ReadFileLinesMap["C:\\Root\\src\\PrtgAPI\\Properties\\Version.cs"] = new[]
             {
                 "[assembly: AssemblyVersion(\"0.9.0.0\")]",
                 "[assembly: AssemblyFileVersion(\"0.9.16.0\")]",
@@ -220,7 +220,7 @@ For examples and usage scenarios, please see the Project Site.'
 
             fileSystem.FileExistsMap["C:\\Root\\build\\Version.props"] = true;
 
-            fileSystem.GetFileTextMap["C:\\Root\\build\\Version.props"] = @"
+            fileSystem.ReadFileTextMap["C:\\Root\\build\\Version.props"] = @"
 <Project>
   <PropertyGroup>
     <Version>0.9.16</Version>
@@ -237,18 +237,18 @@ For examples and usage scenarios, please see the Project Site.'
 
             fileSystem.OnWriteFileText["C:\\Root\\build\\Version.props"] = (path, contents) =>
             {
-                fileSystem.GetFileTextMap[path] = contents;
+                fileSystem.ReadFileTextMap[path] = contents;
             };
 
             fileSystem.OnWriteFileText["C:\\Root\\src\\PrtgAPI\\Properties\\Version.cs"] = (path, contents) =>
             {
-                fileSystem.GetFileLinesMap[path] = contents.Replace("\r", string.Empty).Split('\n');
+                fileSystem.ReadFileLinesMap[path] = contents.Replace("\r", string.Empty).Split('\n');
             };
 
             fileSystem.OnWriteFileLines["C:\\Root\\src\\PrtgAPI.PowerShell\\PrtgAPI.psd1"] = (path, contents) =>
             {
-                fileSystem.GetFileLinesMap[path] = contents;
-                fileSystem.GetFileTextMap[path] = string.Join(Environment.NewLine, contents);
+                fileSystem.ReadFileLinesMap[path] = contents;
+                fileSystem.ReadFileTextMap[path] = string.Join(Environment.NewLine, contents);
 
                 powerShell.InvokeScriptMap[string.Join(Environment.NewLine, contents)] = new Hashtable
                 {
