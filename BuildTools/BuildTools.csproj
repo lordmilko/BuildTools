@@ -1,15 +1,48 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
-	  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <TargetFrameworks>net461;netstandard2.1</TargetFrameworks>
+    <LangVersion>8.0</LangVersion>
+
+    <TestAdapterPath>..\PowerShell.TestAdapter\bin\$(Configuration)\netstandard2.0\PowerShell.TestAdapter.dll</TestAdapterPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net4'))">
+    <FrameworkType>Full</FrameworkType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputPath>$(ProjectDir)bin\$(Configuration)\BuildTools</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="System.Management.Automation">
-      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\WindowsPowerShell\3.0\System.Management.Automation.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
+    <None Condition="Exists($(TestAdapterPath))" Include="$(TestAdapterPath)" Link="TestAdapters\PowerShell.TestAdapter.dll" Visible="false">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
+
+  <ItemGroup Condition="'$(FrameworkType)' == 'Full'">
+    <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" PrivateAssets="all" />
+    <PackageReference Include="System.IO.Compression" Version="4.3.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(FrameworkType)' != 'Full'">
+    <PackageReference Include="PowerShellStandard.Library" Version="5.1.1" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="BuildTools.Format.ps1xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="BuildTools.psd1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="ClearReferenceCopyLocalPaths" AfterTargets="ResolveReferences">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' == 'Microsoft.PowerShell.5.ReferenceAssemblies' OR '%(ReferenceCopyLocalPaths.NuGetPackageId)' == 'System.IO.Compression'" />
+    </ItemGroup>
+  </Target>
 
 </Project>

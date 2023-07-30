@@ -44,7 +44,11 @@ namespace BuildTools.Dynamic
             var assemblyName = new AssemblyName(Name);
 
             //RunAndSave must be specified to allow debugging in memory (even if we don't actually save it)
+#if NETFRAMEWORK
             assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
+#else
+            assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
+#endif
 
 #if DEBUG
             //Specify a DebuggableAttribute to enable debugging
@@ -84,7 +88,13 @@ namespace BuildTools.Dynamic
         void InitModule()
         {
             //All assemblies contain at least one module. This implementation detail is typically invisible
-            moduleBuilder = assemblyBuilder.DefineDynamicModule(Name, Name + ".dll", true);
+            moduleBuilder = assemblyBuilder.DefineDynamicModule(
+                Name
+#if NETFRAMEWORK
+                , Name + ".dll"
+                , true
+#endif
+            );
         }
 
         #endregion
@@ -116,9 +126,11 @@ namespace BuildTools.Dynamic
             return typeBuilder;
         }
 
+#if NETFRAMEWORK
         public void Save()
         {
             AssemblyBuilder.Save(Name + ".dll");
         }
+#endif
     }
 }
