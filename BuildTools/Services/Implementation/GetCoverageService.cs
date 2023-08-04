@@ -7,7 +7,8 @@ namespace BuildTools
 {
     public enum CoverageReportType
     {
-        Html
+        Html,
+        XmlSummary
     }
 
     class CoverageConfig
@@ -33,7 +34,12 @@ namespace BuildTools
         private readonly IVsProductLocator vsProductLocator;
 
         private readonly string openCover;
-        private readonly string openCoverOutput;
+        public static string OpenCoverOutput { get; }
+
+        static GetCoverageService()
+        {
+            OpenCoverOutput = Path.Combine(Path.GetTempPath(), "opencover.xml");
+        }
 
         public GetCoverageService(
             IProjectConfigProvider configProvider,
@@ -51,7 +57,6 @@ namespace BuildTools
             this.vsProductLocator = vsProductLocator;
 
             openCover = dependencyProvider.Install(WellKnownDependency.OpenCover).Path;
-            openCoverOutput = Path.Combine(Path.GetTempPath(), "opencover.xml");
         }
 
         public void GetCoverage(CoverageConfig coverageConfig, bool isLegacy)
@@ -311,8 +316,8 @@ namespace BuildTools
 
         private void ClearCoverage()
         {
-            if (fileSystem.FileExists(openCoverOutput))
-                fileSystem.DeleteFile(openCoverOutput);
+            if (fileSystem.FileExists(OpenCoverOutput))
+                fileSystem.DeleteFile(OpenCoverOutput);
         }
 
         private ArgList GetCommonOpenCoverParams(string testRunner, ArgList testParams, bool isLegacy)
@@ -322,7 +327,7 @@ namespace BuildTools
                 //https://github.com/OpenCover/opencover/wiki/Usage#understanding-filters
                 $"\"-target:{testRunner}\"",
                 $"\"-targetargs:{testParams}\"",
-                $"-output:\"{openCoverOutput}\"",
+                $"-output:\"{OpenCoverOutput}\"",
 
                 //Filter syntax: +[<modulesToInclude>]<classesToinclude> -[<modulesToExclude>]<classesInThoseModulesToExclude>
                 $"-filter:+\"[{configProvider.Config.Name}*]* -[*Tests*]*\"",
@@ -346,7 +351,7 @@ namespace BuildTools
 
             var args = new ArgList
             {
-                $"\"-reports:{openCoverOutput}\"",
+                $"\"-reports:{OpenCoverOutput}\"",
                 $"-reporttypes:{type}",
                 $"\"-targetdir:{targetDir}\"",
                 "-verbosity:off"

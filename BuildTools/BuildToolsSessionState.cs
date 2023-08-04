@@ -88,6 +88,7 @@ namespace BuildTools
                 typeof(StartModuleService),
 
                 typeof(NewAppveyorPackageService),
+                typeof(MeasureAppveyorCoverageService),
 
                 typeof(AppveyorPackageProviderServices),
                 typeof(AppveyorCSharpPackageProvider),

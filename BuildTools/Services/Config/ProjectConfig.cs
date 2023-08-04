@@ -65,6 +65,9 @@ namespace BuildTools
         [Optional]
         public string SourceFolder { get; set; }
 
+        [RequiredWith(CommandKind.Coverage)]
+        public double? CoverageThreshold { get; set; }
+
         #endregion
         #endregion
         #region CSharp
