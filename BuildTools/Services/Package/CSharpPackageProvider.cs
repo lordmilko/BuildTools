@@ -22,14 +22,14 @@ namespace BuildTools
             this.processService = processService;
         }
 
-        public void Execute(bool isLegacy, BuildConfiguration configuration, Version version)
+        public void Execute(PackageConfig config, Version version)
         {
             logger.LogInformation("\t\tBuilding package");
 
             string processName;
             ArgList args;
 
-            if (isLegacy)
+            if (config.IsLegacy)
             {
                 processName = dependencyProvider.Install(WellKnownDependency.NuGet).Path;
 
@@ -56,7 +56,7 @@ namespace BuildTools
                     "-version",
                     version,
                     "-properties",
-                    "Configuration=$Configuration"
+                    $"Configuration={config.Configuration}"
                 };
             }
             else
@@ -69,7 +69,7 @@ namespace BuildTools
                     "--no-restore",
                     "--no-build",
                     "-c",
-                    configuration,
+                    config.Configuration,
                     "--output",
                     $"\"{PackageSourceService.RepoLocation}\"",
                     "/nologo",

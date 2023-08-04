@@ -35,6 +35,7 @@ namespace BuildTools
         }
 
         private BuildProject[] projects;
+        private string baseSolutionName;
 
         internal ProjectConfigProvider(ProjectConfig config, string buildRoot, IFileSystemProvider fileSystem)
         {
@@ -42,6 +43,7 @@ namespace BuildTools
 
             Config = config;
             SolutionRoot = CalculateSolutionRoot(buildRoot);
+            baseSolutionName = GetBaseSolutionName();
 
             if (config.SourceFolder != null)
                 SourceRoot = Path.Combine(SolutionRoot, config.SourceFolder);
@@ -106,6 +108,36 @@ namespace BuildTools
             }
         }
 
+        private string GetBaseSolutionName()
+        {
+            if (!string.IsNullOrWhiteSpace(Config.SolutionName))
+                return Config.SolutionName;
+
+            var files = fileSystem.EnumerateFiles(SolutionRoot, "*.sln").Select(Path.GetFileName).ToArray();
+
+            //Implicitly there's at least one, since we found the solution root
+            if (files.Length == 1)
+                return files[0];
+
+            var nonCore = files.Where(f =>
+            {
+                var baseName = Path.GetFileNameWithoutExtension(f);
+
+                if (baseName.EndsWith(ProjectConfig.CoreSuffix))
+                    return false;
+
+                return true;
+            }).ToArray();
+
+            if (nonCore.Length == 0)
+                throw new InvalidOperationException($"Cannot calculate solution name: '{nameof(Config.SolutionName)}' was not specified and all solution names exclusively ended with core suffix '{ProjectConfig.CoreSuffix}'.");
+
+            if (nonCore.Length > 1)
+                throw new InvalidOperationException($"Cannot calculate solution name: '{nameof(Config.SolutionName)}' was not specified and multiple solutions were found: {string.Join(", ", nonCore)}.");
+
+            return nonCore[0];
+        }
+
         /// <summary>
         /// Gets the filename of the solution.
         /// </summary>
@@ -113,14 +145,19 @@ namespace BuildTools
         /// <returns>The name of the solution file.</returns>
         public string GetSolutionName(bool isLegacy)
         {
-            var name = Config.SolutionName;
+            var name = baseSolutionName;
 
             var baseName = Path.GetFileNameWithoutExtension(name);
 
-            if (!isLegacy && !string.IsNullOrWhiteSpace(ProjectConfig.CoreSuffix))
-                baseName += ProjectConfig.CoreSuffix;
+            if (!isLegacy)
+            {
+                var coreName = Path.Combine($"{baseName}{ProjectConfig.CoreSuffix}.sln");
 
-            return baseName + ".sln";
+                if (fileSystem.FileExists(Path.Combine(SolutionRoot, coreName)))
+                    return coreName;
+            }
+
+            return name;
         }
 
         public string GetSolutionPath(bool isLegacy) => Path.Combine(SolutionRoot, GetSolutionName(isLegacy));
@@ -469,7 +506,7 @@ namespace BuildTools
             var name = fallbackSetting;
 
             if (name == null)
-                throw new InvalidOperationException($"Cannot process PowerShell projects: setting '{fallbackSettingName}' was not specified");
+                throw new InvalidOperationException($"Cannot process PowerShell projects: setting '{fallbackSettingName}' was not specified and PowerShell project could not automatically be identified.");
 
             return name;
         }

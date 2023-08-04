@@ -7,6 +7,8 @@ namespace BuildTools.PowerShell
     {
         string Name { get; }
 
+        string Path { get; }
+
         Version Version { get; }
     }
 
@@ -16,11 +18,18 @@ namespace BuildTools.PowerShell
 
         public string Name => Module.Name;
 
+        public string Path => Module.Path;
+
         public Version Version => Module.Version;
 
         public PowerShellModule(PSModuleInfo module)
         {
             Module = module;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} {Version}";
         }
     }
 }

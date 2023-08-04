@@ -72,9 +72,8 @@ namespace BuildTools.Tests
     Name = '{methodName}'
     CmdletPrefix = '{methodName}'
     SolutionName = '{methodName}.sln'
-    CopyrightAuthor = 'foo'
-    CopyrightYear = '2023'
-    ExcludedCommands = 'GetVersion','SetVersion','UpdateVersion'
+    Copyright = 'foo, 2023'
+    ExcludedCommands = 'GetVersion','SetVersion','UpdateVersion','NewPackage'
 }}
 ");
 
@@ -124,7 +123,7 @@ namespace BuildTools.Tests
             var unitTestProjectDir = Path.Combine(solutionDir, $"{methodName}.Tests");
             Directory.CreateDirectory(unitTestProjectDir);
             var unitTestProjectCsproj = Path.Combine(unitTestProjectDir, $"{methodName}.Tests.csproj");
-            File.Create(unitTestProjectCsproj);
+            File.Create(unitTestProjectCsproj).Dispose();
 
             var buildDir = Path.Combine(solutionDir, "build");
             Directory.CreateDirectory(buildDir);

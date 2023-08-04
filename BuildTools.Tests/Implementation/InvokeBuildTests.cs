@@ -29,6 +29,7 @@ namespace BuildTools.Tests
                 //Preparation
                 fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
                 fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
+                fileSystem.FileExistsMap["C:\\Root\\PrtgAPIv17.sln"] = true;
 
                 envProvider.SetValue(WellKnownEnvironmentVariable.CI, string.Empty);
                 powerShell.KnownCommands["dotnet"] = new MockPowerShellCommand("dotnet");
@@ -52,6 +53,8 @@ namespace BuildTools.Tests
                 //Preparation
                 fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
                 fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
+                fileSystem.FileExistsMap["C:\\Root\\PrtgAPIv17.sln"] = true;
+
                 fileSystem.DirectoryExistsMap[NETFrameworkReferenceAssemblies] = true;
                 fileSystem.DirectoryExistsMap[NETFrameworkReferenceAssemblies452] = true;
                 fileSystem.DirectoryExistsMap[NETFrameworkReferenceAssemblies461] = true;

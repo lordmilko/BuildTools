@@ -4,6 +4,7 @@
     {
         public const string Appveyor = "APPVEYOR";
         public const string AppveyorBuildFolder = "APPVEYOR_BUILD_FOLDER";
+        public const string AppveyorBuildVersion = "APPVEYOR_BUILD_VERSION";
 
         public const string TravisBuildDir = "TRAVIS_BUILD_DIR";
 

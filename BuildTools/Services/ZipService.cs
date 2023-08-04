@@ -8,6 +8,8 @@ namespace BuildTools
     interface IZipService
     {
         void CreateFromDirectory(string sourceDirectoryName, string destinationArchiveFileName);
+
+        void ExtractToDirectory(string sourceArchiveFileName, string destinationDirectoryName);
     }
 
     class ZipService : IZipService
@@ -18,6 +20,8 @@ namespace BuildTools
         {
             this.fileSystem = fileSystem;
         }
+
+        #region CreateFromDirectory
 
         public void CreateFromDirectory(string sourceDirectoryName, string destinationArchiveFileName)
         {
@@ -73,8 +77,8 @@ namespace BuildTools
 
                 zipArchiveEntry.LastWriteTime = dateTime;
 
-                using (var destination1 = zipArchiveEntry.Open())
-                    stream.CopyTo(destination1);
+                using (var entryStream = zipArchiveEntry.Open())
+                    stream.CopyTo(entryStream);
 
                 return zipArchiveEntry;
             }
@@ -101,5 +105,92 @@ namespace BuildTools
 
         private bool IsDirEmpty(string possiblyEmptyDir) =>
             !fileSystem.EnumerateDirectoryFileSystemEntries(possiblyEmptyDir, "*", SearchOption.AllDirectories).Any();
+
+        #endregion
+        #region ExtractToDirectory
+
+        public void ExtractToDirectory(string sourceArchiveFileName, string destinationDirectoryName)
+        {
+            if (sourceArchiveFileName == null)
+                throw new ArgumentNullException(nameof(sourceArchiveFileName));
+
+            using (var archive = new ZipArchive(fileSystem.ReadFile(sourceArchiveFileName)))
+            {
+                ExtractToDirectory(archive, destinationDirectoryName);
+            }
+        }
+
+        private void ExtractToDirectory(ZipArchive source, string destinationDirectoryName)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            if (destinationDirectoryName == null)
+                throw new ArgumentNullException(nameof(destinationDirectoryName));
+
+            foreach (var entry in source.Entries)
+            {
+                ExtractRelativeToDirectory(entry, destinationDirectoryName);
+            }
+        }
+
+        private void ExtractRelativeToDirectory(ZipArchiveEntry source, string destinationDirectoryName)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            if (destinationDirectoryName == null)
+                throw new ArgumentNullException(nameof(destinationDirectoryName));
+
+            // Note that this will give us a good DirectoryInfo even if destinationDirectoryName exists:
+            var di = Directory.CreateDirectory(destinationDirectoryName);
+
+            var destinationDirectoryFullPath = di.FullName;
+
+            if (!destinationDirectoryFullPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                destinationDirectoryFullPath += Path.DirectorySeparatorChar;
+
+            var fileDestinationPath = Path.GetFullPath(Path.Combine(destinationDirectoryFullPath, source.FullName));
+
+            //Assume case sensitive operating system to protect against work case scenario
+            if (!fileDestinationPath.StartsWith(destinationDirectoryFullPath, StringComparison.Ordinal))
+                throw new IOException("Extracting Zip entry would have resulted in a file outside the specified destination directory.");
+
+            if (Path.GetFileName(fileDestinationPath).Length == 0)
+            {
+                // If it is a directory:
+
+                if (source.Length != 0)
+                    throw new IOException("Zip entry name ends in directory separator character but contains data.");
+
+                Directory.CreateDirectory(fileDestinationPath);
+            }
+            else
+            {
+                // If it is a file:
+                // Create containing directory:
+                fileSystem.CreateDirectory(Path.GetDirectoryName(fileDestinationPath));
+                ExtractToFile(source, fileDestinationPath);
+            }
+        }
+
+        private void ExtractToFile(ZipArchiveEntry source, string destinationFileName)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            if (destinationFileName == null)
+                throw new ArgumentNullException(nameof(destinationFileName));
+
+            using (Stream fs = fileSystem.WriteFile(destinationFileName, FileMode.CreateNew))
+            {
+                using (var es = source.Open())
+                    es.CopyTo(fs);
+            }
+
+            fileSystem.SetFileLastWriteTime(destinationFileName, source.LastWriteTime.DateTime);
+        }
+
+        #endregion
     }
 }

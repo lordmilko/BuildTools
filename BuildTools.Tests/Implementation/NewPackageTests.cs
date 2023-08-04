@@ -25,7 +25,7 @@ namespace BuildTools.Tests
             fileSystem.EnumerateFilesMap[(SolutionRoot, "*.csproj", SearchOption.AllDirectories)] = new[]
             {
                 "C:\\Root\\first\\PrtgAPI.csproj",
-                "C:\\Root\\second\\PrtgAPI.PowerShell.csproj",
+                "C:\\Root\\PrtgAPI.PowerShell\\PrtgAPI.PowerShell.csproj",
             };
 
             fileSystem.DirectoryExistsMap[PackageSourceService.RepoLocation] = true;
@@ -49,13 +49,13 @@ namespace BuildTools.Tests
                 "*.cmd",
                 "*.pdb",
                 "*.sh",
-                "*.json",
-
-                "*.dll"
+                "*.json"
             };
 
             foreach (var ext in exts)
                 fileSystem.EnumerateFilesMap[(TempOutputPrtgAPI, ext, SearchOption.AllDirectories)] = new string[0];
+
+            fileSystem.EnumerateFilesMap[(TempOutputPrtgAPI, "*.dll", SearchOption.AllDirectories)] = new string[0];
 
             fileSystem.DirectoryExistsMap[PackageSourceService.RepoLocation] = true;
         }

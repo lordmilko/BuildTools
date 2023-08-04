@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Management.Automation;
+using System.Reflection;
+using BuildTools.Cmdlets.Appveyor;
 using BuildTools.Dynamic;
 using BuildTools.PowerShell;
 
@@ -17,6 +20,9 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false, Position = 1)]
         public string File { get; set; }
 
+        [Parameter(Mandatory = false)]
+        public SwitchParameter Appveyor { get; set; }
+
         protected override void ProcessRecordEx()
         {
             var factory = GetService<IProjectConfigProviderFactory>();
@@ -27,9 +33,14 @@ namespace BuildTools.Cmdlets
             var dynamicAssemblyBuilder = new DynamicAssemblyBuilder(configProvider.Config);
             dynamicAssemblyBuilder.BuildCmdlets();
 
+            var name = configProvider.Config.Name;
+
             //Create and import a dynamic module containing the dynamic cmdlets
             var powerShell = GetService<IPowerShellService>();
-            var module = powerShell.RegisterModule(configProvider.Config.Name, dynamicAssemblyBuilder.CmdletTypes);
+            var module = powerShell.RegisterModule($"{name}.Build", dynamicAssemblyBuilder.CmdletTypes);
+
+            if (Appveyor)
+                RegisterCIModule<AppveyorCmdlet>(powerShell, name, "Appveyor");
 
             //Now finalize the build environment
             FinalizeEnvironment(
@@ -74,6 +85,20 @@ namespace BuildTools.Cmdlets
             {
                 powerShell.Pop();
             }
+        }
+
+        private void RegisterCIModule<T>(IPowerShellService powerShell, string name, string suffix)
+        {
+            var moduleName = $"{name}.{suffix}";
+
+            if (BuildToolsSessionState.ContinuousIntegrationOwner != null)
+                throw new InvalidOperationException($"Cannot register {name} cmdlets: {name} cmdlets have already been registered under the {BuildToolsSessionState.ContinuousIntegrationOwner} build environment");
+
+            var cmdlets = typeof(StartBuildEnvironment).Assembly.GetTypes().Where(v => typeof(T).IsAssignableFrom(v) && v.GetCustomAttribute<CmdletAttribute>() != null).ToArray();
+
+            powerShell.RegisterModule(moduleName, cmdlets);
+
+            BuildToolsSessionState.ContinuousIntegrationOwner = moduleName;
         }
 
         protected override T GetService<T>() => BuildToolsSessionState.GlobalServiceProvider.GetService<T>();

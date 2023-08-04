@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BuildTools.Tests
@@ -56,7 +57,9 @@ namespace BuildTools.Tests
 
         public Stream ReadFile(string path)
         {
-            throw new NotImplementedException();
+            var text = ReadFileText(path);
+
+            return new MemoryStream(Encoding.ASCII.GetBytes(text));
         }
 
         public Stream WriteFile(string path, FileMode mode)
@@ -99,6 +102,11 @@ namespace BuildTools.Tests
             MovedFiles.Add((sourceFileName, destFileName));
         }
 
+        public void MoveDirectory(string sourceDirName, string destDirName)
+        {
+            throw new NotImplementedException();
+        }
+
         public Version GetVersionInfo(string fileName)
         {
             if (VersionInfoMap.TryGetValue(fileName, out var version))
@@ -139,11 +147,20 @@ namespace BuildTools.Tests
                 throw new InvalidOperationException($"{nameof(OnWriteFileLines)} for '{path}' is not set");
         }
 
+        public void CopyFile(string sourceFileName, string destFileName)
+        {
+        }
+
         public void CopyDirectory(string sourcePath, string destinationPath, bool recursive = false)
         {
         }
 
         public void WithCurrentDirectory(string path, Action action) => action();
+
+        public void SetFileLastWriteTime(string path, DateTime lastWriteTime)
+        {
+            throw new NotImplementedException();
+        }
 
         public void AssertDeletedFiles(params string[] expected)
         {

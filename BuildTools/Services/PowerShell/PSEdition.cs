@@ -1,6 +1,6 @@
 ﻿namespace BuildTools.PowerShell
 {
-    enum PSEdition
+    public enum PSEdition
     {
         Desktop,
         Core

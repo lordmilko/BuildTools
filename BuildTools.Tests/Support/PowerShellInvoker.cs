@@ -45,7 +45,7 @@ namespace BuildTools.Tests
                 if (errors.Length > 0)
                     throw errors[0].Exception;
 
-                return result.Cast<T>().ToArray();
+                return items.Cast<T>().ToArray();
             }
             finally
             {

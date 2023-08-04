@@ -67,7 +67,7 @@ namespace BuildTools
 
             var config = BuildConfig(hashTable);
 
-            ValidateConfig(config);
+            ValidateFinalConfig(config);
 
             return new ProjectConfigProvider(config, buildRoot, fileSystem);
         }
@@ -101,6 +101,18 @@ namespace BuildTools
                             throw new NotImplementedException($"Deserializing a property of type {prop.PropertyType} is not implemented");
                     }
 
+                    var hashtableConverterAttrib = prop.GetCustomAttribute<HashtableConverterAttribute>();
+
+                    if (hashtableConverterAttrib != null)
+                    {
+                        var instanceField = hashtableConverterAttrib.Type.GetField("Instance");
+
+                        if (instanceField == null)
+                            throw new MissingMemberException(hashtableConverterAttrib.Type.Name, "Instance");
+
+                        value = ((IHashtableConverter) instanceField.GetValue(null)).Convert((Hashtable) value);
+                    }
+
                     if (value.GetType() != prop.PropertyType)
                         value = LanguagePrimitives.ConvertTo(value, prop.PropertyType);
 
@@ -108,26 +120,7 @@ namespace BuildTools
                 }
             }
 
-            foreach (var prop in props.Values)
-            {
-                var value = prop.GetValue(config);
-
-                var attrib = prop.GetCustomAttribute<MandatoryAttribute>();
-
-                if (attrib != null)
-                {
-                    if (IsMissingValue(value))
-                        throw new InvalidOperationException($"Property '{prop.Name}' is required however no value was specified");
-                }
-                else
-                {
-                    var optional = prop.GetCustomAttribute<OptionalAttribute>();
-
-                    if (optional == null)
-                        throw new InvalidOperationException($"Property '{nameof(ProjectConfig)}.{prop.Name}' does not specify either a '{nameof(MandatoryAttribute)}' or '{nameof(OptionalAttribute)}'.");
-                }
-                
-            }
+            ValidateRequired(config, props.Values.ToArray());
 
             return config;
         }
@@ -171,10 +164,13 @@ namespace BuildTools
                 return value.Equals(@default);
             }
 
+            if (value is Array arr)
+                return arr.Length == 0;
+
             return string.IsNullOrWhiteSpace(value.ToString());
         }
 
-        private void ValidateConfig(ProjectConfig config)
+        private void ValidateFinalConfig(ProjectConfig config)
         {
             foreach (var existing in existingConfigs)
             {
@@ -186,6 +182,64 @@ namespace BuildTools
             }
 
             existingConfigs.Add(config);
+        }
+
+        private void ValidateRequired(ProjectConfig config, PropertyInfo[] properties)
+        {
+            foreach (var prop in properties)
+            {
+                var value = prop.GetValue(config);
+
+                var required = prop.GetCustomAttribute<RequiredAttribute>();
+
+                if (required != null)
+                {
+                    if (required is RequiredWithAttribute rw)
+                    {
+                        if (IsMissingValue(value))
+                        {
+                            if (config.ExcludedCommands != null && !config.ExcludedCommands.Contains(rw.CommandKind))
+                                throw new InvalidOperationException($"Property '{prop.Name}' is required when feature {rw.CommandKind} is used however no value was specified");
+                        }
+                    }
+                    else
+                    {
+                        if (IsMissingValue(value))
+                            throw new InvalidOperationException($"Property '{prop.Name}' is required however no value was specified");
+                    }                    
+                }
+                else
+                {
+                    var optional = prop.GetCustomAttribute<OptionalAttribute>();
+
+                    if (optional == null)
+                        throw new InvalidOperationException($"Property '{nameof(ProjectConfig)}.{prop.Name}' does not specify either a '{nameof(RequiredAttribute)}' or '{nameof(OptionalAttribute)}'.");
+                }
+
+                ValidatePackageTypes(value, prop, config);
+            }
+        }
+
+        private void ValidatePackageTypes(object value, PropertyInfo parentProperty, ProjectConfig config)
+        {
+            //If the value must be provided, we would have checked this above with things such as RequiredWith
+            if (value == null)
+                return;
+
+            var properties = parentProperty.PropertyType.GetProperties();
+
+            foreach (var prop in properties)
+            {
+                var attrib = prop.GetCustomAttribute<PackageTypeAttribute>();
+
+                if (attrib != null)
+                {
+                    var propertyValue = prop.GetValue(value);
+
+                    if (config.PackageTypes.Contains(attrib.Type) && IsMissingValue(propertyValue))
+                        throw new InvalidOperationException($"No '{parentProperty.Name}' for '{prop.Name}' have been defined");
+                }
+            }
         }
     }
 }

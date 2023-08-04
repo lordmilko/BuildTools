@@ -528,14 +528,13 @@ namespace BuildTools.Tests
                         { "Name", "PrtgAPI" },
                         { "SolutionName", "PrtgAPI.sln" },
                         { "CmdletPrefix", "Prtg" },
-                        { "UnitTestPowerShellFilter", ScriptBlock.Create("$_.BaseName -ne 'First.Tests'") },
-                        { "CopyrightAuthor", "lordmilko" },
-                        { "CopyrightYear", "2015" }
+                        { "PowerShellUnitTestFilter", ScriptBlock.Create("$_.BaseName -ne 'First.Tests'") },
+                        { "Copyright", "lordmilko, 2015" }
                     };
                     fileSystem.EnumerateFilesMap[("C:\\Root\\build", "*.sln", SearchOption.TopDirectoryOnly)] = Array.Empty<string>();
                     fileSystem.DirectoryExistsMap["C:\\Root\\build\\src"] = false;
                     var temp = configProviderFactory.CreateProvider("C:\\Root\\build");
-                    configProvider.Value.Config.UnitTestPowerShellFilter = temp.Config.UnitTestPowerShellFilter;
+                    configProvider.Value.Config.PowerShellUnitTestFilter = temp.Config.PowerShellUnitTestFilter;
 
                     getService.Value.GetCoverage(
                         new CoverageConfig

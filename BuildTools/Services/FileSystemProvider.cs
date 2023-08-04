@@ -29,6 +29,8 @@ namespace BuildTools
 
         void MoveFile(string sourceFileName, string destFileName);
 
+        void MoveDirectory(string sourceDirName, string destDirName);
+
         Version GetVersionInfo(string fileName);
 
         string ReadFileText(string path);
@@ -39,9 +41,13 @@ namespace BuildTools
 
         void WriteFileLines(string path, string[] contents);
 
+        void CopyFile(string sourceFileName, string destFileName);
+
         void CopyDirectory(string sourcePath, string destinationPath, bool recursive = false);
 
         void WithCurrentDirectory(string path, Action action);
+
+        void SetFileLastWriteTime(string path, DateTime lastWriteTime);
     }
 
     class FileSystemProvider : IFileSystemProvider
@@ -83,6 +89,8 @@ namespace BuildTools
             File.Move(sourceFileName, destFileName);
         }
 
+        public void MoveDirectory(string sourceDirName, string destDirName) => Directory.Move(sourceDirName, destDirName);
+
         public Version GetVersionInfo(string fileName) =>
             new Version(FileVersionInfo.GetVersionInfo(fileName).FileVersion);
 
@@ -93,6 +101,8 @@ namespace BuildTools
         public void WriteFileText(string path, string contents) => File.WriteAllText(path, contents);
 
         public void WriteFileLines(string path, string[] contents) => File.WriteAllLines(path, contents);
+
+        public void CopyFile(string sourceFileName, string destFileName) => File.Copy(sourceFileName, destFileName);
 
         public void CopyDirectory(string sourcePath, string destinationPath, bool recursive = false)
         {
@@ -137,5 +147,7 @@ namespace BuildTools
                 Directory.SetCurrentDirectory(original);
             }
         }
+
+        public void SetFileLastWriteTime(string path, DateTime lastWriteTime) => File.SetLastWriteTime(path, lastWriteTime);
     }
 }

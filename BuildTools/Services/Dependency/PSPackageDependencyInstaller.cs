@@ -51,7 +51,15 @@ namespace BuildTools
                 if (log)
                     logger.LogInformation($"\tInstalling '{dependency.Name}' PowerShell Module");
 
-                var result = powerShell.InstallPackage(dependency.Name, requiredVersion, minimumVersion, skipPublisherCheck);
+                var result = powerShell.InstallPackage(
+                    dependency.Name,
+                    requiredVersion: requiredVersion,
+                    minimumVersion: minimumVersion,
+                    skipPublisherCheck: skipPublisherCheck,
+                    force: true,
+                    forceBootstrap: true,
+                    allowClobber: true
+                );
 
                 return new DependencyResult(dependency, null, result.Version, DependencyAction.Success);
             }

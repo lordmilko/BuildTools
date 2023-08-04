@@ -61,7 +61,7 @@ namespace BuildTools.Tests
             fileSystem.EnumerateFilesMap[("C:\\Root", "*.csproj", SearchOption.AllDirectories)] = new[]
             {
                 "C:\\Root\\first\\first.csproj",
-                "C:\\Root\\second\\second.csproj",
+                "C:\\Root\\PrtgAPI.PowerShell\\PrtgAPI.PowerShell.csproj",
             };
 
             if (isLegacy)

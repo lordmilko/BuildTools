@@ -86,7 +86,7 @@ namespace BuildTools
         {
             var nl = Environment.NewLine;
             var pad = string.Empty.PadLeft(10);
-            powerShell.WriteColor($"{nl}{pad}Copyright (C) {configProvider.Config.CopyrightAuthor}, {configProvider.Config.CopyrightYear}{nl}{nl}");
+            powerShell.WriteColor($"{nl}{pad}Copyright (C) {configProvider.Config.Copyright}{nl}{nl}");
         }
     }
 }

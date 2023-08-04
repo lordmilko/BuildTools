@@ -116,7 +116,7 @@ namespace BuildTools.PowerShell
         {
             return Invoke<IPowerShellModule>(
                 $"Get-Module -ListAvailable '{name}'",
-                o => new PowerShellModule((PSModuleInfo)UnwrapPSObject(o))
+                o => new PowerShellModule((PSModuleInfo) UnwrapPSObject(o))
             );
         }
 
@@ -125,7 +125,7 @@ namespace BuildTools.PowerShell
             return Invoke(
                 "Get-Module",
                 new[] {$"-Name '{name}'"},
-                o => new PowerShellModule((PSModuleInfo)UnwrapPSObject(o))
+                o => new PowerShellModule((PSModuleInfo) UnwrapPSObject(o))
             ).FirstOrDefault();
         }
 
@@ -139,7 +139,7 @@ namespace BuildTools.PowerShell
             if (global)
                 args.Add("-Global");
 
-            return Invoke("Import-Module", args, o => new PowerShellModule((PSModuleInfo)UnwrapPSObject(o))).First();
+            return Invoke("Import-Module", args, o => new PowerShellModule((PSModuleInfo) UnwrapPSObject(o))).First();
         }
 
         public IPowerShellModule RegisterModule(string name, IList<Type> cmdletTypes)
@@ -150,20 +150,23 @@ namespace BuildTools.PowerShell
             if (cmdletTypes.Count == 0)
                 throw new InvalidOperationException("At least one cmdlet type should be specified");
 
-            var module = (PSModuleInfo) InvokeAndUnwrap($"New-Module {name}.Build {{}}");
+            var module = (PSModuleInfo) InvokeAndUnwrap($"New-Module {name} {{}}");
 
             var cmdletInfoModule = typeof(CmdletInfo).GetProperty(nameof(CmdletInfo.Module));
 
-            foreach (var type in cmdletTypes)
+            void RegisterCmdlet(Type type)
             {
                 var attrib = type.GetCustomAttribute<CmdletAttribute>();
 
                 var cmdletName = $"{attrib.VerbName}-{attrib.NounName}";
                 var info = new CmdletInfo(cmdletName, type);
 
-                addExportedCmdletMethod.Invoke(module, new object[] {info});
-                cmdletInfoModule.GetSetMethod(true).Invoke(info, new object[] {module});
+                addExportedCmdletMethod.Invoke(module, new object[] { info });
+                cmdletInfoModule.GetSetMethod(true).Invoke(info, new object[] { module });
             }
+
+            foreach (var type in cmdletTypes)
+                RegisterCmdlet(type);
 
             var result = (PSModuleInfo) InvokeAndUnwrap("$input | Import-Module -PassThru", module);
 
@@ -192,16 +195,69 @@ finally
             InvokeWithArgs(script);
         }
 
-        public IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null, bool skipPublisherCheck = false)
+        public void UpdateModuleManifest(string path, string rootModule = null)
+        {
+            var args = new List<string>
+            {
+                $"-Path '{path}'"
+            };
+
+            if (rootModule != null)
+                args.Add($"-RootModule '{rootModule}'");
+
+            InvokeWithArgs("Update-ModuleManifest", args.ToArray());
+        }
+
+        public IPowerShellPackage GetPackage(string name, string destination = null)
         {
             var args = new List<string>
             {
                 $"-Name {name}",
-                "-Force",
-                "-ForceBootstrap",
-                "-AllowClobber",
-                "-ProviderName PowerShellGet"
+                "-ErrorAction SilentlyContinue"
             };
+
+            if (destination != null)
+                args.Add($"-Destination '{destination}'");
+
+            return Invoke("Get-Package", args, o => new PowerShellPackage(o)).FirstOrDefault();
+        }
+
+        public IPowerShellPackage InstallPackage(
+            string name,
+            Version requiredVersion = null,
+            Version minimumVersion = null,
+            bool force = false,
+            bool forceBootstrap = false,
+            bool allowClobber = false,
+            string providerName = "PowerShellGet",
+            string source = null,
+            string destination = null,
+            bool skipDependencies =false,
+            bool skipPublisherCheck = false)
+        {
+            var args = new List<string>
+            {
+                $"-Name {name}",
+                $"-ProviderName {providerName}"
+            };
+
+            if (force)
+                args.Add("-Force");
+
+            if (forceBootstrap)
+                args.Add("-ForceBootstrap");
+
+            if (allowClobber)
+                args.Add("-AllowClobber");
+
+            if (source != null)
+                args.Add($"-Source {source}");
+
+            if (destination != null)
+                args.Add($"-Destination '{destination}'");
+
+            if (skipDependencies)
+                args.Add("-SkipDependencies");
 
             if (requiredVersion != null)
                 args.Add($"-RequiredVersion {requiredVersion}");
@@ -213,6 +269,16 @@ finally
                 args.Add("-SkipPublisherCheck");
 
             return Invoke("Install-Package", args, o => new PowerShellPackage(o)).First();
+        }
+
+        public void UninstallPackage(string name)
+        {
+            Invoke("Uninstall-Package", new[] { $"-Name '{name}'" }, o => new PowerShellPackage(o));
+        }
+
+        public void UninstallPackage(IPowerShellPackage package)
+        {
+            InvokeAndUnwrap("$input | Uninstall-Package", ((PowerShellPackage)package).Raw);
         }
 
         #region PackageProvider

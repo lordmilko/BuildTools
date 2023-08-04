@@ -26,6 +26,8 @@ namespace BuildTools
 
         public string AppveyorBuildFolder => Get(Env.AppveyorBuildFolder);
 
+        public string AppveyorBuildVersion => Get(Env.AppveyorBuildVersion);
+
         public string Configuration => Get(Env.Configuration);
 
         public string Path

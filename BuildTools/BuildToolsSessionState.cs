@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using BuildTools.PowerShell;
 
 namespace BuildTools
@@ -14,6 +15,12 @@ namespace BuildTools
         internal static bool HeadlessUI { get; set; }
 
         internal static bool ScriptAnalyzerRepaired { get; set; }
+
+        internal static Type[] Environments => serviceProviderCache.Keys.ToArray();
+
+        internal static string ContinuousIntegrationOwner { get; set; }
+
+        internal static bool? AppveyorBuildCore { get; set; }
 
         internal static IServiceProvider ServiceProvider(Type environment)
         {
@@ -79,6 +86,12 @@ namespace BuildTools
                 typeof(InvokeTestService),
                 typeof(NewPackageService),
                 typeof(StartModuleService),
+
+                typeof(NewAppveyorPackageService),
+
+                typeof(AppveyorPackageProviderServices),
+                typeof(AppveyorCSharpPackageProvider),
+                typeof(AppveyorPowerShellPackageProvider),
 
                 typeof(DotnetDependencyInstaller),
                 typeof(ChocolateyDependencyInstaller),

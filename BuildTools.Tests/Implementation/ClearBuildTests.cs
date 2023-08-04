@@ -24,6 +24,7 @@ namespace BuildTools.Tests
                 fileSystem.EnumerateFilesMap[("C:\\Root", "*.zip", SearchOption.TopDirectoryOnly)] = new[] {"foo.zip"};
                 fileSystem.FileExistsMap["C:\\Root\\msbuild.binlog"] = false;
                 fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
+                fileSystem.FileExistsMap["C:\\Root\\PrtgAPIv17.sln"] = true;
 
                 envProvider.SetValue(WellKnownEnvironmentVariable.CI, string.Empty);
                 powerShell.KnownCommands["dotnet"] = new MockPowerShellCommand("dotnet");

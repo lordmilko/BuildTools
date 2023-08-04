@@ -18,6 +18,8 @@ namespace BuildTools.Tests
 
         public List<string> Executed { get; } = new List<string>();
 
+        public Dictionary<string, string[]> ExecuteMap { get; } = new Dictionary<string, string[]>();
+
         public string[] Execute(string fileName, ArgList arguments = default, string errorFormat = null, bool writeHost = false, bool shellExecute = false)
         {
             var argList = arguments.Arguments;
@@ -32,6 +34,9 @@ namespace BuildTools.Tests
                 Assert.IsNull(command);
                 powerShell.KnownCommands[dependency.CommandName] = new MockPowerShellCommand(dependency.CommandName);
             }
+
+            if (ExecuteMap.TryGetValue($"{fileName} {arguments}", out var result))
+                return result;
 
             return new string[0];
         }

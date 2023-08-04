@@ -14,9 +14,16 @@ namespace BuildTools.Cmdlets
 
         private static readonly MethodInfo getService;
 
+        private bool forceVerbose;
+
         static BuildCmdlet()
         {
             getService = typeof(BuildCmdlet<TEnvironment>).GetMethod(nameof(GetService), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        }
+
+        protected BuildCmdlet(bool forceVerbose = true)
+        {
+            this.forceVerbose = forceVerbose;
         }
 
         protected virtual bool IsLegacyMode
@@ -34,8 +41,16 @@ namespace BuildTools.Cmdlets
         {
             WithActiveCmdlet(() =>
             {
-                using (new VerboseEnforcer(this))
+                var verboseEnforcer = forceVerbose ? new VerboseEnforcer(this) : null;
+
+                try
+                {
                     ProcessRecordEx();
+                }
+                finally
+                {
+                    verboseEnforcer?.Dispose();
+                }
             });
         }
 
@@ -46,6 +61,12 @@ namespace BuildTools.Cmdlets
                 if (MyInvocation.BoundParameters.TryGetValue(IntegrationParameterName, out var value))
                     provider.Integration = (SwitchParameter) value;
             }
+
+            BeginProcessingEx();
+        }
+
+        protected virtual void BeginProcessingEx()
+        {
         }
 
         protected abstract void ProcessRecordEx();
@@ -56,11 +77,11 @@ namespace BuildTools.Cmdlets
         }
 
         //If you touch this property, implicitly you're a cmdlet that CAN support legacy parameters, the only question is WILL you
-        internal static Delegate NeedLegacyParameter => (Func<IPowerShellService, bool>) (powerShell => NeedLegacyParameterInternal(true, powerShell));
+        internal static Delegate NeedLegacyParameter => (Func<IPowerShellService, IProjectConfigProvider, bool>) ((powerShell, configProvider) => NeedLegacyParameterInternal(true, powerShell, configProvider));
 
-        private static bool NeedLegacyParameterInternal(bool isLegacyProvider, IPowerShellService powerShell)
+        private static bool NeedLegacyParameterInternal(bool isLegacyProvider, IPowerShellService powerShell, IProjectConfigProvider configProvider)
         {
-            if (isLegacyProvider && powerShell.IsWindows)
+            if (isLegacyProvider && powerShell.IsWindows && configProvider.GetProjects(true).Any())
                 return true;
 
             return false;
@@ -89,7 +110,7 @@ namespace BuildTools.Cmdlets
 
             WithActiveCmdlet((IPowerShellService powerShell, IProjectConfigProvider configProvider) =>
             {
-                if (NeedLegacyParameterInternal(this is ILegacyProvider, powerShell))
+                if (NeedLegacyParameterInternal(this is ILegacyProvider, powerShell, configProvider))
                     AddDynamicParameters(LegacyParameterName, ((ILegacyProvider) this).GetLegacyParameterSets(), dict);
 
                 if (NeedIntegrationParameterInternal(this is IIntegrationProvider, configProvider))
@@ -133,6 +154,10 @@ namespace BuildTools.Cmdlets
             try
             {
                 action.DynamicInvoke(parameters);
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException;
             }
             finally
             {

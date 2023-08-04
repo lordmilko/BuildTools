@@ -290,8 +290,8 @@ namespace BuildTools
                 tests = tests.Where(t => wildcard.IsMatch(t));
             }
 
-            if (configProvider.Config.UnitTestPowerShellFilter != null)
-                tests = tests.Where(t => configProvider.Config.UnitTestPowerShellFilter(new FileInfo(t)));
+            if (configProvider.Config.PowerShellUnitTestFilter != null)
+                tests = tests.Where(t => configProvider.Config.PowerShellUnitTestFilter(new FileInfo(t)));
 
             var results = tests.Select(t => $"\"{t}\"").ToArray();
 

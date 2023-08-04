@@ -72,7 +72,10 @@ namespace BuildTools
             UnregisterPackageSource();
 
             logger.LogInformation("\t\t\tRemoving temp repository folder");
-            fileSystem.DeleteDirectory(RepoLocation);
+
+            //ClearRepo() removes the folder as well
+            if (fileSystem.DirectoryExists(RepoLocation))
+                fileSystem.DeleteDirectory(RepoLocation);
         }
 
         protected abstract string[] GetPackageSource();
@@ -88,7 +91,9 @@ namespace BuildTools
         {
             var folderName = Path.GetFileName(sourcePath);
 
-            var tempPath = Path.Combine(RepoLocation, "TempOutput", folderName);
+            var tempOutput = Path.Combine(RepoLocation, "TempOutput");
+
+            var tempPath = Path.Combine(tempOutput, folderName);
 
             fileSystem.CopyDirectory(sourcePath, tempPath, true);
 
@@ -98,7 +103,7 @@ namespace BuildTools
             }
             finally
             {
-                fileSystem.DeleteDirectory(tempPath);
+                fileSystem.DeleteDirectory(tempOutput);
             }
         }
     }

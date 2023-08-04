@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
 
 namespace BuildTools
 {
@@ -51,6 +52,13 @@ namespace BuildTools
                     UseShellExecute = shellExecute
                 }
             };
+
+            var fileName = Path.GetFileNameWithoutExtension(FileName).ToLower();
+
+            if (fileName == "powershell" || fileName == "pwsh")
+            {
+                process.StartInfo.EnvironmentVariables.Remove("PSModulePath");
+            }
 
             if (!process.Start())
                 throw new InvalidOperationException($"Failed to start process '{FileName}'.");
@@ -105,17 +113,12 @@ namespace BuildTools
             {
                 var errorMsg = ErrorFormat ?? $"Process '{FileName}' exited with error code '{{0}}'.";
 
-                if (!WriteHost)
-                {
-                    errorMsg = $"{errorMsg}{Environment.NewLine}{Environment.NewLine}{writer}";
-                }
+                errorMsg = string.Format(errorMsg, process.ExitCode);
 
-                throw new ProcessException(
-                    string.Format(
-                        errorMsg,
-                        process.ExitCode
-                    )
-                );
+                if (!WriteHost)
+                    errorMsg = $"{errorMsg}{Environment.NewLine}{Environment.NewLine}{writer}";
+
+                throw new ProcessException(errorMsg);
             }
         }
     }

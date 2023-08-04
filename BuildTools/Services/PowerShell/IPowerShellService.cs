@@ -42,7 +42,26 @@ namespace BuildTools.PowerShell
 
         void PublishModule(string path);
 
-        IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null, bool skipPublisherCheck = false);
+        void UpdateModuleManifest(string path, string rootModule = null);
+
+        IPowerShellPackage GetPackage(string name, string destination = null);
+
+        IPowerShellPackage InstallPackage(
+            string name,
+            Version requiredVersion = null,
+            Version minimumVersion = null,
+            bool force = false,
+            bool forceBootstrap = false,
+            bool allowClobber = false,
+            string providerName = "PowerShellGet",
+            string source = null,
+            string destination = null,
+            bool skipDependencies = false,
+            bool skipPublisherCheck = false);
+
+        void UninstallPackage(string name);
+
+        void UninstallPackage(IPowerShellPackage package);
 
         #region PackageProvider
 

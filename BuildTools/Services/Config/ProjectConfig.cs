@@ -15,24 +15,38 @@ namespace BuildTools
         /// </summary>
         public const string CoreSuffix = "v17";
 
-        [Mandatory]
-        public string Name { get; set; }
-
-        [Mandatory]
-        public string SolutionName { get; set; }
+        #region Global
+        #region Required
 
         /// <summary>
-        /// Gets or sets the subfolder under the <see cref="ProjectConfigProvider.SolutionRoot"/> that the source files are contained in. If this is not specified,
-        /// the <see cref="ProjectConfigProvider.SourceRoot"/> is the "src" subfolder under the <see cref="ProjectConfigProvider.SolutionRoot"/> (if one exists)
-        /// or the <see cref="ProjectConfigProvider.SolutionRoot"/> itself.
+        /// Gets or sets the name of the project/GitHub repository.
         /// </summary>
-        [Optional]
-        public string SourceFolder { get; set; }
+        [Required]
+        public string Name { get; set; }
 
-        [Mandatory]
+        /// <summary>
+        /// Gets or sets the prefix to use for all build environment cmdlets.
+        /// </summary>
+        [Required]
         public string CmdletPrefix { get; set; }
 
-        #region Prompt
+        [Required]
+        public string Copyright { get; set; }
+
+        #endregion
+        #region Optional
+
+        [Optional]
+        public string SolutionName { get; set; }
+
+        [Optional]
+        public string BuildFilter { get; set; }
+
+        [Optional]
+        public string DebugTargetFramework { get; set; }
+
+        [Optional]
+        public CommandKind[] ExcludedCommands { get; set; }
 
         private string prompt;
 
@@ -43,42 +57,26 @@ namespace BuildTools
             set => prompt = value;
         }
 
+        /// <summary>
+        /// Gets or sets the subfolder under the <see cref="ProjectConfigProvider.SolutionRoot"/> that the source files are contained in. If this is not specified,
+        /// the <see cref="ProjectConfigProvider.SourceRoot"/> is the "src" subfolder under the <see cref="ProjectConfigProvider.SolutionRoot"/> (if one exists)
+        /// or the <see cref="ProjectConfigProvider.SolutionRoot"/> itself.
+        /// </summary>
         [Optional]
-        public string BuildFilter { get; set; }
+        public string SourceFolder { get; set; }
 
         #endregion
-        #region TestTypes
-
-        private TestType[] testTypes;
+        #endregion
+        #region CSharp
 
         [Optional]
-        public TestType[] TestTypes
-        {
-            get => testTypes ?? DefaultTestTypes;
-            set => testTypes = value;
-        }
+        public string[] CSharpLegacyPackageExcludes { get; set; }
 
         #endregion
-        #region PackageTypes
-
-        private PackageType[] packageTypes;
+        #region PowerShell
 
         [Optional]
-        public PackageType[] PackageTypes
-        {
-            get => packageTypes ?? DefaultPackageTypes;
-            set => packageTypes = value;
-        }
-
-        #endregion
-
-        [Mandatory]
-        public string CopyrightAuthor { get; set; }
-
-        [Mandatory]
-        public string CopyrightYear { get; set; }
-
-        #region PowerShellModuleName
+        public bool PowerShellMultiTargeted { get; set; }
 
         private string powerShellModuleName;
 
@@ -92,24 +90,47 @@ namespace BuildTools
             set => powerShellModuleName = value;
         }
 
-        #endregion
-
         [Optional]
         public string PowerShellProjectName { get; set; }
 
         [Optional]
+        public Func<FileInfo, bool> PowerShellUnitTestFilter { get; set; }
+
+        #endregion
+        #region Test
+
+        private TestType[] testTypes;
+
+        [Optional]
+        public TestType[] TestTypes
+        {
+            get => testTypes ?? DefaultTestTypes;
+            set => testTypes = value;
+        }
+
+        [Optional]
         public string UnitTestProjectName { get; set; }
 
-        [Optional]
-        public bool PowerShellMultiTargeted { get; set; }
+        #endregion
+        #region Package
+
+        private PackageType[] packageTypes;
 
         [Optional]
-        public Func<FileInfo, bool> UnitTestPowerShellFilter { get; set; }
+        public PackageType[] PackageTypes
+        {
+            get => packageTypes ?? DefaultPackageTypes;
+            set => packageTypes = value;
+        }
 
         [Optional]
-        public CommandKind[] ExcludedCommands { get; set; }
+        [HashtableConverter(typeof(PackageTestsHashtableConverter))]
+        public PackageTests PackageTests { get; set; }
 
-        [Optional]
-        public string[] CSharpLegacyPackageExcludes { get; set; }
+        [RequiredWith(CommandKind.NewPackage)]
+        [HashtableConverter(typeof(PackageFilesHashtableConverter))]
+        public PackageFiles PackageFiles { get; set; }
+
+        #endregion
     }
 }

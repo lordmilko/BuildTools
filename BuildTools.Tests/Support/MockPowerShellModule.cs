@@ -6,6 +6,7 @@ namespace BuildTools.Tests
     class MockPowerShellModule : IPowerShellModule
     {
         public string Name { get; }
+        public string Path { get; }
         public Version Version { get; }
 
         public MockPowerShellModule(string name, string version)

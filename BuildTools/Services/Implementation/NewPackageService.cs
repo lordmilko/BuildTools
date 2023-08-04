@@ -47,23 +47,28 @@ namespace BuildTools
 
             var results = new List<FileInfo>();
 
-            var target = new PackageTarget(packageTypes);
+            var config = new PackageConfig(
+                buildConfiguration,
+                isLegacy,
+                configProvider.Config.PowerShellMultiTargeted,
+                packageTypes
+            );
 
             var cmdletName = commandService.GetCommand(CommandKind.NewPackage).Name;
 
             var numLogs = 0;
 
-            if (target.CSharp)
+            if (config.Target.CSharp)
                 numLogs++;
 
-            if (target.PowerShell || target.Redist)
+            if (config.Target.PowerShell || config.Target.Redist)
                 numLogs++;
 
             var count = 0;
 
             try
             {
-                if (target.CSharp)
+                if (config.Target.CSharp)
                 {
                     count++;
 
@@ -79,13 +84,13 @@ namespace BuildTools
 
                     var version = getVersionService.GetVersion(isLegacy).Package;
 
-                    csharpPackageProvider.Execute(isLegacy, buildConfiguration, version);
+                    csharpPackageProvider.Execute(config, version);
                     results.AddRange(MovePackages(string.Empty, configProvider.SolutionRoot));
 
                     fileSystem.DeleteDirectory(PackageSourceService.RepoLocation);
                 }
 
-                if (target.PowerShell || target.Redist)
+                if (config.Target.PowerShell || config.Target.Redist)
                 {
                     count++;
 
@@ -98,7 +103,7 @@ namespace BuildTools
 
                     powerShellPackageSourceService.Install();
 
-                    powerShellPackageProvider.Execute(isLegacy, buildConfiguration, target);
+                    powerShellPackageProvider.Execute(config);
                     results.AddRange(MovePackages("_PowerShell", configProvider.SolutionRoot));
 
                     // Don't uninstall the repository unless we succeeded, so we can troubleshoot any issues
@@ -114,7 +119,7 @@ namespace BuildTools
             return results.ToArray();
         }
 
-        private FileInfo[] MovePackages(
+        internal FileInfo[] MovePackages(
             string suffix,
             string destinationFolder)
         {

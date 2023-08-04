@@ -17,6 +17,10 @@ namespace BuildTools.Tests
 
         public List<string> InvokedCommands { get; } = new List<string>();
 
+        public Dictionary<string, Action<string>> OnInstallPackage { get; } = new Dictionary<string, Action<string>>();
+
+        public Dictionary<string, Action<string>> OnUninstallPackage { get; } = new Dictionary<string, Action<string>>();
+
         public bool IsISE { get; }
         public PSEdition Edition { get; }
         public bool IsProgressEnabled { get; }
@@ -85,6 +89,35 @@ namespace BuildTools.Tests
         {
         }
 
+        public void UpdateModuleManifest(string path, string rootModule = null)
+        {
+        }
+
+        public IPowerShellPackage GetPackage(string name, string destination = null) =>
+            new MockPowerShellPackage(name, new Version("1.0"));
+
+        public IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null,
+            bool force = false, bool forceBootstrap = false, bool allowClobber = false, string providerName = "PowerShellGet",
+            string source = null, string destination = null, bool skipDependencies = false, bool skipPublisherCheck = false)
+        {
+            if (OnInstallPackage.TryGetValue(name, out var action))
+                action(name);
+
+            return new MockPowerShellPackage(name, requiredVersion ?? minimumVersion ?? new Version("1.0"));
+        }
+
+        public void UninstallPackage(string name)
+        {
+            if (OnUninstallPackage.TryGetValue(name, out var action))
+                action(name);
+        }
+
+        public void UninstallPackage(IPowerShellPackage package)
+        {
+            if( OnUninstallPackage.TryGetValue(package.Name, out var action))
+                action(package.Name);
+        }
+
         public IPowerShellPackage InstallPackage(string name, Version requiredVersion = null, Version minimumVersion = null,
             bool skipPublisherCheck = false)
         {
@@ -112,19 +145,14 @@ namespace BuildTools.Tests
         #endregion
         #region PackageSource
 
-        public IPackageSource[] GetPackageSource()
-        {
-            throw new NotImplementedException();
-        }
+        public IPackageSource[] GetPackageSource() => new[] { new MockPackageSource() };
 
         public void RegisterPackageSource()
         {
-            throw new NotImplementedException();
         }
 
         public void UnregisterPackageSource()
         {
-            throw new NotImplementedException();
         }
 
         #endregion

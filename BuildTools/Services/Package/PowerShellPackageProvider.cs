@@ -28,10 +28,10 @@ namespace BuildTools
             this.logger = logger;
         }
 
-        public void Execute(bool isLegacy, BuildConfiguration configuration, PackageTarget target)
+        public void Execute(PackageConfig config)
         {
-            var moduleDir = configProvider.GetPowerShellOutputDirectory(configuration, isLegacy);
-            var configDir = configProvider.GetPowerShellConfigurationDirectory(configuration);
+            var moduleDir = configProvider.GetPowerShellOutputDirectory(config.Configuration, config.IsLegacy);
+            var configDir = configProvider.GetPowerShellConfigurationDirectory(config.Configuration);
 
             var outputDir = moduleDir;
 
@@ -40,11 +40,9 @@ namespace BuildTools
             if (!fileSystem.FileExists(dll))
                 throw new FileNotFoundException($"Cannot build PowerShell package as {configProvider.Config.Name} has not been compiled. Could not find file '{dll}'.", dll);
 
-            bool needMultiTargeting = !isLegacy && configuration == BuildConfiguration.Release && configProvider.Config.PowerShellMultiTargeted;
-
             //We are either in Release\net461 or Release\net461\FooModule. We want to package up both Release\net461 and Release\netstandard2.0.
             //As such, we must find our way back to the Release folder.
-            if (needMultiTargeting)
+            if (config.IsMultiTargeting)
                 outputDir = configDir;
 
             PackageSourceService.WithTempCopy(
@@ -55,24 +53,24 @@ namespace BuildTools
                     string packageDir = tempPath;
                     string primaryModuleDir = tempPath;
 
-                    if (needMultiTargeting)
+                    if (config.IsMultiTargeting)
                     {
                         //While we may have multiple target frameworks we want to include, for the purposes of publishing we just move everything into whatever the "main" folder is
                         var relativePath = moduleDir.Substring(configDir.Length).TrimStart(Path.DirectorySeparatorChar);
                         primaryModuleDir = Path.Combine(tempPath, relativePath);
 
-                        UpdateRootModule_MultiTargetedRelease(primaryModuleDir, isLegacy);
+                        UpdateRootModule_MultiTargetedRelease(primaryModuleDir);
 
-                        packageDir = MovePowerShellAssemblies_MultiTargetedRelease(tempPath, isLegacy, configuration);
+                        packageDir = MovePowerShellAssemblies_MultiTargetedRelease(tempPath);
                     }
 
-                    CreateRedistributablePackage(packageDir, target);
-                    CreatePowerShellPackage(primaryModuleDir, target);
+                    CreateRedistributablePackage(packageDir, config.Target);
+                    CreatePowerShellPackage(primaryModuleDir, config.Target);
                 }
             );
         }
 
-        private void UpdateRootModule_MultiTargetedRelease(string primaryModuleDir, bool isLegacy)
+        private void UpdateRootModule_MultiTargetedRelease(string primaryModuleDir)
         {
             //Cmdlets such as Import-PowerShellDataFile and code inside PSModule.psm1 cannot handle a RootModule being set to a script expression.
             //As such, we must rewrite these strings directly
@@ -130,7 +128,7 @@ else # Desktop
             }
         }
 
-        private string MovePowerShellAssemblies_MultiTargetedRelease(string modulePath, bool isLegacy, BuildConfiguration buildConfiguration)
+        private string MovePowerShellAssemblies_MultiTargetedRelease(string modulePath)
         {
             var netStandardOutput = Path.Combine(modulePath, "netstandard2.0", configProvider.Config.PowerShellModuleName);
             var netFrameworkOutput = Path.Combine(modulePath, "net452", configProvider.Config.PowerShellModuleName); //todo
@@ -162,6 +160,20 @@ else # Desktop
 
             foreach (var file in frameworkFiles)
                 fileSystem.MoveFile(file, fullclr);
+
+            var primaryProject = configProvider.GetPrimaryProject(false);
+            var configDir = configProvider.GetProjectConfigurationDirectory(primaryProject, BuildConfiguration.Release);
+
+            var depsName = $"{configProvider.GetPrimaryProject(false).NormalizedName}.deps.json";
+
+            var depsSourcePath = Path.Combine(configDir, "netstandard2.0", depsName);
+
+            if (!fileSystem.FileExists(depsSourcePath))
+                throw new FileNotFoundException($"Could not find '{depsName}' at '{depsSourcePath}'", depsSourcePath);
+
+            var depsDestPath = Path.Combine(coreclr, depsName);
+
+            fileSystem.CopyFile(depsSourcePath, depsDestPath);
 
             //The coreclr and fullclr files were created under this folder. Everything that didn't need moving into the fullclr
             //folder (e.g. *.cmd files, etc) is still in the root
