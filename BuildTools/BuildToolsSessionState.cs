@@ -56,6 +56,8 @@ namespace BuildTools
         {
             var serviceCollection = new ServiceCollection
             {
+                typeof(NewBuildEnvironmentService),
+
                 typeof(EnvironmentService),
                 { typeof(IFileSystemProvider), typeof(FileSystemProvider) },
                 { typeof(IProjectConfigProviderFactory), typeof(ProjectConfigProviderFactory) },

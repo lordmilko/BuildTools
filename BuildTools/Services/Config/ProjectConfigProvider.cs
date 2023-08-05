@@ -10,7 +10,7 @@ namespace BuildTools
     {
         private IFileSystemProvider fileSystem;
 
-        private readonly string[] srcFolders =
+        internal static readonly string[] SrcFolders =
         {
             "src"
         };
@@ -42,7 +42,7 @@ namespace BuildTools
             this.fileSystem = fileSystem;
 
             Config = config;
-            SolutionRoot = CalculateSolutionRoot(buildRoot);
+            SolutionRoot = CalculateSolutionRoot(buildRoot, Config.SourceFolder, fileSystem);
             baseSolutionName = GetBaseSolutionName();
 
             if (config.SourceFolder != null)
@@ -51,13 +51,13 @@ namespace BuildTools
                 SourceRoot = CalculateSourceRoot();
         }
 
-        private string CalculateSolutionRoot(string buildRoot)
+        internal static string CalculateSolutionRoot(string buildRoot, string sourceFolder, IFileSystemProvider fileSystem)
         {
             var subDirs = new List<string>();
-            subDirs.AddRange(srcFolders);
+            subDirs.AddRange(SrcFolders);
 
-            if (!string.IsNullOrWhiteSpace(Config.SourceFolder))
-                subDirs.Add(Config.SourceFolder);
+            if (!string.IsNullOrWhiteSpace(sourceFolder))
+                subDirs.Add(sourceFolder);
 
             while (buildRoot != null)
             {
@@ -96,7 +96,7 @@ namespace BuildTools
             {
                 //Don't know what the source root is, so try guess
 
-                foreach (var dir in srcFolders)
+                foreach (var dir in SrcFolders)
                 {
                     var path = Path.Combine(SolutionRoot, dir);
 

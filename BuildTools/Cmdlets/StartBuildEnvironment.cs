@@ -24,6 +24,8 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = true, ParameterSetName = ParameterSet.CI)]
         public SwitchParameter CI { get; set; }
 
+        public SwitchParameter Quiet { get; set; }
+
         /// <summary>
         /// Indicates that the alternate CI environment that would not normally be loaded should be used.
         /// </summary>
@@ -42,12 +44,15 @@ namespace BuildTools.Cmdlets
 
             var name = configProvider.Config.Name;
 
+            IPowerShellModule module = null;
+
             //Create and import a dynamic module containing the dynamic cmdlets
             var powerShell = GetService<IPowerShellService>();
-            var module = powerShell.RegisterModule($"{name}.Build", dynamicAssemblyBuilder.CmdletTypes);
 
             if (CI)
                 RegisterCI(powerShell, name);
+            else
+                module = powerShell.RegisterModule($"{name}.Build", dynamicAssemblyBuilder.CmdletTypes);
 
             //Now finalize the build environment
             FinalizeEnvironment(
@@ -79,14 +84,20 @@ namespace BuildTools.Cmdlets
 
             try
             {
-                powerShell.InitializePrompt(configProvider.Config);
+                if (!CI)
+                {
+                    var helpService = envProvider.GetService<IHelpService>();
+                    helpService.RegisterHelp(module);
+                }
 
-                var helpService = envProvider.GetService<IHelpService>();
-                helpService.RegisterHelp(module);
+                if (!Quiet && !CI)
+                {
+                    powerShell.InitializePrompt(configProvider.Config);
 
-                //And then display the welcome banner listing the key cmdlets that are available
-                var bannerService = envProvider.GetService<BannerService>();
-                bannerService.DisplayBanner();
+                    //And then display the welcome banner listing the key cmdlets that are available
+                    var bannerService = envProvider.GetService<BannerService>();
+                    bannerService.DisplayBanner();
+                }
             }
             finally
             {
