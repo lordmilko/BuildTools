@@ -12,6 +12,8 @@
         public const string BuildFull = "BuildFullSet";
 
         public const string Appveyor = "AppveyorSet";
-        public const string Travis = "TravisSet";
+        public const string GenericCI = "GenericCISet";
+
+        public const string CI = "CISet";
     }
 }

@@ -5,6 +5,7 @@ namespace BuildTools.PowerShell
 {
     class PesterResult
     {
+        public int FailedCount { get; }
         public int PassedCount { get; }
         public int PendingCount { get; }
         public int SkippedCount { get; }
@@ -13,6 +14,7 @@ namespace BuildTools.PowerShell
 
         public PesterResult(PSObject pso)
         {
+            FailedCount = (int)pso.Properties[nameof(FailedCount)].Value;
             PassedCount = (int) pso.Properties[nameof(PassedCount)].Value;
             PendingCount = (int) pso.Properties[nameof(PendingCount)].Value;
             SkippedCount = (int) pso.Properties[nameof(SkippedCount)].Value;

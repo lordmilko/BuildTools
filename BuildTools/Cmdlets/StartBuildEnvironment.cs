@@ -3,6 +3,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
 using BuildTools.Cmdlets.Appveyor;
+using BuildTools.Cmdlets.CI;
 using BuildTools.Dynamic;
 using BuildTools.PowerShell;
 
@@ -20,8 +21,14 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false, Position = 1)]
         public string File { get; set; }
 
-        [Parameter(Mandatory = false)]
-        public SwitchParameter Appveyor { get; set; }
+        [Parameter(Mandatory = true, ParameterSetName = ParameterSet.CI)]
+        public SwitchParameter CI { get; set; }
+
+        /// <summary>
+        /// Indicates that the alternate CI environment that would not normally be loaded should be used.
+        /// </summary>
+        [Parameter(Mandatory = false, ParameterSetName = ParameterSet.CI)]
+        public SwitchParameter Alternate { get; set; }
 
         protected override void ProcessRecordEx()
         {
@@ -39,8 +46,8 @@ namespace BuildTools.Cmdlets
             var powerShell = GetService<IPowerShellService>();
             var module = powerShell.RegisterModule($"{name}.Build", dynamicAssemblyBuilder.CmdletTypes);
 
-            if (Appveyor)
-                RegisterCIModule<AppveyorCmdlet>(powerShell, name, "Appveyor");
+            if (CI)
+                RegisterCI(powerShell, name);
 
             //Now finalize the build environment
             FinalizeEnvironment(
@@ -57,7 +64,7 @@ namespace BuildTools.Cmdlets
             IProjectConfigProvider configProvider,
             IPowerShellModule module)
         {
-            var envProvider = (ServiceProvider)BuildToolsSessionState.ServiceProvider(environmentId);
+            var envProvider = (ServiceProvider) BuildToolsSessionState.ServiceProvider(environmentId);
 
             //Register the project's configuration provider so that it is accessible when its custom cmdlets execute
             envProvider.AddSingleton(configProvider);
@@ -85,6 +92,21 @@ namespace BuildTools.Cmdlets
             {
                 powerShell.Pop();
             }
+        }
+
+        private void RegisterCI(IPowerShellService powerShell, string name)
+        {
+            var environmentService = GetService<EnvironmentService>();
+
+            var appveyor = environmentService.IsCI ? environmentService.IsAppveyor : powerShell.IsWindows;
+
+            if (Alternate)
+                appveyor = !appveyor;
+
+            if (appveyor)
+                RegisterCIModule<AppveyorCmdlet>(powerShell, name, "Appveyor");
+            else
+                RegisterCIModule<GenericCICmdlet>(powerShell, name, "CI");
         }
 
         private void RegisterCIModule<T>(IPowerShellService powerShell, string name, string suffix)

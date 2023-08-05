@@ -23,8 +23,8 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false, ParameterSetName = ParameterSet.Appveyor)]
         public SwitchParameter Appveyor { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = ParameterSet.Travis)]
-        public SwitchParameter Travis { get; set; }
+        [Parameter(Mandatory = true, ParameterSetName = ParameterSet.GenericCI)]
+        public SwitchParameter Generic { get; set; }
 
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = ParameterSet.Appveyor)]
         public AppveyorTask[] Task { get; set; }
@@ -32,7 +32,7 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false)]
         public BuildConfiguration Configuration { get; set; } = BuildConfiguration.Debug;
 
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
+        public static void CreateHelp(HelpConfig help, ProjectConfig project)
         {
             help.Synopsis = $"Simulates building {project.Name} under a Continuous Integration environment";
 
@@ -41,7 +41,7 @@ namespace BuildTools.Cmdlets
             help.Parameters = new[]
             {
                 new HelpParameter(nameof(Appveyor), "Specifies to simulate Appveyor CI"),
-                new HelpParameter(nameof(Travis), "Specifies to simulate Travis CI"),
+                new HelpParameter(nameof(Generic), "Specifies to simulate Generic CI"),
                 new HelpParameter(nameof(Task), "CI task to execute. If no value is specified, all CI tasks will be executed."),
                 new ConditionalHelpParameter(NeedLegacyParameter, LegacyParameterName, "Specifies whether to use .NET Core CLI or legacy .NET infrastructure when simulating CI tasks"),
             };
@@ -49,7 +49,7 @@ namespace BuildTools.Cmdlets
             help.Examples = new[]
             {
                 new HelpExample(help.Command, "Simulate Appveyor CI"),
-                new HelpExample($"{help.Command} -Travis", "Simulate Travis CI"),
+                new HelpExample($"{help.Command} -Generic", "Simulate Generic CI"),
                 new HelpExample($"{help.Command} -Task Test", "Simulate Appveyor CI tests")
             };
         }
@@ -64,6 +64,10 @@ namespace BuildTools.Cmdlets
             {
                 case ParameterSet.Appveyor:
                     ProcessAppveyor();
+                    break;
+
+                case ParameterSet.GenericCI:
+                    ProcessGenericCI();
                     break;
 
                 default:
@@ -102,6 +106,13 @@ namespace BuildTools.Cmdlets
                     }
                 }, Configuration);
             }
+        }
+
+        private void ProcessGenericCI()
+        {
+            var simulateCIService = GetService<SimulateCIService>();
+
+            simulateCIService.Execute(Configuration);
         }
 
         public string[] GetLegacyParameterSets() => null;

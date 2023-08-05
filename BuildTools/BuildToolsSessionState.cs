@@ -56,9 +56,11 @@ namespace BuildTools
         {
             var serviceCollection = new ServiceCollection
             {
+                typeof(EnvironmentService),
                 { typeof(IFileSystemProvider), typeof(FileSystemProvider) },
                 { typeof(IProjectConfigProviderFactory), typeof(ProjectConfigProviderFactory) },
                 { typeof(IPowerShellService), typeof(PowerShellService) },
+                { typeof(IEnvironmentVariableProvider), typeof(EnvironmentVariableProvider) }
             };
 
             var serviceProvider = serviceCollection.Build();
@@ -110,6 +112,15 @@ namespace BuildTools
                 typeof(AppveyorCSharpPackageProvider),
                 typeof(AppveyorPowerShellPackageProvider),
                 { typeof(IAppveyorClient), typeof(AppveyorClient) },
+
+                #endregion
+                #region CI
+
+                typeof(ClearCIBuildService),
+                typeof(InvokeCIInstallService),
+                typeof(InvokeCIScriptService),
+                typeof(InvokeCIBuildService),
+                typeof(InvokeCITestService),
 
                 #endregion
 
