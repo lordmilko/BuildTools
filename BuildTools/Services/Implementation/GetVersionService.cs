@@ -62,7 +62,7 @@ namespace BuildTools
             this.processService = processService;
         }
 
-        public VersionTable GetVersion(bool isLegacy)
+        public virtual VersionTable GetVersion(bool isLegacy)
         {
             string assembly;
             string file;

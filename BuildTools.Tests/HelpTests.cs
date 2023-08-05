@@ -74,6 +74,7 @@ namespace BuildTools.Tests
     SolutionName = '{methodName}.sln'
     Copyright = 'foo, 2023'
     ExcludedCommands = 'GetVersion','SetVersion','UpdateVersion','NewPackage'
+    CoverageThreshold = 10
 }}
 ");
 

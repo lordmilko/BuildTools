@@ -199,7 +199,7 @@ namespace BuildTools
                         if (IsMissingValue(value))
                         {
                             if (config.ExcludedCommands != null && !config.ExcludedCommands.Contains(rw.CommandKind))
-                                throw new InvalidOperationException($"Property '{prop.Name}' is required when feature {rw.CommandKind} is used however no value was specified");
+                                throw new InvalidOperationException($"Property '{prop.Name}' is required when feature '{rw.CommandKind}' is used however no value was specified");
                         }
                     }
                     else

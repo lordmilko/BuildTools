@@ -24,9 +24,28 @@ namespace BuildTools
         public bool IsAppveyor => !string.IsNullOrEmpty(Get(Env.Appveyor));
         public bool IsCI => !string.IsNullOrEmpty(Get(Env.CI));
 
+        public string AppveyorAccountName => Get(Env.AppveyorAccountName);
+
+        public string AppveyorAPIToken => Get(Env.AppveyorAPIToken);
+
         public string AppveyorBuildFolder => Get(Env.AppveyorBuildFolder);
 
+        public int AppveyorBuildNumber
+        {
+            get
+            {
+                var build = Get(Env.AppveyorBuildNumber);
+
+                if (string.IsNullOrEmpty(build))
+                    return -1;
+
+                return Convert.ToInt32(build);
+            }
+        }
+
         public string AppveyorBuildVersion => Get(Env.AppveyorBuildVersion);
+
+        public string AppveyorProjectSlug => Get(Env.AppveyorProjectSlug);
 
         public string Configuration => Get(Env.Configuration);
 

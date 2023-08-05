@@ -24,6 +24,7 @@
   <ItemGroup Condition="'$(FrameworkType)' == 'Full'">
     <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" PrivateAssets="all" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" PrivateAssets="all" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(FrameworkType)' != 'Full'">
