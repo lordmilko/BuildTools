@@ -40,15 +40,15 @@ namespace BuildTools
             this.logger = logger;
         }
 
-        public FileInfo[] Execute(PackageType[] packageTypes, BuildConfiguration buildConfiguration, bool isLegacy)
+        public FileInfo[] Execute(PackageType[] packageTypes, BuildConfiguration configuration, bool isLegacy)
         {
-            if (!powerShell.IsWindows && buildConfiguration == BuildConfiguration.Release)
+            if (!powerShell.IsWindows && configuration == BuildConfiguration.Release)
                 throw new InvalidOperationException("Release packages can only be created on Windows.");
 
             var results = new List<FileInfo>();
 
             var config = new PackageConfig(
-                buildConfiguration,
+                configuration,
                 isLegacy,
                 configProvider.Config.PowerShellMultiTargeted,
                 packageTypes

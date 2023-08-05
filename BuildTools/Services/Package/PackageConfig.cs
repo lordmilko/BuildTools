@@ -16,9 +16,9 @@
 
         public PackageTarget Target => new PackageTarget(Types);
 
-        public PackageConfig(BuildConfiguration buildConfiguration, bool isLegacy, bool powerShellMultiTargeted, params PackageType[] types)
+        public PackageConfig(BuildConfiguration configuration, bool isLegacy, bool powerShellMultiTargeted, params PackageType[] types)
         {
-            Configuration = buildConfiguration;
+            Configuration = configuration;
             IsLegacy = isLegacy;
             IsMultiTargeting = IsRelease && !isLegacy && powerShellMultiTargeted;
             Types = types;

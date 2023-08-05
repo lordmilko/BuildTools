@@ -47,6 +47,10 @@ namespace BuildTools
 
         public string AppveyorProjectSlug => Get(Env.AppveyorProjectSlug);
 
+        public string AppveyorRepoCommitMessage => Get(Env.AppveyorRepoCommitMessage);
+
+        public string AppveyorRepoCommitMessageExtended => Get(Env.AppveyorRepoCommitMessageExtended);
+
         public string Configuration => Get(Env.Configuration);
 
         public string Path

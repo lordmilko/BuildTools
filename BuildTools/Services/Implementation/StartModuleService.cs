@@ -25,9 +25,9 @@ namespace BuildTools
         }
 
 
-        public IPowerShellModule Execute(BuildConfiguration buildConfiguration, bool isLegacy, string targetFramework)
+        public IPowerShellModule Execute(BuildConfiguration configuration, bool isLegacy, string targetFramework)
         {
-            var path = GetModulePath(buildConfiguration, isLegacy, targetFramework);
+            var path = GetModulePath(configuration, isLegacy, targetFramework);
 
             if (fileSystem.DirectoryExists(path))
             {
@@ -74,7 +74,7 @@ namespace BuildTools
             }
             else
             {
-                throw new InvalidOperationException($"Cannot start {configProvider.Config.Name}: solution has not been compiled for '{buildConfiguration}' build. Path '{path}' does not exist.");
+                throw new InvalidOperationException($"Cannot start {configProvider.Config.Name}: solution has not been compiled for '{configuration}' build. Path '{path}' does not exist.");
             }
         }
 
@@ -92,13 +92,13 @@ namespace BuildTools
             return "pwsh";
         }
 
-        private string GetModulePath(BuildConfiguration buildConfiguration, bool isLegacy, string targetFramework)
+        private string GetModulePath(BuildConfiguration configuration, bool isLegacy, string targetFramework)
         {
             string targetFolder;
 
             if (!isLegacy && !string.IsNullOrWhiteSpace(targetFramework))
             {
-                var configDir = configProvider.GetPowerShellConfigurationDirectory(buildConfiguration);
+                var configDir = configProvider.GetPowerShellConfigurationDirectory(configuration);
 
                 targetFolder = Path.Combine(configDir, targetFramework);
 
@@ -123,7 +123,7 @@ namespace BuildTools
                     targetFolder = moduleDir;
             }
             else
-                targetFolder = configProvider.GetPowerShellOutputDirectory(buildConfiguration, isLegacy);
+                targetFolder = configProvider.GetPowerShellOutputDirectory(configuration, isLegacy);
 
             return targetFolder;
         }

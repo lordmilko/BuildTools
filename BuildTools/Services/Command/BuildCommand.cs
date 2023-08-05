@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
 
@@ -20,9 +21,10 @@ namespace BuildTools
         {
             Type = type;
 
-            var attrib = type.GetCustomAttribute<CmdletAttribute>();
+            var cmdletAttrib = type.GetCustomAttribute<CmdletAttribute>();
+            var aliasAttrib = type.GetCustomAttribute<AliasAttribute>();
 
-            if (attrib == null)
+            if (cmdletAttrib == null)
                 throw new InvalidOperationException($"Cmdlet '{type.Name}' is missing a '{nameof(CmdletAttribute)}'.");
 
             var buildAttrib = type.GetCustomAttribute<BuildCommandAttribute>();
@@ -30,7 +32,16 @@ namespace BuildTools
             if (buildAttrib == null)
                 throw new InvalidOperationException($"Cmdlet '{type.Name}' is missing a '{nameof(BuildCommandAttribute)}'.");
 
-            Name = $"{attrib.VerbName}-{attrib.NounName}";
+            Name = $"{cmdletAttrib.VerbName}-{cmdletAttrib.NounName}";
+
+            if (aliasAttrib != null)
+            {
+                var alternateName = aliasAttrib.AliasNames.FirstOrDefault(v => v.Contains('-'));
+
+                if (alternateName != null)
+                    Name = alternateName;
+            }
+
             Type = type;
             Kind = buildAttrib.Kind;
             Category = buildAttrib.Category;

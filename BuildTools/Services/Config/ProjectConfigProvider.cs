@@ -257,13 +257,13 @@ namespace BuildTools
             throw new InvalidOperationException($"Multiple {displayKind} test projects were found: {string.Join(", ", candidates.Select(v => v.Name))}");
         }
 
-        public string GetTestDll(bool integration, BuildConfiguration buildConfiguration, bool isLegacy) =>
-            integration ? GetIntegrationTestDll(buildConfiguration, isLegacy) : GetUnitTestDll(buildConfiguration, isLegacy);
+        public string GetTestDll(bool integration, BuildConfiguration configuration, bool isLegacy) =>
+            integration ? GetIntegrationTestDll(configuration, isLegacy) : GetUnitTestDll(configuration, isLegacy);
 
-        public string GetUnitTestDll(BuildConfiguration buildConfiguration, bool isLegacy) => GetTestDllInternal(ProjectKind.UnitTest, "unit", buildConfiguration, isLegacy);
-        public string GetIntegrationTestDll(BuildConfiguration buildConfiguration, bool isLegacy) => GetTestDllInternal(ProjectKind.IntegrationTest, "integration", buildConfiguration, isLegacy);
+        public string GetUnitTestDll(BuildConfiguration configuration, bool isLegacy) => GetTestDllInternal(ProjectKind.UnitTest, "unit", configuration, isLegacy);
+        public string GetIntegrationTestDll(BuildConfiguration configuration, bool isLegacy) => GetTestDllInternal(ProjectKind.IntegrationTest, "integration", configuration, isLegacy);
 
-        private string GetTestDllInternal(ProjectKind kind, string displayKind, BuildConfiguration buildConfiguration, bool isLegacy)
+        private string GetTestDllInternal(ProjectKind kind, string displayKind, BuildConfiguration configuration, bool isLegacy)
         {
             EnsureProjects();
 
@@ -274,7 +274,7 @@ namespace BuildTools
 
             if (candidates.Length == 1)
             {
-                var output = GetProjectConfigurationDirectory(candidates[0], buildConfiguration);
+                var output = GetProjectConfigurationDirectory(candidates[0], configuration);
 
                 var dll = Path.Combine(output, $"{candidates[0].NormalizedName}.dll");
 
@@ -340,7 +340,7 @@ namespace BuildTools
         }
 
         /// <inheritdoc />
-        public string GetPowerShellConfigurationDirectory(BuildConfiguration buildConfiguration)
+        public string GetPowerShellConfigurationDirectory(BuildConfiguration configuration)
         {
             var powerShellProjectName = GetPowerShellProjectName();
 
@@ -354,18 +354,18 @@ namespace BuildTools
             if (!fileSystem.DirectoryExists(binDir))
                 throw new DirectoryNotFoundException($"Could not find PowerShell Project bin directory '{binDir}'");
 
-            var configDir = Path.Combine(binDir, buildConfiguration.ToString());
+            var configDir = Path.Combine(binDir, configuration.ToString());
 
             if (!fileSystem.DirectoryExists(configDir))
-                throw new DirectoryNotFoundException($"Could not find PowerShell Project {buildConfiguration} directory '{configDir}'");
+                throw new DirectoryNotFoundException($"Could not find PowerShell Project {configuration} directory '{configDir}'");
 
             return configDir;
         }
 
         /// <inheritdoc />
-        public string GetPowerShellOutputDirectory(BuildConfiguration buildConfiguration, bool isLegacy)
+        public string GetPowerShellOutputDirectory(BuildConfiguration configuration, bool isLegacy)
         {
-            var configDir = GetPowerShellConfigurationDirectory(buildConfiguration);
+            var configDir = GetPowerShellConfigurationDirectory(configuration);
 
             string baseDir;
 
@@ -399,7 +399,7 @@ namespace BuildTools
                 }
 
                 if (candidates.Length == 0)
-                    throw new InvalidOperationException($"Couldn't find any Core {buildConfiguration} build candidates for {Config.PowerShellProjectName}");
+                    throw new InvalidOperationException($"Couldn't find any Core {configuration} build candidates for {Config.PowerShellProjectName}");
 
                 baseDir = candidates.First();
             }
@@ -511,7 +511,7 @@ namespace BuildTools
             return name;
         }
 
-        public string GetProjectConfigurationDirectory(BuildProject project, BuildConfiguration buildConfiguration)
+        public string GetProjectConfigurationDirectory(BuildProject project, BuildConfiguration configuration)
         {
             var projectDir = project.DirectoryName;
 
@@ -523,10 +523,10 @@ namespace BuildTools
             if (!fileSystem.DirectoryExists(binDir))
                 throw new DirectoryNotFoundException($"Could not find project bin directory '{binDir}'");
 
-            var configDir = Path.Combine(binDir, buildConfiguration.ToString());
+            var configDir = Path.Combine(binDir, configuration.ToString());
 
             if (!fileSystem.DirectoryExists(configDir))
-                throw new DirectoryNotFoundException($"Could not find project {buildConfiguration} directory '{configDir}'");
+                throw new DirectoryNotFoundException($"Could not find project {configuration} directory '{configDir}'");
 
             return configDir;
         }

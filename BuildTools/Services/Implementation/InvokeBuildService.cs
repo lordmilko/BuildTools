@@ -106,7 +106,7 @@ namespace BuildTools
 
             argList.AddRange(buildConfig.ArgumentList);
 
-            logger.LogVerbose($"Executing command '$msbuild {argList}'");
+            logger.LogVerbose($"Executing command '{msbuild} {argList}'");
 
             processService.Execute(msbuild, argList, writeHost: true);
         }

@@ -9,6 +9,8 @@
         public const string AppveyorBuildNumber = "APPVEYOR_BUILD_NUMBER";
         public const string AppveyorBuildVersion = "APPVEYOR_BUILD_VERSION";
         public const string AppveyorProjectSlug = "APPVEYOR_PROJECT_SLUG";
+        public const string AppveyorRepoCommitMessage = "APPVEYOR_REPO_COMMIT_MESSAGE";
+        public const string AppveyorRepoCommitMessageExtended = "APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED";
 
         public const string TravisBuildDir = "TRAVIS_BUILD_DIR";
 

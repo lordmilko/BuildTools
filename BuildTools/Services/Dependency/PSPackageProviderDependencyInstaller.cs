@@ -34,7 +34,7 @@ namespace BuildTools
             if (provider == null || (minimumVersion != null && minimumVersion > provider.Version))
             {
                 if (log)
-                    logger.LogInformation("\tInstalling '$PackageName' package provider");
+                    logger.LogInformation($"\tInstalling '{name}' package provider");
 
                 var result = powerShell.InstallPackageProvider(name, minimumVersion);
 
@@ -43,7 +43,7 @@ namespace BuildTools
             else
             {
                 if (log && logSkipped)
-                    logger.LogInformation("\tSkipping installing '$PackageName' package provider as it is already installed");
+                    logger.LogInformation($"\tSkipping installing '{name}' package provider as it is already installed");
 
                 return new DependencyResult(dependency, null, provider.Version, DependencyAction.Skipped);
             }

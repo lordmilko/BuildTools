@@ -25,9 +25,9 @@ namespace BuildTools
         BuildProject GetUnitTestProject(bool isLegacy);
         BuildProject GetIntegrationTestProject(bool isLegacy);
 
-        string GetTestDll(bool integration, BuildConfiguration buildConfiguration, bool isLegacy);
-        string GetUnitTestDll(BuildConfiguration buildConfiguration, bool isLegacy);
-        string GetIntegrationTestDll(BuildConfiguration buildConfiguration, bool isLegacy);
+        string GetTestDll(bool integration, BuildConfiguration configuration, bool isLegacy);
+        string GetUnitTestDll(BuildConfiguration configuration, bool isLegacy);
+        string GetIntegrationTestDll(BuildConfiguration configuration, bool isLegacy);
 
         /// <summary>
         /// Gets the directory in a test project containing PowerShell tests.
@@ -38,20 +38,20 @@ namespace BuildTools
         /// <summary>
         /// Gets the Debug or Release directory of the PowerShell project.
         /// </summary>
-        /// <param name="buildConfiguration">The build configuration to get the output directory of.</param>
-        /// <exception cref="DirectoryNotFoundException">The specified <paramref name="buildConfiguration"/> has not been built.</exception>
-        /// <returns>The path to the <paramref name="buildConfiguration"/> build directory.</returns>
-        string GetPowerShellConfigurationDirectory(BuildConfiguration buildConfiguration);
+        /// <param name="configuration">The build configuration to get the output directory of.</param>
+        /// <exception cref="DirectoryNotFoundException">The specified <paramref name="configuration"/> has not been built.</exception>
+        /// <returns>The path to the <paramref name="configuration"/> build directory.</returns>
+        string GetPowerShellConfigurationDirectory(BuildConfiguration configuration);
 
         /// <summary>
         /// Gets the path to the directory containing the built PowerShell module. This may be the raw Debug/Release directory,
         /// or may be a subfolder underneath this directory containing the PowerShell module.
         /// </summary>
-        /// <param name="buildConfiguration">The build configuration to get the output directory of.</param>
+        /// <param name="configuration">The build configuration to get the output directory of.</param>
         /// <param name="isLegacy">Whether to get the output directory for legacy builds.</param>
-        /// <exception cref="DirectoryNotFoundException">The specified <paramref name="buildConfiguration"/> has not been built.</exception>
+        /// <exception cref="DirectoryNotFoundException">The specified <paramref name="configuration"/> has not been built.</exception>
         /// <returns>The path to the directory containing the built PowerShell module.</returns>
-        string GetPowerShellOutputDirectory(BuildConfiguration buildConfiguration, bool isLegacy);
+        string GetPowerShellOutputDirectory(BuildConfiguration configuration, bool isLegacy);
 
         /// <summary>
         /// Gets the name of the PowerShell project.
@@ -70,6 +70,6 @@ namespace BuildTools
 
         string GetVersionPropsPath(bool relativePath = false);
 
-        string GetProjectConfigurationDirectory(BuildProject project, BuildConfiguration buildConfiguration);
+        string GetProjectConfigurationDirectory(BuildProject project, BuildConfiguration configuration);
     }
 }

@@ -14,6 +14,7 @@
         LaunchModule,
         Log,
         NewPackage,
+        SimulateCI,
         OpenWiki,
         SetVersion,
         TestResult,

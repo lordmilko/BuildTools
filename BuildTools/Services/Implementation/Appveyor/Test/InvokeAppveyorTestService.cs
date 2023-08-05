@@ -3,7 +3,7 @@ using BuildTools.PowerShell;
 
 namespace BuildTools
 {
-    class InvokeAppveyorTestService
+    public class InvokeAppveyorTestService : IAppveyorService
     {
         private readonly InvokeTestService invokeTestService;
         private readonly IProjectConfigProvider configProvider;
@@ -12,7 +12,7 @@ namespace BuildTools
         private readonly IProcessService processService;
         private readonly Logger logger;
 
-        public InvokeAppveyorTestService(InvokeTestService invokeTestService, IProjectConfigProvider configProvider, EnvironmentService environmentService, IPowerShellService powerShell, IProcessService processService, Logger logger)
+        internal InvokeAppveyorTestService(InvokeTestService invokeTestService, IProjectConfigProvider configProvider, EnvironmentService environmentService, IPowerShellService powerShell, IProcessService processService, Logger logger)
         {
             this.invokeTestService = invokeTestService;
             this.configProvider = configProvider;
@@ -22,12 +22,12 @@ namespace BuildTools
             this.logger = logger;
         }
 
-        public void Execute(BuildConfiguration buildConfiguration, bool isLegacy)
+        public void Execute(BuildConfiguration configuration, bool isLegacy)
         {
             logger.LogHeader("Executing tests");
 
             ProcessPowerShell(isLegacy);
-            ProcessCSharp(buildConfiguration, isLegacy);
+            ProcessCSharp(configuration, isLegacy);
         }
 
         private void ProcessPowerShell(bool isLegacy)
@@ -46,28 +46,31 @@ namespace BuildTools
                 var project = configProvider.GetUnitTestProject(true);
                 var result = invokeTestService.InvokeCIPowerShellTest(project, default);
 
-                foreach (var test in result.TestResult)
+                if (environmentService.IsAppveyor)
                 {
-                    var args = new[]
+                    foreach (var test in result.TestResult)
                     {
-                        $"-Name {GetPesterTestName(test)}",
-                        "-Framework = 'Pester'",
-                        $"-Filename = '{test.Describe}.Tests.ps1'",
-                        $"-Outcome = {test.Result}",
-                        $"-ErrorMessage = '{test.FailureMessage}'",
-                        $"-Duration = {test.Time.TotalMilliseconds}"
-                    };
+                        var args = new[]
+                        {
+                            $"-Name {GetPesterTestName(test)}",
+                            "-Framework = 'Pester'",
+                            $"-Filename = '{test.Describe}.Tests.ps1'",
+                            $"-Outcome = {test.Result}",
+                            $"-ErrorMessage = '{test.FailureMessage}'",
+                            $"-Duration = {test.Time.TotalMilliseconds}"
+                        };
 
-                    powerShell.InvokeWithArgs("Add-AppveyorTest", args);
+                        powerShell.InvokeWithArgs("Add-AppveyorTest", args);
+                    }
                 }
             }
         }
 
-        private void ProcessCSharp(BuildConfiguration buildConfiguration, bool isLegacy)
+        private void ProcessCSharp(BuildConfiguration configuration, bool isLegacy)
         {
             var config = new InvokeTestConfig
             {
-                Configuration = buildConfiguration
+                Configuration = configuration
             };
 
             if (isLegacy)

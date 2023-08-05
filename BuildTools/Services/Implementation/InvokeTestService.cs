@@ -95,7 +95,7 @@ namespace BuildTools
             processService.Execute(vstest, vsTestArgs, writeHost: true);
         }
 
-        private void InvokeCICSharpTestCore(string csproj, BuildConfiguration buildConfiguration, ArgList additionalArgs)
+        private void InvokeCICSharpTestCore(string csproj, BuildConfiguration configuration, ArgList additionalArgs)
         {
             var dotnetTestArgs = new ArgList
             {
@@ -106,7 +106,7 @@ namespace BuildTools
                 "--no-build",
                 "--verbosity:n",
                 "-c",
-                buildConfiguration,
+                configuration,
 
                 additionalArgs
             };

@@ -11,7 +11,7 @@ namespace BuildTools
     {
         public static readonly PackageFilesHashtableConverter Instance = new PackageFilesHashtableConverter();
 
-        private static string[] packageContextProps = typeof(PackageFileContext).GetProperties().Select(v => v.Name).ToArray();
+        private static readonly string[] packageContextProps = typeof(PackageFileContext).GetProperties().Select(v => v.Name).ToArray();
 
         public object Convert(Hashtable value)
         {

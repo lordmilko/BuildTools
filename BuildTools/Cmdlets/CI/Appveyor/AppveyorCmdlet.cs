@@ -4,11 +4,21 @@ using System.Text;
 
 namespace BuildTools.Cmdlets.Appveyor
 {
+    public abstract class AppveyorCmdlet<TService> : AppveyorCmdlet where TService : IAppveyorService
+    {
+        protected sealed override void ProcessRecordEx()
+        {
+            var service = (IAppveyorService)GetService<TService>();
+
+            service.Execute(Configuration, IsLegacyMode);
+        }
+    }
+
     public abstract class AppveyorCmdlet : BuildCmdlet<AppveyorEnvironment>
     {
         protected override bool IsLegacyMode => BuildToolsSessionState.AppveyorBuildCore ?? base.IsLegacyMode;
 
-        protected BuildConfiguration Configuration
+        public virtual BuildConfiguration Configuration
         {
             get
             {
@@ -19,6 +29,7 @@ namespace BuildTools.Cmdlets.Appveyor
 
                 return (BuildConfiguration) Enum.Parse(typeof(BuildConfiguration), service.Configuration, true);
             }
+            set => throw new NotSupportedException();
         }
 
         private Type environment;
@@ -30,20 +41,6 @@ namespace BuildTools.Cmdlets.Appveyor
         protected override void BeginProcessingEx()
         {
             environment = GetEnvironment();
-        }
-
-        protected void LogHeader(string message)
-        {
-            var configProvider = GetService<IProjectConfigProvider>();
-
-            var builder = new StringBuilder();
-
-            var supportsLegacy = configProvider.GetProjects(true).Any();
-
-            builder.Append(message);
-
-            if (supportsLegacy)
-                builder.AppendFormat(" (Core: {0})", !IsLegacyMode);
         }
 
         protected override T GetService<T>()

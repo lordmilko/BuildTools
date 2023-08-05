@@ -12,10 +12,10 @@
 
         public string DebugTargetFramework { get; }
 
-        public PackageFileContext(BuildConfiguration buildConfiguration, bool isLegacy, bool powerShellMultiTargeted, string debugTargetFramework)
+        public PackageFileContext(BuildConfiguration configuration, bool isLegacy, bool powerShellMultiTargeted, string debugTargetFramework)
         {
-            IsRelease = buildConfiguration == BuildConfiguration.Release;
-            IsDebug = buildConfiguration == BuildConfiguration.Debug;
+            IsRelease = configuration == BuildConfiguration.Release;
+            IsDebug = configuration == BuildConfiguration.Debug;
             IsLegacy = isLegacy;
             IsMultiTargeting = IsRelease && !isLegacy && powerShellMultiTargeted;
             DebugTargetFramework = debugTargetFramework;

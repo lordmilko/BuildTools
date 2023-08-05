@@ -12,11 +12,29 @@ namespace BuildTools.PowerShell
     {
         private Stack<PSCmdlet> cmdletStack = new Stack<PSCmdlet>();
 
+
         private static MethodInfo addExportedCmdletMethod;
+        private static MethodInfo addExportedAliasMethod;
+
+        private static ConstructorInfo aliasInfoCtor;
 
         static PowerShellService()
         {
             addExportedCmdletMethod = typeof(PSModuleInfo).GetInternalMethod("AddExportedCmdlet");
+            addExportedAliasMethod = typeof(PSModuleInfo).GetInternalMethod("AddExportedAlias");
+
+            aliasInfoCtor = typeof(AliasInfo).GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Single(c =>
+            {
+                var parameters = c.GetParameters();
+
+                if (parameters.Length != 3)
+                    return false;
+
+                if (parameters[0].ParameterType != typeof(string) || parameters[1].ParameterType != typeof(string))
+                    return false;
+
+                return true;
+            });
         }
 
         public void Push(PSCmdlet cmdlet)
@@ -153,16 +171,29 @@ namespace BuildTools.PowerShell
             var module = (PSModuleInfo) InvokeAndUnwrap($"New-Module {name} {{}}");
 
             var cmdletInfoModule = typeof(CmdletInfo).GetProperty(nameof(CmdletInfo.Module));
+            var aliasInfoModule = typeof(AliasInfo).GetProperty(nameof(CmdletInfo.Module));
 
             void RegisterCmdlet(Type type)
             {
-                var attrib = type.GetCustomAttribute<CmdletAttribute>();
+                var cmdletAttrib = type.GetCustomAttribute<CmdletAttribute>();
+                var aliasAttrib = type.GetCustomAttribute<AliasAttribute>();
 
-                var cmdletName = $"{attrib.VerbName}-{attrib.NounName}";
+                var cmdletName = $"{cmdletAttrib.VerbName}-{cmdletAttrib.NounName}";
                 var info = new CmdletInfo(cmdletName, type);
 
                 addExportedCmdletMethod.Invoke(module, new object[] { info });
                 cmdletInfoModule.GetSetMethod(true).Invoke(info, new object[] { module });
+
+                if (aliasAttrib != null)
+                {
+                    foreach (var alias in aliasAttrib.AliasNames)
+                    {
+                        var aliasInfo = (AliasInfo)aliasInfoCtor.Invoke(new object[] { alias, cmdletName, null });
+
+                        addExportedAliasMethod.Invoke(module, new object[] { aliasInfo });
+                        aliasInfoModule.GetSetMethod(true).Invoke(aliasInfo, new object[] { module });
+                    }
+                }
             }
 
             foreach (var type in cmdletTypes)

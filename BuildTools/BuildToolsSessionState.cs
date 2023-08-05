@@ -87,12 +87,31 @@ namespace BuildTools
                 typeof(NewPackageService),
                 typeof(StartModuleService),
 
+                #region Appveyor
+
+                typeof(ClearAppveyorBuildService),
+                typeof(InvokeAppveyorInstallService),
+                typeof(GetAppveyorVersionService),
+                typeof(SetAppveyorVersionService),
+
+                typeof(InvokeAppveyorBeforeBuildService),
+                typeof(InvokeAppveyorBuildService),
+                typeof(InvokeAppveyorAfterBuildService),
+
+                typeof(InvokeAppveyorBeforeTestService),
+                typeof(InvokeAppveyorTestService),
+                typeof(InvokeAppveyorAfterTestService),
+
                 typeof(NewAppveyorPackageService),
                 typeof(MeasureAppveyorCoverageService),
+                typeof(SimulateAppveyorService),
 
                 typeof(AppveyorPackageProviderServices),
                 typeof(AppveyorCSharpPackageProvider),
                 typeof(AppveyorPowerShellPackageProvider),
+                { typeof(IAppveyorClient), typeof(AppveyorClient) },
+
+                #endregion
 
                 typeof(DotnetDependencyInstaller),
                 typeof(ChocolateyDependencyInstaller),

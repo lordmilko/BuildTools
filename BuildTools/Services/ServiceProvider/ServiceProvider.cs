@@ -127,7 +127,7 @@ namespace BuildTools
 
         private object ResolveService(Type type, Stack<ServiceDescriptor> resolutionScope)
         {
-            var ctors = type.GetConstructors();
+            var ctors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             if (ctors.Length > 1)
                 throw new InvalidOperationException($"Cannot resolve service '{type.Name}': more than one constructor was found.");

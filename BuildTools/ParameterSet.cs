@@ -10,5 +10,8 @@
         public const string Build = "BuildSet";
         public const string IntegrationFull = "IntegrationFullSet";
         public const string BuildFull = "BuildFullSet";
+
+        public const string Appveyor = "AppveyorSet";
+        public const string Travis = "TravisSet";
     }
 }

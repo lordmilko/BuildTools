@@ -62,20 +62,52 @@ namespace BuildTools.Dynamic
 
             var typeBuilder = DynamicAssembly.Instance.DefineCmdlet(config.CmdletPrefix, genericBaseType);
 
-            //var ctor = typeof(CmdletAttribute).GetConstructors().Single();
-            var cmdletAttrib = genericBaseType.GetCustomAttribute<CmdletAttribute>();
-            var attributeBuilder = CloneAttribute<CmdletAttribute>(
-                genericBaseType,
-                new object[] { cmdletAttrib.VerbName, noun ?? $"{config.CmdletPrefix}{cmdletAttrib.NounName}" }
-            );
-
-            typeBuilder.SetCustomAttribute(attributeBuilder);
+            SetCmdletAttribute(genericBaseType, typeBuilder, noun);
+            SetAliasAttribute(genericBaseType, typeBuilder, noun);
 
             typeBuilder.SetCustomAttribute(CloneAttribute<BuildCommandAttribute>(genericBaseType));
 
             CloneParameters(typeBuilder, genericBaseType);
 
             CmdletTypes.Add(typeBuilder.CreateType());
+        }
+
+        private void SetCmdletAttribute(Type genericBaseType, TypeBuilder typeBuilder, string noun)
+        {
+            var cmdletAttrib = genericBaseType.GetCustomAttribute<CmdletAttribute>();
+
+            var attributeBuilder = CloneAttribute<CmdletAttribute>(
+                genericBaseType,
+                new object[] { cmdletAttrib.VerbName, noun ?? $"{config.CmdletPrefix}{cmdletAttrib.NounName}" }
+            );
+
+            typeBuilder.SetCustomAttribute(attributeBuilder);
+        }
+
+        private void SetAliasAttribute(Type genericBaseType, TypeBuilder typeBuilder, string noun)
+        {
+            var aliasAttrib = genericBaseType.GetCustomAttribute<AliasAttribute>();
+
+            if (aliasAttrib != null)
+            {
+                var attributeBuilder = CloneAttribute<AliasAttribute>(
+                    genericBaseType,
+                    new object[]
+                    {
+                        aliasAttrib.AliasNames.Select(v =>
+                        {
+                            var split = v.Split('-');
+
+                            if (split.Length == 2)
+                                return $"{split[0]}-{config.CmdletPrefix}{noun ?? split[1]}";
+
+                            return v;
+                        }).ToArray()
+                    }
+                );
+
+                typeBuilder.SetCustomAttribute(attributeBuilder);
+            }
         }
 
         private void CloneParameters(TypeBuilder typeBuilder, Type baseType)

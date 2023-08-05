@@ -19,7 +19,7 @@ namespace BuildTools.PowerShell
         internal PackageProvider(PSObject pso)
         {
             Name = (string) pso.Properties["Name"].Value;
-            Version = (Version) pso.Properties["Version"].Value;
+            Version = Version.Parse(pso.Properties["Version"].Value.ToString()); //Could be a "Microsoft.PackageManagement.Internal.Utility.Versions.FourPartVersion instead of a Version
         }
     }
 }

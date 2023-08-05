@@ -10,7 +10,7 @@ namespace BuildTools
         private IFileSystemProvider fileSystem;
         private IProjectConfigProvider configProvider;
         private GetCoverageService getCoverageService;
-        private ProcessService processService;
+        private IProcessService processService;
         private Logger logger;
 
         public MeasureAppveyorCoverageService(
@@ -18,7 +18,7 @@ namespace BuildTools
             IFileSystemProvider fileSystem,
             IProjectConfigProvider configProvider,
             GetCoverageService getCoverageService,
-            ProcessService processService,
+            IProcessService processService,
             Logger logger)
         {
             this.environmentService = environmentService;
@@ -29,13 +29,13 @@ namespace BuildTools
             this.logger = logger;
         }
 
-        public void Execute(BuildConfiguration buildConfiguration, bool isLegacy)
+        public void Execute(BuildConfiguration configuration, bool isLegacy)
         {
             logger.LogHeader("Calculating code coverage");
 
             getCoverageService.GetCoverage(new CoverageConfig
             {
-                Configuration = buildConfiguration
+                Configuration = configuration
             }, isLegacy);
 
             var summaryPath = Path.Combine(Path.GetTempPath(), "report", "Summary.xml");
@@ -69,8 +69,6 @@ namespace BuildTools
                 if (environmentService.IsAppveyor)
                 {
                     logger.LogInformation("\tUploading coverage to codecov");
-
-                    var openCoverXml = Path.Combine(Path.GetTempPath(), "opencover.xml");
                     processService.Execute("cmd", $"/c \"codecov - f \\\"{GetCoverageService.OpenCoverOutput}\\\" 2 > nul\"");
                 }
             }

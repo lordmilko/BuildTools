@@ -131,22 +131,32 @@ namespace BuildTools
 
         private string GetLastAppveyorBuild()
         {
-            var history = client.GetBuildHistory();
+            if (environmentService.IsAppveyor)
+            {
+                var history = client.GetBuildHistory();
 
-            var version = history.FirstOrDefault(v => !v.Version?.StartsWith("Build") == true)?.Version;
+                var version = history.FirstOrDefault(v => !v.Version?.StartsWith("Build") == true)?.Version;
 
-            return version;
+                return version;
+            }
+
+            return null;
         }
 
         private string GetLastAppveyorNuGetVersion()
         {
-            var deployments = client.GetAppveyorDeployments();
+            if (environmentService.IsAppveyor)
+            {
+                var deployments = client.GetAppveyorDeployments();
 
-            var lastNuGet = deployments
-                .OrderByDescending(d => d.Started)
-                .FirstOrDefault(d => d.Environment.Provider == "NuGet");
+                var lastNuGet = deployments
+                    .OrderByDescending(d => d.Started)
+                    .FirstOrDefault(d => d.Environment.Provider == "NuGet");
 
-            return lastNuGet?.Build.Version;
+                return lastNuGet?.Build.Version;
+            }
+
+            return null;
         }
     }
 }
