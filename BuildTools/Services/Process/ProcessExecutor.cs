@@ -55,9 +55,12 @@ namespace BuildTools
 
             var fileName = Path.GetFileNameWithoutExtension(FileName).ToLower();
 
-            if (fileName == "powershell" || fileName == "pwsh")
+            if (!shellExecute)
             {
-                process.StartInfo.EnvironmentVariables.Remove("PSModulePath");
+                if (fileName == "powershell" || fileName == "pwsh")
+                {
+                    process.StartInfo.EnvironmentVariables.Remove("PSModulePath");
+                }
             }
 
             if (!process.Start())

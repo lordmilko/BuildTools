@@ -189,6 +189,16 @@ namespace BuildTools.Tests
             throw new NotImplementedException();
         }
 
+        public void SetWindowTitle(string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Clear()
+        {
+            throw new NotImplementedException();
+        }
+
         public object[] InvokeWithArgs(string cmdlet, params string[] args)
         {
             InvokedCommands.Add(cmdlet);

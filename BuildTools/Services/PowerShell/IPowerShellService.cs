@@ -96,5 +96,9 @@ namespace BuildTools.PowerShell
         object[] InvokeWithArgs(string cmdlet, params string[] args);
 
         void InitializePrompt(ProjectConfig config);
+
+        void SetWindowTitle(string value);
+
+        void Clear();
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using BuildTools.Reflection;
@@ -12,6 +13,50 @@ namespace BuildTools.PowerShell
     {
         private Stack<PSCmdlet> cmdletStack = new Stack<PSCmdlet>();
 
+        public bool IsISE => GetVariable(WellKnownPowerShellVariable.psISE) != null;
+
+        public PSEdition Edition => (PSEdition) Enum.Parse(typeof(PSEdition), (string) GetVariable(WellKnownPowerShellVariable.PSEdition));
+
+        private ProgressRecord progressRecord;
+
+        public bool IsProgressEnabled => progressRecord != null;
+
+        public bool IsWindows
+        {
+            get
+            {
+                if (Edition == PSEdition.Core)
+                    return (bool) GetVariable(WellKnownPowerShellVariable.IsWindows);
+
+                return true;
+            }
+        }
+
+        internal PSCmdlet ActiveCmdlet
+        {
+            get
+            {
+                if (cmdletStack.Count == 0)
+                    throw new InvalidOperationException("Cannot get the active cmdlet: no cmdlets are currently active");
+
+                if (cmdletStack.Count == 1)
+                    return cmdletStack.First();
+
+                foreach (var cmdlet in cmdletStack)
+                {
+                    if (cmdlet.CommandRuntime == null)
+                        continue;
+
+                    var permitted = cmdlet.CommandRuntime.GetInternalProperty("PipelineProcessor").GetInternalField("_permittedToWrite");
+
+                    if (ReferenceEquals(cmdlet, permitted))
+                        return cmdlet;
+                }
+
+                //We tried our best; just go with the first one then and see what happens
+                return cmdletStack.First();
+            }
+        }
 
         private static MethodInfo addExportedCmdletMethod;
         private static MethodInfo addExportedAliasMethod;
@@ -463,7 +508,7 @@ finally
             if (BuildToolsSessionState.HeadlessUI)
                 return;
 
-            ActiveCmdlet.Host.UI.RawUI.WindowTitle = $"{config.Name} Build Environment";
+            SetWindowTitle($"{config.Name} Build Environment");
 
             if (!IsISE)
             {
@@ -475,6 +520,18 @@ function global:Prompt
     return "" ""
 }}");
             }
+        }
+
+        public void SetWindowTitle(string value)
+        {
+            ActiveCmdlet.Host.UI.RawUI.WindowTitle = value;
+        }
+
+        public void Clear()
+        {
+            var ui = ActiveCmdlet.Host.UI.RawUI;
+            ui.CursorPosition = new Coordinates(0, 0);
+            ui.SetBufferContents(new Rectangle(-1, -1, -1, -1), new BufferCell(' ', ui.ForegroundColor, ui.BackgroundColor, BufferCellType.Complete));
         }
 
         private object UnwrapPSObject(object obj)

@@ -80,6 +80,7 @@ namespace BuildTools
 
                 //Cmdlet Services
                 typeof(ClearBuildService),
+                typeof(GetLogService),
                 typeof(GetCoverageService),
                 typeof(GetTestResultService),
                 typeof(GetVersionService),
