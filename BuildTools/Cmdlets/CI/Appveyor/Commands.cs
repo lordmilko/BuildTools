@@ -54,7 +54,7 @@ namespace BuildTools.Cmdlets.Appveyor
     {
     }
 
-    [Alias("Simulate-Appveyor")]
+    [Name("Simulate-Appveyor")]
     [Cmdlet(VerbsLifecycle.Invoke, "SimulateAppveyor")]
     public class SimulateAppveyor : AppveyorCmdlet<SimulateAppveyorService>
     {

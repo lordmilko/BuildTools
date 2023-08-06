@@ -15,7 +15,7 @@ namespace BuildTools.Cmdlets
         Coverage
     }
 
-    [Alias("Simulate-CI")]
+    [Name("Simulate-CI")]
     [Cmdlet(VerbsDiagnostic.Test, "CI", DefaultParameterSetName = ParameterSet.Appveyor)]
     [BuildCommand(CommandKind.SimulateCI, CommandCategory.CI)]
     public abstract class SimulateCI<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider

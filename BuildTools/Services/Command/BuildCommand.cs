@@ -22,7 +22,7 @@ namespace BuildTools
             Type = type;
 
             var cmdletAttrib = type.GetCustomAttribute<CmdletAttribute>();
-            var aliasAttrib = type.GetCustomAttribute<AliasAttribute>();
+            var nameAttrib = type.GetCustomAttribute<NameAttribute>();
 
             if (cmdletAttrib == null)
                 throw new InvalidOperationException($"Cmdlet '{type.Name}' is missing a '{nameof(CmdletAttribute)}'.");
@@ -34,13 +34,8 @@ namespace BuildTools
 
             Name = $"{cmdletAttrib.VerbName}-{cmdletAttrib.NounName}";
 
-            if (aliasAttrib != null)
-            {
-                var alternateName = aliasAttrib.AliasNames.FirstOrDefault(v => v.Contains('-'));
-
-                if (alternateName != null)
-                    Name = alternateName;
-            }
+            if (nameAttrib != null)
+                Name = nameAttrib.Name;
 
             Type = type;
             Kind = buildAttrib.Kind;

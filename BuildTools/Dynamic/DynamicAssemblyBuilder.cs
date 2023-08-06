@@ -63,7 +63,7 @@ namespace BuildTools.Dynamic
             var typeBuilder = DynamicAssembly.Instance.DefineCmdlet(config.CmdletPrefix, genericBaseType);
 
             SetCmdletAttribute(genericBaseType, typeBuilder, noun);
-            SetAliasAttribute(genericBaseType, typeBuilder, noun);
+            SetNameAttribute(genericBaseType, typeBuilder, noun);
 
             typeBuilder.SetCustomAttribute(CloneAttribute<BuildCommandAttribute>(genericBaseType));
 
@@ -84,25 +84,27 @@ namespace BuildTools.Dynamic
             typeBuilder.SetCustomAttribute(attributeBuilder);
         }
 
-        private void SetAliasAttribute(Type genericBaseType, TypeBuilder typeBuilder, string noun)
+        private void SetNameAttribute(Type genericBaseType, TypeBuilder typeBuilder, string noun)
         {
-            var aliasAttrib = genericBaseType.GetCustomAttribute<AliasAttribute>();
+            var attrib = genericBaseType.GetCustomAttribute<NameAttribute>();
 
-            if (aliasAttrib != null)
+            if (attrib != null)
             {
-                var attributeBuilder = CloneAttribute<AliasAttribute>(
+                string GetName(string value)
+                {
+                    var split = value.Split('-');
+
+                    if (split.Length == 2)
+                        return $"{split[0]}-{config.CmdletPrefix}{noun ?? split[1]}";
+
+                    return value;
+                }
+
+                var attributeBuilder = CloneAttribute<NameAttribute>(
                     genericBaseType,
                     new object[]
                     {
-                        aliasAttrib.AliasNames.Select(v =>
-                        {
-                            var split = v.Split('-');
-
-                            if (split.Length == 2)
-                                return $"{split[0]}-{config.CmdletPrefix}{noun ?? split[1]}";
-
-                            return v;
-                        }).ToArray()
+                        GetName(attrib.Name)
                     }
                 );
 

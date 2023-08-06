@@ -221,7 +221,7 @@ namespace BuildTools.PowerShell
             void RegisterCmdlet(Type type)
             {
                 var cmdletAttrib = type.GetCustomAttribute<CmdletAttribute>();
-                var aliasAttrib = type.GetCustomAttribute<AliasAttribute>();
+                var nameAttrib = type.GetCustomAttribute<NameAttribute>();
 
                 var cmdletName = $"{cmdletAttrib.VerbName}-{cmdletAttrib.NounName}";
                 var info = new CmdletInfo(cmdletName, type);
@@ -229,15 +229,12 @@ namespace BuildTools.PowerShell
                 addExportedCmdletMethod.Invoke(module, new object[] { info });
                 cmdletInfoModule.GetSetMethod(true).Invoke(info, new object[] { module });
 
-                if (aliasAttrib != null)
+                if (nameAttrib != null)
                 {
-                    foreach (var alias in aliasAttrib.AliasNames)
-                    {
-                        var aliasInfo = (AliasInfo)aliasInfoCtor.Invoke(new object[] { alias, cmdletName, null });
+                    var aliasInfo = (AliasInfo)aliasInfoCtor.Invoke(new object[] { nameAttrib.Name, cmdletName, null });
 
-                        addExportedAliasMethod.Invoke(module, new object[] { aliasInfo });
-                        aliasInfoModule.GetSetMethod(true).Invoke(aliasInfo, new object[] { module });
-                    }
+                    addExportedAliasMethod.Invoke(module, new object[] { aliasInfo });
+                    aliasInfoModule.GetSetMethod(true).Invoke(aliasInfo, new object[] { module });
                 }
             }
 

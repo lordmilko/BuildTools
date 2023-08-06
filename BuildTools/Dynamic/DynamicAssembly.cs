@@ -121,7 +121,24 @@ namespace BuildTools.Dynamic
             if (cmdletAttrib == null)
                 throw new InvalidOperationException($"Cannot define cmdlet proxy for type '{baseType.Name}': type is missing a '{nameof(CmdletAttribute)}'.");
 
-            var typeBuilder = ModuleBuilder.DefineType($"{AssemblyBuilder.GetName().Name}.{cmdletAttrib.VerbName}{cmdletPrefix}{cmdletAttrib.NounName}", TypeAttributes.Public, baseType);
+            string typeName = baseType.Name;
+
+            var index = typeName.IndexOf('`');
+
+            if (index != -1)
+                typeName = typeName.Substring(0, index);
+
+            string verb = cmdletAttrib.VerbName;
+
+            if (typeName.EndsWith(cmdletAttrib.NounName))
+            {
+                var prefix = typeName.Substring(0, typeName.Length - cmdletAttrib.NounName.Length);
+
+                if (cmdletAttrib.VerbName == "Test" && prefix == "Simulate")
+                    verb = prefix;
+            }
+
+            var typeBuilder = ModuleBuilder.DefineType($"{AssemblyBuilder.GetName().Name}.{verb}{cmdletPrefix}{cmdletAttrib.NounName}", TypeAttributes.Public, baseType);
 
             return typeBuilder;
         }
