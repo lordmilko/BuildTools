@@ -147,6 +147,9 @@ namespace BuildTools
             catch (TargetInvocationException ex)
             {
                 ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+
+                //This should be unreachable
+                throw ex.InnerException;
             }
         }
     }

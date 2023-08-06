@@ -66,10 +66,12 @@ namespace BuildTools
 
         private static void InitializeParameterBinderAssociation()
         {
-            var type = typeof(PSCmdlet).Assembly.GetType("System.Management.Automation.ParameterBinderAssociation");
+            var typeName = "System.Management.Automation.ParameterBinderAssociation";
+
+            var type = typeof(PSCmdlet).Assembly.GetType(typeName);
 
             if (type == null)
-                throw new NotImplementedException();
+                throw new InvalidOperationException($"Failed to find type '{typeName}'.");
 
             ParameterBinderAssociation_DynamicParameters = Enum.GetValues(type).Cast<object>().Single(v => v.ToString() == "DynamicParameters");
         }

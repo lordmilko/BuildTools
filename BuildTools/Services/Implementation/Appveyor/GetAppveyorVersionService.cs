@@ -129,7 +129,7 @@ namespace BuildTools
 
         private bool IsFirstPreRelease(string lastBuild) => !lastBuild?.Contains("build") == true;
 
-        private string GetLastAppveyorBuild()
+        protected virtual string GetLastAppveyorBuild()
         {
             if (environmentService.IsAppveyor)
             {
@@ -143,7 +143,7 @@ namespace BuildTools
             return null;
         }
 
-        private string GetLastAppveyorNuGetVersion()
+        protected virtual string GetLastAppveyorNuGetVersion()
         {
             if (environmentService.IsAppveyor)
             {

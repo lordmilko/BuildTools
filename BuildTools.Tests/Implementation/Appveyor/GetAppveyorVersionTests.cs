@@ -152,6 +152,7 @@ namespace BuildTools.Tests.Implementation
                 fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
                 fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
 
+                envProvider.SetValue(WellKnownEnvironmentVariable.Appveyor, string.Empty);
                 envProvider.SetValue(WellKnownEnvironmentVariable.AppveyorAPIToken, "token");
                 envProvider.SetValue(WellKnownEnvironmentVariable.AppveyorBuildNumber, "1");
                 envProvider.SetValue(WellKnownEnvironmentVariable.AppveyorAccountName, "lordmilko");
@@ -171,11 +172,10 @@ namespace BuildTools.Tests.Implementation
         {
             serviceCollection = new ServiceCollection
             {
-                typeof(GetAppveyorVersionService),
-
                 typeof(EnvironmentService),
                 typeof(Logger),
 
+                { typeof(GetAppveyorVersionService), typeof(MockAppveyorGetVersionService) },
                 { typeof(GetVersionService), typeof(MockGetVersionService) },
 
                 { typeof(IConsoleLogger), typeof(MockConsoleLogger) },

@@ -81,7 +81,7 @@ namespace BuildTools
                     if (command != null && result != null)
                         results.Add(new ScriptPackageTest(command, result));
                     else
-                        throw new NotImplementedException(); //dont know what it is
+                        throw new InvalidOperationException($"When '{nameof(kind)}' is not specified, both '{nameof(command)}' and '{nameof(result)}' must be specified.");
                 }
                 else
                 {

@@ -34,7 +34,7 @@ namespace BuildTools
                     break;
 
                 default:
-                    throw new PSNotImplementedException();
+                    throw new NotImplementedException($"Don't know how to handle '{nameof(CommandTypes)}' type '{Type}'.");
             }
 
             var exe = GetPowerShellExecutable(edition);

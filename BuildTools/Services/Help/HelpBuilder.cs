@@ -22,7 +22,7 @@ namespace BuildTools
 
         public ScriptBlock CreateBlock(CmdletInfo cmdletInfo)
         {
-            var createHelp = cmdletInfo.ImplementingType.BaseType.GetMethod(CreateHelpMethodName, BindingFlags.Static | BindingFlags.Public);
+            var createHelp = cmdletInfo.ImplementingType.BaseType.GetMethod(CreateHelpMethodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 
             if (createHelp == null)
                 throw new MissingMemberException(cmdletInfo.ImplementingType.BaseType.Name, CreateHelpMethodName);

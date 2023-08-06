@@ -14,11 +14,13 @@ namespace BuildTools
 
         public BuildConfiguration Configuration { get; set; } = BuildConfiguration.Debug;
 
-        public bool DebugBuild { get; set; }
+        public bool Dbg { get; set; }
 
         public bool? SourceLink { get; set; }
 
         public string Target { get; set; }
+
+        public bool ViewLog { get; set; } = true;
     }
 
     class InvokeBuildService
@@ -26,6 +28,7 @@ namespace BuildTools
         private readonly IPowerShellService powerShell;
         private readonly IProjectConfigProvider configProvider;
         private readonly DependencyProvider dependencyProvider;
+        private readonly IFileSystemProvider fileSystem;
         private readonly Logger logger;
         private readonly IProcessService processService;
         private readonly IVsProductLocator vsProductLocator;
@@ -34,6 +37,7 @@ namespace BuildTools
             IPowerShellService powerShell,
             IProjectConfigProvider configProvider,
             DependencyProvider dependencyProvider,
+            IFileSystemProvider fileSystem,
             Logger logger,
             IProcessService processService,
             IVsProductLocator vsProductLocator)
@@ -41,6 +45,7 @@ namespace BuildTools
             this.powerShell = powerShell;
             this.configProvider = configProvider;
             this.dependencyProvider = dependencyProvider;
+            this.fileSystem = fileSystem;
             this.logger = logger;
             this.processService = processService;
             this.vsProductLocator = vsProductLocator;
@@ -50,6 +55,8 @@ namespace BuildTools
         {
             if (powerShell.IsWindows && buildConfig.SourceLink == null)
                 buildConfig.SourceLink = true;
+
+            var args = buildConfig.ArgumentList;
 
             if (buildConfig.Name != null)
             {
@@ -70,16 +77,31 @@ namespace BuildTools
 
             var root = configProvider.SolutionRoot;
 
-            if (buildConfig.DebugBuild)
-            {
-                var binLog = Path.Combine(root, "msbuild.binlog");
-                buildConfig.ArgumentList.Add($"/bl:{binLog}");
-            }
+            var binLog = Path.Combine(root, "msbuild.binlog");
+
+            if (buildConfig.Dbg)
+                args.Add($"/bl:{binLog}");
 
             if (isLegacy)
                 RestoreNuGetPackages();
 
-            BuildInternal(buildConfig, isLegacy);
+            try
+            {
+                //We need to store our argument list in a local to modify it, as trying to modify it on our build config will result in a copy being modified
+                buildConfig.ArgumentList = args;
+
+                BuildInternal(buildConfig, isLegacy);
+            }
+            finally
+            {
+                if (buildConfig.Dbg && buildConfig.ViewLog && fileSystem.FileExists(binLog))
+                {
+                    if (!powerShell.IsWindows)
+                        powerShell.WriteWarning($"Cannot open {binLog} as MSBuld Structured Log Viewer is only compatible with Windows. Please copy binlog to Windows system in order to inspect log");
+                    else
+                        processService.Execute(binLog, shellExecute: true);
+                }
+            }
         }
 
         private void BuildInternal(BuildConfig buildConfig, bool isLegacy)

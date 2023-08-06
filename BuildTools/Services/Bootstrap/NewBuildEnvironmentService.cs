@@ -19,11 +19,16 @@ namespace BuildTools
     internal class NewBuildEnvironmentService
     {
         private readonly IFileSystemProvider fileSystem;
+        private readonly IProcessService processService;
         private readonly IPowerShellService powerShell;
 
-        public NewBuildEnvironmentService(IFileSystemProvider fileSystem, IPowerShellService powerShell)
+        public NewBuildEnvironmentService(
+            IFileSystemProvider fileSystem,
+            IProcessService processService,
+            IPowerShellService powerShell)
         {
             this.fileSystem = fileSystem;
+            this.processService = processService;
             this.powerShell = powerShell;
         }
 
@@ -61,7 +66,32 @@ start {exe} -executionpolicy bypass -noexit -noninteractive -command ""ipmo psre
 BASEDIR=""$(dirname ""$BASH_SOURCE"")""
 pwsh -executionpolicy bypass -noexit -noninteractive -command ""ipmo psreadline; . '$BASEDIR/build/Bootstrap.ps1'""";
 
-            return WriteFile(solutionRoot, "build.sh", str, force, windows: false);
+            var result = WriteFile(solutionRoot, "build.sh", str, force, windows: false); //todo: chmod+x it too on write
+
+            if (result != null)
+            {
+                var gitDir = Path.Combine(solutionRoot, ".git");
+
+                if (fileSystem.DirectoryExists(gitDir))
+                {
+                    var git = powerShell.GetCommand("git");
+
+                    if (git != null)
+                    {
+                        processService.Execute("git", new ArgList
+                        {
+                            "-C",
+                            solutionRoot,
+                            "update-index",
+                            "--chmod=+x",
+                            "--add",
+                            result
+                        });
+                    }
+                }
+            }
+
+            return result;
         }
 
         private string GenerateBootstrap(string buildFolder, bool force)
@@ -91,6 +121,17 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
 
         private string GenerateConfig(string buildFolder, bool force)
         {
+            var name = "Config.psd1";
+
+            if (fileSystem.DirectoryExists(buildFolder))
+            {
+                //Check if there's already a config file with an alternate name, e.g. PrtgAPI.psd1 instead of Config.psd1
+                var existing = fileSystem.EnumerateFiles(buildFolder, "*.psd1").ToArray();
+
+                if (existing.Length == 1 && Path.GetFileNameWithoutExtension(existing[0]) == Path.GetFileName(Path.GetDirectoryName(buildFolder)))
+                    name = Path.GetFileName(existing[0]);
+            }
+
             var groups = new[]
             {
                 new ConfigGroup("Global", new[]
@@ -136,7 +177,7 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
 
             var str = builder.ToString();
 
-            return WriteFile(buildFolder, "Config.psd1", str, force);
+            return WriteFile(buildFolder, name, str, force);
         }
 
         private string GenerateAppveyor(string solutionRoot, bool force)
@@ -235,6 +276,9 @@ skip_tags: true
 
         private string WriteFile(string path, string name, string content, bool force, bool windows = true)
         {
+            if (!fileSystem.DirectoryExists(path))
+                fileSystem.CreateDirectory(path);
+
             var filePath = Path.Combine(path, name);
 
             bool write = !fileSystem.FileExists(filePath) || force;

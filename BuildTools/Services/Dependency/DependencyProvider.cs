@@ -31,24 +31,6 @@ namespace BuildTools
             this.powerShellProviderInstaller = powerShellProviderInstaller;
             this.targetingPackInstaller = targetingPackInstaller;
 
-            PSPackageDependency Pester()
-            {
-                var minimumVersion = "3.4.5";
-                var version = "3.4.6";
-
-                if (!powerShell.IsWindows)
-                {
-                    /* We want to be able to test BuildTools on Linux, however the advanced mocking
-                     * required by these tests won't work in Pester 3, so when we're actually on Linux
-                     * use Pester 4 instead. We go with 4.7.2 because 4.7.3 truncates "Should Be" output
-                     * to 5 characters which is useless */
-                    minimumVersion = "4.7.0";
-                    version = "4.7.2";
-                }
-
-                return new PSPackageDependency(WellKnownDependency.Pester, version: version, minimumVersion: minimumVersion, true);
-            }
-
             dependencies = new Dependency[]
             {
                 new ChocolateyDependency(                                             minimumVersion: "0.10.5.0"),
@@ -60,7 +42,7 @@ namespace BuildTools
                 new ChocolateyPackageDependency("NuGet.CommandLine",                  minimumVersion: "5.2.0",     commandName: "nuget",             displayName: WellKnownDependency.NuGet),
                 new PSPackageProviderDependency("NuGetProvider",                      minimumVersion: "2.8.5.201"),
                 new PSPackageDependency        ("PowerShellGet",                      minimumVersion: "2.0.0"),
-                Pester(),
+                new PSPackageDependency(WellKnownDependency.Pester, version: "3.4.6", minimumVersion: "3.4.5", true),
                 new PSPackageDependency        (WellKnownDependency.PSScriptAnalyzer),
                 new TargetingPackDependency    (WellKnownDependency.TargetingPack452, version: "4.5.2"),
                 new TargetingPackDependency    (WellKnownDependency.TargetingPack461, version: "4.6.1"),

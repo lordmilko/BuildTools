@@ -30,12 +30,12 @@ namespace BuildTools.Cmdlets
             set => buildConfig.Configuration = value;
         }
 
-        [Alias("Dbg", "DebugMode")]
+        [Alias("DebugMode")]
         [Parameter(Mandatory = false)]
-        public SwitchParameter DebugBuild
+        public SwitchParameter Dbg
         {
-            get => buildConfig.DebugBuild;
-            set => buildConfig.DebugBuild = value;
+            get => buildConfig.Dbg;
+            set => buildConfig.Dbg = value;
         }
 
         [Parameter(Mandatory = false)]
@@ -46,7 +46,11 @@ namespace BuildTools.Cmdlets
         }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter ViewLog { get; set; } = true;
+        public SwitchParameter ViewLog
+        {
+            get => buildConfig.ViewLog;
+            set => buildConfig.ViewLog = value;
+        }
 
         private BuildConfig buildConfig = new BuildConfig();
 
@@ -63,7 +67,7 @@ In the event you wish to debug your build, the -Dbg parameter can be specified. 
                 new HelpParameter(nameof(Name), $"Wildcard specifying the name of a single {project.Name} project to build. If no value is specified, the entire {project.Name} solution will be built."),
                 new HelpParameter(nameof(ArgumentList), "Additional arguments to pass to the build tool."),
                 new HelpParameter(nameof(Configuration), $"Configuration to build. If no value is specified, {project.Name} will be built for Debug."),
-                new HelpParameter(nameof(DebugBuild), "Specifies whether to generate an msbuild *.binlog file. File will automatically be opened upon completion of the build."),
+                new HelpParameter(nameof(Dbg), "Specifies whether to generate an msbuild *.binlog file. File will automatically be opened upon completion of the build."),
                 new ConditionalHelpParameter(NeedLegacyParameter, LegacyParameterName, $"Specifies whether to build the .NET Core version of {project.Name} or the legacy .NET Framework solution."),
                 new HelpParameter(nameof(SourceLink), $"Specifies whether to build the .NET Core version of {project.Name} with SourceLink debug info. If this value is not specified, on Windows it will be true by default."),
                 new HelpParameter(nameof(ViewLog), "Specifies whether to open the debug log upon finishing the build when -DebugBuild is specified.")

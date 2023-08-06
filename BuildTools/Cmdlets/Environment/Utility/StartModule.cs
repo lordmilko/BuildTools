@@ -1,4 +1,5 @@
 ﻿using System.Management.Automation;
+using BuildTools.PowerShell;
 
 namespace BuildTools.Cmdlets
 {
@@ -12,14 +13,21 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false)]
         public string TargetFramework { get; set; }
 
-        public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
+        internal static void CreateHelp(HelpConfig help, IProjectConfigProvider configProvider, ICommandService commandService, IPowerShellService powerShell)
         {
+            var project = configProvider.Config;
+
             help.Synopsis = $"Starts a new PowerShell console containing the compiled version of {project.Name}.";
             help.Description = $@"
 The {help.Command} cmdlet starts starts a previously compiled version of {project.Name} in a new PowerShell console. By default, {help.Command} will attempt to launch the last Debug build of {project.Name}. Builds for .NET Core and .NET Standard will be launched in PowerShell Core, while builds for the .NET Framework will be launched in Windows PowerShell. If builds for multiple target frameworks are detected, {help.Command} will throw an execption specifying the builds that were found. A specific target framework can be specified to the -TargetFramework parameter.
+";
 
+            if ((bool) NeedLegacyParameter.DynamicInvoke(powerShell, configProvider))
+            {
+                help.Description += $@"
 If -Legacy is true, {help.Command} will skip enumerating target frameworks and instead attempt to open a build from the legacy .NET Framework version of {project.Name} in a Windows PowerShell console.
 ";
+            }
 
             help.Parameters = new[]
             {

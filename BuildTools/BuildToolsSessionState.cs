@@ -62,6 +62,7 @@ namespace BuildTools
                 { typeof(IFileSystemProvider), typeof(FileSystemProvider) },
                 { typeof(IProjectConfigProviderFactory), typeof(ProjectConfigProviderFactory) },
                 { typeof(IPowerShellService), typeof(PowerShellService) },
+                { typeof(IProcessService), typeof(ProcessService) },
                 { typeof(IEnvironmentVariableProvider), typeof(EnvironmentVariableProvider) }
             };
 
