@@ -41,7 +41,12 @@ namespace BuildTools
 
         private HelpConfig InvokeCreateHelp(CmdletInfo cmdletInfo, MethodInfo createHelp)
         {
-            var helpConfig = new HelpConfig(cmdletInfo.Name);
+            var name = cmdletInfo.Name;
+
+            if (name.StartsWith("Test-") && cmdletInfo.ImplementingType.GetCustomAttribute<NameAttribute>()?.Name.StartsWith("Simulate-") == true)
+                name = name.Replace("Test-", "Simulate-");
+
+            var helpConfig = new HelpConfig(name);
 
             var parameters = createHelp.GetParameters();
 

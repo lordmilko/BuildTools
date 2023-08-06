@@ -1,9 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework Condition="'$(IsWindows)'">net472</TargetFramework>
+    <TargetFramework Condition="'$(IsWindows)' == 'false'">netcoreapp3.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
+    <NoWarn>1701;1702;NU1901;NU1902;NETSDK1138</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,12 +17,13 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 
-	<ItemGroup>
-		<Reference Include="System.Management.Automation">
-			<HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\WindowsPowerShell\3.0\System.Management.Automation.dll</HintPath>
-			<Private>false</Private>
-		</Reference>
-	</ItemGroup>
+  <ItemGroup Condition="'$(FrameworkType)' == 'Full'">
+    <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(FrameworkType)' != 'Full'">
+    <PackageReference Include="PowerShellStandard.Library" Version="5.1.1" PrivateAssets="all" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BuildTools\BuildTools.csproj" />

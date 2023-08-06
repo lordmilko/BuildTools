@@ -7,7 +7,7 @@ using System.Text;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "TestResult", DefaultParameterSetName = ParameterSet.Default)]
-    [BuildCommand(CommandKind.TestResult, CommandCategory.Version)]
+    [BuildCommand(CommandKind.TestResult, CommandCategory.Test)]
     public abstract class GetTestResult<TEnvironment> : BuildCmdlet<TEnvironment>, IIntegrationProvider
     {
         [Parameter(Mandatory = false, Position = 0)]
@@ -59,8 +59,8 @@ namespace BuildTools.Cmdlets
             var description = new StringBuilder();
 
             description.Append(
-                $"The {help.Command} cmdlet retrieves test results from the last invocation of {invokeTest.Name}. By default, test all test results for all languages (e.g. both C# and PowerShell) will be displayed. " +
-                "Results can be limited to either of the two by specifying a value to the -Type parameter. The -Name parameter allows results to be further limited based on a wildcard expression that matches part of the results name. " +
+                $"The {help.Command} cmdlet retrieves test results from the last invocation of {invokeTest.Name}. By default, test results for all supported test languages will be displayed. " +
+                "Results can be limited to either of the two by specifying a value to the -Type parameter. The -Name parameter allows results to be further limited based on a wildcard expression that matches part of the results' name. " +
                 "Results can also be filtered to those that had a particular status (such as Failed) using the -Outcome parameter."
             ).AppendLine().AppendLine();
 
@@ -77,7 +77,7 @@ namespace BuildTools.Cmdlets
 
                 var str = string.Join(" and ", testTypes.OrderByDescending(v => (v.Kind & ProjectKind.UnitTest) != 0).Select(v => v.NormalizedName));
 
-                description.Append($"Note that whenever the {str} projects are built, all previous test results will automatically be cleared.");
+                description.Append($"Note that whenever the {str} projects are built, all previous test results may automatically be cleared.");
             }
 
             help.Synopsis = $"Retrieve test results from the last invocation of {invokeTest.Name}";
@@ -87,7 +87,7 @@ namespace BuildTools.Cmdlets
             {
                 new HelpParameter(nameof(Name), "Wildcard specifying the tests to view the results of. If no value is specified, all test results will be displayed."),
                 new HelpParameter(nameof(Path), "One or more test files to view the results of. Accepts values by pipeline."),
-                new HelpParameter(nameof(Type), "Type of test results to view. By default both C# and PowerShell test results will be displayed."),
+                new HelpParameter(nameof(Type), "Type of test results to view. By default test results for all supported languages will be displayed."),
                 new HelpParameter(nameof(Outcome), "Limits test results to only those with a specified outcome."),
                 new HelpParameter(nameof(ListAvailable), "Lists all test files that are available within the test results directory."),
                 new ConditionalHelpParameter(NeedIntegrationParameter, nameof(Integration), "Indicates to retrieve test results from the last integration test run rather than unit test run.")

@@ -88,6 +88,13 @@ For certain rule violations, {help.Command} can automatically apply the recommen
                     !p.StartsWith(packages, StringComparison.OrdinalIgnoreCase)
                 )).ToArray();
 
+                if (Name != null)
+                {
+                    var wildcard = new WildcardPattern(Name, WildcardOptions.IgnoreCase);
+
+                    files = files.Where(f => wildcard.IsMatch(f)).ToArray();
+                }
+
                 for (var i = 0; i < files.Length; i++)
                 {
                     powerShell.WriteProgress(

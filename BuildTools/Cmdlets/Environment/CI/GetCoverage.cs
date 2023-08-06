@@ -57,7 +57,7 @@ When the coverage analysis has completed, a HTML report detailing the results of
             help.Parameters = new[]
             {
                 new HelpParameter(nameof(Name), "Wildcard used to limit coverage to those whose test names match a specified pattern."),
-                new HelpParameter(nameof(Type), "Types of tests to generate coverage for. If no type is specified, both C# and PowerShell test coverage will be generated."),
+                new HelpParameter(nameof(Type), "Types of tests to generate coverage for. If no type is specified, coverage for all test types in your project will be generated."),
                 new HelpParameter(nameof(Configuration), "Build configuration to use when calculating coverage. If no configuration is specified, Debug will be used."),
                 new ConditionalHelpParameter(NeedLegacyParameter, LegacyParameterName, "Specifies whether code coverage should be generated using .NET Core CLI tooling (where applicable) or legacy .NET Framework tooling."),
                 new HelpParameter(nameof(TestOnly), "Run the test commands used by OpenCover without collecting coverage."),

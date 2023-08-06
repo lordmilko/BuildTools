@@ -23,5 +23,6 @@
         public const string ChocolateyInstall = "ChocolateyInstall";
 
         public const string DotnetSkipFirstTimeExperience = "DOTNET_SKIP_FIRST_TIME_EXPERIENCE";
+        public const string DotnetSystemGlobalizationInvariant = "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT";
     }
 }

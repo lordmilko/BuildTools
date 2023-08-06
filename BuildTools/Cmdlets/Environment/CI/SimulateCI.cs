@@ -43,6 +43,7 @@ namespace BuildTools.Cmdlets
                 new HelpParameter(nameof(Appveyor), "Specifies to simulate Appveyor CI"),
                 new HelpParameter(nameof(Generic), "Specifies to simulate Generic CI"),
                 new HelpParameter(nameof(Task), "CI task to execute. If no value is specified, all CI tasks will be executed."),
+                new HelpParameter(nameof(Configuration), "Configuration to simulate"),
                 new ConditionalHelpParameter(NeedLegacyParameter, LegacyParameterName, "Specifies whether to use .NET Core CLI or legacy .NET infrastructure when simulating CI tasks"),
             };
 
@@ -89,7 +90,7 @@ namespace BuildTools.Cmdlets
                     { AppveyorTask.Restore, typeof(InvokeAppveyorBeforeBuildService) },
                     { AppveyorTask.Build, typeof(InvokeAppveyorBuildService) },
                     { AppveyorTask.Package, typeof(InvokeAppveyorBeforeTestService) },
-                    { AppveyorTask.Test, typeof(InvokeTestService) },
+                    { AppveyorTask.Test, typeof(InvokeAppveyorTestService) },
                     { AppveyorTask.Coverage, typeof(InvokeAppveyorAfterTestService) },
                 };
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Management.Automation;
 using System.Reflection;
 
 namespace BuildTools.Reflection
@@ -7,10 +8,22 @@ namespace BuildTools.Reflection
     {
         public static FieldInfo GetInternalFieldInfo(this Type type, string name)
         {
-            var fieldInfo = type.GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+
+            var fieldInfo = type.GetField(name, flags);
 
             if (fieldInfo == null)
+            {
+                if (typeof(CmdletInfo).Assembly == type.Assembly && !name.StartsWith("_"))
+                {
+                    fieldInfo = type.GetField("_" + name, flags);
+
+                    if (fieldInfo != null)
+                        return fieldInfo;
+                }
+
                 throw new MissingMemberException(type.Name, name);
+            }
 
             return fieldInfo;
         }

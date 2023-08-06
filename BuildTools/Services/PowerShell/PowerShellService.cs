@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using BuildTools.Reflection;
@@ -522,13 +521,6 @@ function global:Prompt
         public void SetWindowTitle(string value)
         {
             ActiveCmdlet.Host.UI.RawUI.WindowTitle = value;
-        }
-
-        public void Clear()
-        {
-            var ui = ActiveCmdlet.Host.UI.RawUI;
-            ui.CursorPosition = new Coordinates(0, 0);
-            ui.SetBufferContents(new Rectangle(-1, -1, -1, -1), new BufferCell(' ', ui.ForegroundColor, ui.BackgroundColor, BufferCellType.Complete));
         }
 
         private object UnwrapPSObject(object obj)

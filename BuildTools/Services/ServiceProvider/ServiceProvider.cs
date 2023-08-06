@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using static System.Linq.Expressions.Expression;
 
 namespace BuildTools
@@ -127,19 +128,26 @@ namespace BuildTools
 
         private object ResolveService(Type type, Stack<ServiceDescriptor> resolutionScope)
         {
-            var ctors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            try
+            {
+                var ctors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-            if (ctors.Length > 1)
-                throw new InvalidOperationException($"Cannot resolve service '{type.Name}': more than one constructor was found.");
+                if (ctors.Length > 1)
+                    throw new InvalidOperationException($"Cannot resolve service '{type.Name}': more than one constructor was found.");
 
-            if (ctors.Length == 0)
-                return Activator.CreateInstance(type);
+                if (ctors.Length == 0)
+                    return Activator.CreateInstance(type);
 
-            var ctor = ctors.Single();
+                var ctor = ctors.Single();
 
-            var parameters = ctor.GetParameters().Select(p => GetServiceInternal(p.ParameterType, resolutionScope)).ToArray();
+                var parameters = ctor.GetParameters().Select(p => GetServiceInternal(p.ParameterType, resolutionScope)).ToArray();
 
-            return ctor.Invoke(parameters);
+                return ctor.Invoke(parameters);
+            }
+            catch (TargetInvocationException ex)
+            {
+                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+            }
         }
     }
 }

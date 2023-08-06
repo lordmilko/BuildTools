@@ -1,18 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsWindows)'">net461;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsWindows)' == 'false'">netstandard2.1</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
+    <OutputPath>$(ProjectDir)bin\$(Configuration)\BuildTools</OutputPath>
 
     <TestAdapterPath>..\PowerShell.TestAdapter\bin\$(Configuration)\netstandard2.0\PowerShell.TestAdapter.dll</TestAdapterPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(TargetFramework.StartsWith('net4'))">
-    <FrameworkType>Full</FrameworkType>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <OutputPath>$(ProjectDir)bin\$(Configuration)\BuildTools</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

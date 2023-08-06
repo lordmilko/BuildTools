@@ -124,6 +124,7 @@ namespace BuildTools
                 typeof(InvokeCIScriptService),
                 typeof(InvokeCIBuildService),
                 typeof(InvokeCITestService),
+                typeof(SimulateCIService),
 
                 #endregion
 

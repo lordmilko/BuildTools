@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using BuildTools.PowerShell;
 
 namespace BuildTools.Cmdlets
@@ -157,7 +158,7 @@ namespace BuildTools.Cmdlets
             }
             catch (TargetInvocationException ex)
             {
-                throw ex.InnerException;
+                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
             }
             finally
             {

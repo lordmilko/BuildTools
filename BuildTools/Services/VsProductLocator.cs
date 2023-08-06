@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 
 namespace BuildTools
@@ -19,7 +20,7 @@ namespace BuildTools
         private IFileSystemProvider fileSystem;
         private IProcessService processService;
 
-        private string vswhere;
+        private Lazy<string> vswhere;
         private const string vsTestFileName = "vstest.console.exe";
 
         public VsProductLocator(
@@ -31,7 +32,9 @@ namespace BuildTools
             this.fileSystem = fileSystem;
             this.processService = processService;
 
-            vswhere = dependencyProvider.Install(WellKnownDependency.vswhere).Path;
+            //On Non-Windows platforms, vswhere won't be available, so lazily initialize it.
+            //It will only be called upon by Windows callers running in legacy mode
+            vswhere = new Lazy<string>(() => dependencyProvider.Install(WellKnownDependency.vswhere).Path);
         }
 
         public string GetMSBuild()
@@ -45,7 +48,7 @@ namespace BuildTools
                 "MSBuild\\**\\Bin\\MSBuild.exe"
             };
 
-            var msbuild = processService.Execute(vswhere, vswhereArgs).FirstOrDefault();
+            var msbuild = processService.Execute(vswhere.Value, vswhereArgs).FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(msbuild) || !fileSystem.FileExists(msbuild))
             {
@@ -73,7 +76,7 @@ namespace BuildTools
                 "installationPath"
             };
 
-            var path = processService.Execute(vswhere, vswhereArgs).FirstOrDefault();
+            var path = processService.Execute(vswhere.Value, vswhereArgs).FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(path) || !fileSystem.DirectoryExists(path))
             {

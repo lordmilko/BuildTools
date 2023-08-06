@@ -1,0 +1,23 @@
+﻿<Project>
+  <PropertyGroup>
+    <!-- Configuration -->
+
+    <IsDebug Condition="'$(Configuration)' == 'Debug'">true</IsDebug>
+    <IsDebug Condition="'$(IsDebug)' == ''">false</IsDebug>
+
+    <IsRelease Condition="'$(Configuration)' == 'Release'">true</IsRelease>
+    <IsRelease Condition="'$(IsRelease)' == ''">false</IsRelease>
+
+    <!-- Target Framework Conditions -->
+
+    <FrameworkType Condition="$(TargetFramework.StartsWith('net4'))">Full</FrameworkType>
+    
+    <!-- Operating System-->
+
+    <IsWindows Condition="'$(OS)' == 'Windows_NT'">true</IsWindows>
+    <IsWindows Condition="'$(IsWindows)' == ''">false</IsWindows>
+
+    <IsUnix Condition="'$(IsWindows)' == 'false'">true</IsUnix>
+    <IsUnix Condition="'$(IsUnix)' == ''">false</IsUnix>
+  </PropertyGroup>  
+</Project>

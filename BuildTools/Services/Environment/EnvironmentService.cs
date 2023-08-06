@@ -69,6 +69,12 @@ namespace BuildTools
             set => Set(Env.DotnetSkipFirstTimeExperience, value);
         }
 
+        public string DotnetSystemGlobalizationInvariant
+        {
+            get => Get(Env.DotnetSystemGlobalizationInvariant);
+            set => Set(Env.DotnetSystemGlobalizationInvariant, value);
+        }
+
         private string Get(string variable) => envProvider.GetValue(variable);
 
         private void Set(string variable, string value) => envProvider.SetValue(variable, value);

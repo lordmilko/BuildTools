@@ -98,7 +98,5 @@ namespace BuildTools.PowerShell
         void InitializePrompt(ProjectConfig config);
 
         void SetWindowTitle(string value);
-
-        void Clear();
     }
 }

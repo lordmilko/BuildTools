@@ -71,8 +71,8 @@ In the event you wish to debug your build, the -Dbg parameter can be specified. 
 
             help.Examples = new[]
             {
-                new HelpExample(help.Command, $"Build a Debug version of {help.Command}"),
-                new HelpExample($"{help.Command} -c Release", $"Build a Release version of {help.Command}"),
+                new HelpExample(help.Command, $"Build a Debug version of {project.Name}"),
+                new HelpExample($"{help.Command} -c Release", $"Build a Release version of {project.Name}"),
                 new HelpExample($"{help.Command} *test*", "Build just the projects whose name contains 'test'"),
                 new HelpExample($"{help.Command} -Dbg", $"Build {project.Name} and log to a *.binlog file to be opened by the MSBuild Structured Log Viewer upon completion")
             };

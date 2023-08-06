@@ -49,6 +49,7 @@ namespace BuildTools
             {
                 { Env.Configuration, configuration.ToString() },
                 { Env.AppveyorBuildFolder, configProvider.SolutionRoot },
+                { Env.AppveyorBuildNumber, "1" },
                 { Env.AppveyorBuildVersion, "1" },
                 { Env.AppveyorRepoCommitMessage, "Did some stuff"},
                 { Env.AppveyorRepoCommitMessageExtended, "For #4" },

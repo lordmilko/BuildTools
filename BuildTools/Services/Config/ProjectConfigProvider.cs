@@ -304,6 +304,11 @@ namespace BuildTools
 
         private BuildProject[] GetProjectsInternal()
         {
+            //Note that enumerating projects against the Windows Host takes a few seconds in WSL. GetTestResult
+            //therefore delays initializing the environment due to it being an IIntegrationProvider, so its dynamic
+            //parameters need to check to see whether any integration tests exist in the project. It will access its
+            //projects shortly after this when it goes to build its help, but by this time the projects have already
+            //been cached
             var files = fileSystem.EnumerateFiles(SolutionRoot, "*.csproj", SearchOption.AllDirectories);
 
             var results = new List<BuildProject>();
@@ -431,7 +436,7 @@ namespace BuildTools
 
             if (psd1.Length == 0)
             {
-                var resourcesDir = Path.Combine(powerShellProjectDir, "PowerShell\\Resources");
+                var resourcesDir = Path.Combine(powerShellProjectDir, "PowerShell", "Resources");
 
                 if (fileSystem.DirectoryExists(resourcesDir))
                     psd1 = fileSystem.EnumerateFiles(resourcesDir, "*.psd1").ToArray();

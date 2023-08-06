@@ -78,7 +78,7 @@ if(!$env:LORDMILKO_BUILDTOOLS_DEVELOPMENT -and !(Get-Module lordmilko.BuildTools
 
     if(!(Get-Module -ListAvailable lordmilko.BuildTools))
     {
-        Install-Package lordmilko.BuildTools -ForceBootstrap -Force | Out-Null
+        Install-Package lordmilko.BuildTools -ForceBootstrap -Force -Source PSGallery | Out-Null
     }
     
     Import-Module lordmilko.BuildTools -Scope Local
@@ -195,6 +195,8 @@ skip_tags: true
 
         private void CalculateSolutionPaths(string path, out string solutionRoot, out string buildFolder)
         {
+            path = path.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)).Replace("//", "/");
+
             if (!fileSystem.DirectoryExists(path))
             {
                 var name = Path.GetFileName(path);

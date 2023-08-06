@@ -4,7 +4,7 @@ namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsLifecycle.Install, "Dependency")]
     [BuildCommand(CommandKind.InstallDependency, CommandCategory.Utility)]
-    public abstract class InstallBuildDependency<TEnvironment> : BuildCmdlet<TEnvironment>
+    public abstract class InstallDependency<TEnvironment> : BuildCmdlet<TEnvironment>
     {
         [Parameter(Mandatory = false, Position = 0)]
         [ArgumentCompleter(typeof(DependencyCompleter<>))]

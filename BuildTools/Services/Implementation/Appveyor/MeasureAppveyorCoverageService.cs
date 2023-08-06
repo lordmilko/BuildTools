@@ -69,7 +69,7 @@ namespace BuildTools
                 if (environmentService.IsAppveyor)
                 {
                     logger.LogInformation("\tUploading coverage to codecov");
-                    processService.Execute("cmd", $"/c \"codecov - f \\\"{GetCoverageService.OpenCoverOutput}\\\" 2 > nul\"");
+                    processService.Execute("cmd", $"/c \"codecov - f \\\"{GetCoverageService.OpenCoverOutput}\\\" 2 > nul\"", writeHost: true);
                 }
             }
         }

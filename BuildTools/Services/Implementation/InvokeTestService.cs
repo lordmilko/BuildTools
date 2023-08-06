@@ -11,6 +11,7 @@ namespace BuildTools
         private readonly Logger logger;
         private readonly IProjectConfigProvider configProvider;
         private readonly DependencyProvider dependencyProvider;
+        private readonly EnvironmentService environmentService;
         private readonly IFileSystemProvider fileSystem;
         private readonly IPowerShellService powerShell;
         private readonly IProcessService processService;
@@ -20,6 +21,7 @@ namespace BuildTools
             Logger logger,
             IProjectConfigProvider configProvider,
             DependencyProvider dependencyProvider,
+            EnvironmentService environmentService,
             IFileSystemProvider fileSystem,
             IPowerShellService powerShell,
             IProcessService processService,
@@ -28,6 +30,7 @@ namespace BuildTools
             this.logger = logger;
             this.configProvider = configProvider;
             this.dependencyProvider = dependencyProvider;
+            this.environmentService = environmentService;
             this.fileSystem = fileSystem;
             this.powerShell = powerShell;
             this.processService = processService;
@@ -43,7 +46,7 @@ namespace BuildTools
 
         #region C#
 
-        private void InvokeCSharpTest(InvokeTestConfig invokeTestConfig, bool isLegacy)
+        public void InvokeCSharpTest(InvokeTestConfig invokeTestConfig, bool isLegacy)
         {
             if (!invokeTestConfig.Target.CSharp)
                 return;
@@ -97,6 +100,18 @@ namespace BuildTools
 
         private void InvokeCICSharpTestCore(string csproj, BuildConfiguration configuration, ArgList additionalArgs)
         {
+            var path = "/proc/version";
+
+            //When attempting to run unit tests in WSL, we may get crazy errors about the operating system not having globalization support
+            if (!powerShell.IsWindows &&
+                fileSystem.FileExists(path) &&
+                fileSystem.ReadFileText(path).IndexOf("WSL", StringComparison.OrdinalIgnoreCase) != -1 &&
+                string.IsNullOrEmpty(environmentService.DotnetSystemGlobalizationInvariant))
+            {
+                powerShell.WriteWarning("Disabling globalization as build environment appears to be running under WSL");
+                environmentService.DotnetSystemGlobalizationInvariant = "1";
+            }
+
             var dotnetTestArgs = new ArgList
             {
                 "test",
@@ -120,7 +135,7 @@ namespace BuildTools
         #endregion
         #region PowerShell
 
-        private void InvokePowerShellTest(InvokeTestConfig invokeTestConfig, bool isLegacy)
+        public void InvokePowerShellTest(InvokeTestConfig invokeTestConfig, bool isLegacy)
         {
             if (!invokeTestConfig.Target.PowerShell)
                 return;
@@ -170,12 +185,15 @@ namespace BuildTools
             var loggerTarget = $"trx;LogFileName={configProvider.Config.Name}_C#_{dateStr}.trx";
 
             if (isLegacy)
-                return "/logger:$loggerTarget";
+                return $"/logger:{loggerTarget}";
 
+            //Even though we're specifying --verbosity:n, it seems like on newer build chains on Unix
+            //this can still be ignored, so use the console verbosity trick
             return new ArgList
             {
                 "--logger",
-                loggerTarget
+                loggerTarget,
+                $"--logger \"console;verbosity=normal\""
             };
         }
 

@@ -9,7 +9,7 @@ using BuildTools.PowerShell;
 
 namespace BuildTools.Cmdlets
 {
-    [Cmdlet(VerbsLifecycle.Start, "BuildEnvironment")]
+    [Cmdlet(VerbsLifecycle.Start, "BuildEnvironment", DefaultParameterSetName = ParameterAttribute.AllParameterSets)]
     public class StartBuildEnvironment : BuildCmdlet<object>
     {
         /// <summary>
@@ -24,6 +24,7 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = true, ParameterSetName = ParameterSet.CI)]
         public SwitchParameter CI { get; set; }
 
+        [Parameter(Mandatory = false)]
         public SwitchParameter Quiet { get; set; }
 
         /// <summary>
@@ -34,20 +35,26 @@ namespace BuildTools.Cmdlets
 
         protected override void ProcessRecordEx()
         {
+            //Process the config before checking for possible singleton environments so that on PowerShell Core
+            //we throw a more specific error message that we're trying to reimport the same environment twice
             var factory = GetService<IProjectConfigProviderFactory>();
-
             var configProvider = factory.CreateProvider(BuildRoot, File);
+
+            var powerShell = GetService<IPowerShellService>();
+
+            bool isSingleton = powerShell.Edition == PSEdition.Core;
+            ValidateSingleton(isSingleton);
 
             //Build dynamic cmdlet types based on the configuration file
             var dynamicAssemblyBuilder = new DynamicAssemblyBuilder(configProvider.Config);
-            dynamicAssemblyBuilder.BuildCmdlets();
+
+            dynamicAssemblyBuilder.BuildCmdlets(isSingleton);
 
             var name = configProvider.Config.Name;
 
             IPowerShellModule module = null;
 
             //Create and import a dynamic module containing the dynamic cmdlets
-            var powerShell = GetService<IPowerShellService>();
 
             if (CI)
                 RegisterCI(powerShell, name);
@@ -132,6 +139,26 @@ namespace BuildTools.Cmdlets
             powerShell.RegisterModule(moduleName, cmdlets);
 
             BuildToolsSessionState.ContinuousIntegrationOwner = moduleName;
+        }
+
+        private void ValidateSingleton(bool isSingleton)
+        {
+            if (isSingleton)
+            {
+                /* Cmdlets that need to access the currrent environment (such as argument completers/validators) do so by being defined as taking a generic type argument
+                 * that is filled in to be the dynamically generated environment type by the dynamic assembly builder. In .NET Framework this all works fine, however in .NET Core,
+                 * when attempting to load the custom attributes of a cmdlet parameter, the runtime either won't see that the BuildTools.GeneratedCode assembly is already loaded,
+                 * or will see it but ignore it due to it being a dynamic assembly. In attempting to load it, the Location property of the Assembly will be touched, which is invalid
+                 * for dynamically generated assemblies. To prevent the CLR from touching the Location property we can try and intercept the load event of the AssemblyLoadContext,
+                 * however attempting to return our already known dynamic assembly here generates an exception that dynamic assemblies are not valid in this context.
+                 *
+                 * As such, we work around this in PowerShell Core by utilizing the well known SingletonEnvironment, and not creating a dynamically generated environment type at all.
+                 * The flipside of this is that we can't allow any other environments to be loaded, as we'll have no way of referring to one environment over another within our custom
+                 * attributes */
+
+                if (BuildToolsSessionState.Environments.Length > 0)
+                    throw new InvalidOperationException("Cannot load environment: another environment is already loaded, and PowerShell Core only supports singleton environments.");
+            }
         }
 
         protected override T GetService<T>() => BuildToolsSessionState.GlobalServiceProvider.GetService<T>();

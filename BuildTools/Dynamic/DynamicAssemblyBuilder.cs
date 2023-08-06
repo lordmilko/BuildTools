@@ -33,9 +33,12 @@ namespace BuildTools.Dynamic
             this.config = config;
         }
 
-        public void BuildCmdlets()
+        public void BuildCmdlets(bool singleton)
         {
-            EnvironmentId = DynamicAssembly.Instance.DefineEnvironment(config.Name);
+            if (singleton)
+                EnvironmentId = typeof(SingletonEnvironment);
+            else
+                EnvironmentId = DynamicAssembly.Instance.DefineEnvironment(config.Name);
 
             foreach (var type in baseCmdletTypes)
                 DefineCmdlet(type);

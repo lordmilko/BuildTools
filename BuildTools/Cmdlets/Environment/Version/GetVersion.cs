@@ -16,11 +16,11 @@ namespace BuildTools.Cmdlets
 
             help.Synopsis = $"Retrieves version information used by various components of {project.Name}";
             help.Description = $@"
-The {help.Command} cmdlet retrieves version details found in various locations in the {project.Name} project. Version details can be updated using the {setVersion.Name} and {updateVersion.Name} cmdlet. The following table details the version details that can be retrieved:
+The {help.Command} cmdlet retrieves version details found in various locations in the {project.Name} project. Version details can be updated using the {setVersion.Name} and {updateVersion.Name} cmdlets. The following table details the version details that can be retrieved:
 
 {GetVersionTable(configProvider)}
 
-Note that if {help.Command} detects that the .git folder is missing from the repo or that the ""git"" command is not installed on your system, the PreviousTag property will be omitted from results.
+Note that if {help.Command} detects that the .git folder is missing from the repo or that the ""git"" command is not installed on your system, the PreviousTag property will be empty.
 ";
 
             help.Parameters = new HelpParameter[]
@@ -51,20 +51,27 @@ Note that if {help.Command} detects that the .git folder is missing from the rep
 
         private static string GetVersionTable(IProjectConfigProvider configProvider)
         {
-            var props = configProvider.GetVersionPropsPath(true);
-            var psd1 = configProvider.GetSourcePowerShellModuleManifest(true);
-
-            var table = new VersionTableBuilder
+            try
             {
-                { VersionType.Package, props },
-                { VersionType.Assembly, props },
-                { VersionType.File, props },
-                { VersionType.Module, psd1 },
-                { VersionType.ModuleTag, psd1 },
-                { VersionType.PreviousTag, "Git" },
-            };
+                var props = configProvider.GetVersionPropsPath(true);
+                var psd1 = configProvider.GetSourcePowerShellModuleManifest(true);
 
-            return table.ToString();
+                var table = new VersionTableBuilder
+                {
+                    { VersionType.Package, props },
+                    { VersionType.Assembly, props },
+                    { VersionType.File, props },
+                    { VersionType.Module, psd1 },
+                    { VersionType.ModuleTag, psd1 },
+                    { VersionType.PreviousTag, "Git" },
+                };
+
+                return table.ToString();
+            }
+            catch (Exception ex)
+            {
+                return $"[Failed to get version table: {ex.Message}]";
+            }
         }
 
         public string[] GetLegacyParameterSets() => null;

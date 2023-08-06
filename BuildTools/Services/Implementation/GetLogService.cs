@@ -84,13 +84,17 @@ namespace BuildTools
                     }
                     else
                     {
-                        powerShell.Clear();
+                        //Clear-Host works differently cross-platform; on Windows we can fiddle
+                        //with the console buffer, but on Unix the "clear" application is invoked,
+                        //so we're better off just dispatching to Clear-Host directly
                         powerShell.SetWindowTitle(logFile);
 
                         //The logic of waiting for changes is pretty complicated, so we just defer to PowerShell's builtin system
 
                         var builder = new StringBuilder();
                         BuildCommand(builder);
+
+                        builder.Insert(0, "cls; ");
 
                         powerShell.InvokeWithArgs(builder.ToString());
                     }

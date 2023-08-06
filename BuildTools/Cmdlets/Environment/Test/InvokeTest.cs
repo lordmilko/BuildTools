@@ -56,14 +56,14 @@ namespace BuildTools.Cmdlets
             help.Synopsis = $"Executes tests on a {project.Name} build.";
 
             help.Description = $@"
-The {help.Command} cmdlet executes tests on previously generated builds of {project.Name}. By default, test types for all languages supported by the project (e.g. both C# and PowerShell) will be executed against the last Debug build. Tests can be limited to a specific platform by specifying a value to the -Type parameter, and can also be limited to those whose name matches a specified wildcard expression via the -Name parameter.
+The {help.Command} cmdlet executes tests on previously generated builds of {project.Name}. By default, test types for all languages supported by the project will be executed against the last Debug build. Tests can be limited to a specific platform by specifying a value to the -Type parameter, and can also be limited to those whose name matches a specified wildcard expression via the -Name parameter.
 
 Tests executed by {help.Command} are automatically logged in the TRX format (C#) and NUnitXml format (PowerShell) under the {unitTest.Name}\TestResults folder of the {project.Name} solution. Test results in this directory can be evaluated and filtered after the fact using the {testResultCommand.Name} cmdlet. Note that upon compiling a new build of {unitTest.Name}, all items in this test results folder will automatically be deleted.";
 
             help.Parameters = new[]
             {
                 new HelpParameter(nameof(Name), "Wildcard used to specify tests to execute. If no value is specified, all tests will be executed."),
-                new HelpParameter(nameof(Type), "Type of tests to execute. If no value is specified, both C# and PowerShell tests will be executed."),
+                new HelpParameter(nameof(Type), "Type of tests to execute. If no value is specified, all supported tests will be executed."),
                 new ConditionalHelpParameter(NeedLegacyParameter, LegacyParameterName, $"Specifies whether to test {project.Name} using the .NET Core CLI or legacy .NET Framework tooling."),
                 new HelpParameter(nameof(Configuration), "Build configuration to test. If no value is specified, the last Debug build will be tested."),
                 new ConditionalHelpParameter(NeedIntegrationParameter, nameof(Integration), "Specifies to run integration tests instead of unit tests."),
@@ -90,7 +90,9 @@ Tests executed by {help.Command} are automatically logged in the TRX format (C#)
         {
             var service = GetService<InvokeTestService>();
 
-            service.Execute(invokeTestConfig, IsLegacyMode);
+            //Run C# tests first
+            service.InvokeCSharpTest(invokeTestConfig, IsLegacyMode);
+            service.InvokePowerShellTest(invokeTestConfig, IsLegacyMode);
         }
 
         public string[] GetLegacyParameterSets() => null;

@@ -39,7 +39,7 @@ namespace BuildTools
                 var project = configProvider.GetUnitTestProject(false);
                 var directory = configProvider.GetTestPowerShellDirectory(project);
 
-                processService.Execute("pwsh", $"-Command \"Invoke-Pester '{directory}' -EnableExit\"");
+                processService.Execute("pwsh", $"-Command \"Invoke-Pester '{directory}' -EnableExit\"", writeHost: true);
             }
             else
             {

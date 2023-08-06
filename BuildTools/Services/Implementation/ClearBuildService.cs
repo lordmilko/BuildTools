@@ -99,7 +99,7 @@ namespace BuildTools
 
             logger.LogVerbose($"Executing command 'msbuild {msbuildArgs}'");
 
-            processService.Execute(msbuild, msbuildArgs);
+            processService.Execute(msbuild, msbuildArgs, writeHost: true);
         }
 
         private void ClearNetCore(BuildConfiguration configuration)
@@ -126,7 +126,7 @@ namespace BuildTools
 
             logger.LogVerbose($"Executing command 'dotnet {cleanArgs}'");
 
-            processService.Execute(dotnet.Path, cleanArgs);
+            processService.Execute(dotnet.Path, cleanArgs, writeHost: true);
         }
 
         private void ClearCommon()
