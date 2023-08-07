@@ -26,7 +26,13 @@ namespace BuildTools
 
         public IProjectConfigProvider CreateProvider(string buildRoot, string file = null)
         {
+            powerShell.WriteVerbose($"Reading config from directory '{buildRoot}'{(file != null ? $" (File: {file})" : string.Empty)}");
+
+            var originalBuildRoot = buildRoot;
             buildRoot = Path.GetFullPath(buildRoot);
+
+            if (originalBuildRoot != buildRoot)
+                powerShell.WriteVerbose($"Resolved build root to '{buildRoot}'");
 
             var originalFile = file;
 
@@ -41,18 +47,23 @@ namespace BuildTools
             }
 
             var configFile = Path.Combine(buildRoot, file);
+            powerShell.WriteVerbose($"Using config file {configFile}");
 
             if (!fileSystem.FileExists(configFile))
             {
+                powerShell.WriteVerbose($"Could not find config file '{file}'");
+
                 bool found = false;
 
                 if (originalFile == null)
                 {
+                    powerShell.WriteVerbose("Searching for alternate config files");
                     var candidates = fileSystem.EnumerateFiles(buildRoot, "*.psd1").ToArray();
 
                     if (candidates.Length == 1)
                     {
                         configFile = candidates[0];
+                        powerShell.WriteVerbose($"Using config file '{configFile}'");
                         found = true;
                     }
                 }
@@ -69,7 +80,7 @@ namespace BuildTools
 
             ValidateFinalConfig(config);
 
-            return new ProjectConfigProvider(config, buildRoot, fileSystem);
+            return new ProjectConfigProvider(config, buildRoot, fileSystem, powerShell);
         }
 
         private ProjectConfig BuildConfig(Hashtable hashTable)

@@ -244,7 +244,7 @@ skip_tags: true
 
                 if (name.Equals("build", StringComparison.OrdinalIgnoreCase))
                 {
-                    solutionRoot = ProjectConfigProvider.CalculateSolutionRoot(path, null, fileSystem);
+                    solutionRoot = ProjectConfigProvider.CalculateSolutionRoot(path, null, fileSystem, powerShell);
                     buildFolder = path;
                 }
                 else
@@ -254,7 +254,7 @@ skip_tags: true
             {
                 var name = Path.GetFileName(path);
 
-                var slnRoot = ProjectConfigProvider.CalculateSolutionRoot(path, null, fileSystem);
+                var slnRoot = ProjectConfigProvider.CalculateSolutionRoot(path, null, fileSystem, powerShell);
 
                 if (name.Equals("build", StringComparison.OrdinalIgnoreCase))
                 {

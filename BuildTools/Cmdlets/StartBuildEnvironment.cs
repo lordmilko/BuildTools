@@ -33,6 +33,10 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false, ParameterSetName = ParameterSet.CI)]
         public SwitchParameter Alternate { get; set; }
 
+        public StartBuildEnvironment() : base(false)
+        {
+        }
+
         protected override void ProcessRecordEx()
         {
             //Process the config before checking for possible singleton environments so that on PowerShell Core
@@ -43,11 +47,12 @@ namespace BuildTools.Cmdlets
             var powerShell = GetService<IPowerShellService>();
 
             bool isSingleton = powerShell.Edition == PSEdition.Core;
-            ValidateSingleton(isSingleton);
+            ValidateSingleton(powerShell, isSingleton);
 
             //Build dynamic cmdlet types based on the configuration file
             var dynamicAssemblyBuilder = new DynamicAssemblyBuilder(configProvider.Config);
 
+            powerShell.WriteVerbose("Generating dynamic cmdlets");
             dynamicAssemblyBuilder.BuildCmdlets(isSingleton);
 
             var name = configProvider.Config.Name;
@@ -57,7 +62,10 @@ namespace BuildTools.Cmdlets
             //Create and import a dynamic module containing the dynamic cmdlets
 
             if (CI)
+            {
+                powerShell.WriteVerbose($"Generating CI module instead of regular module as -{nameof(CI)} was specified");
                 RegisterCI(powerShell, name);
+            }
             else
                 module = powerShell.RegisterModule($"{name}.Build", dynamicAssemblyBuilder.CmdletTypes);
 
@@ -91,6 +99,7 @@ namespace BuildTools.Cmdlets
 
             try
             {
+                //If we're in CI, module is null
                 if (!CI)
                 {
                     var helpService = envProvider.GetService<IHelpService>();
@@ -122,9 +131,17 @@ namespace BuildTools.Cmdlets
                 appveyor = !appveyor;
 
             if (appveyor)
+            {
+                powerShell.WriteVerbose("Generating Appveyor CI module");
+
                 RegisterCIModule<AppveyorCmdlet>(powerShell, name, "Appveyor");
+            }
             else
+            {
+                powerShell.WriteVerbose("Generating generic CI module");
+
                 RegisterCIModule<GenericCICmdlet>(powerShell, name, "CI");
+            }
         }
 
         private void RegisterCIModule<T>(IPowerShellService powerShell, string name, string suffix)
@@ -141,7 +158,7 @@ namespace BuildTools.Cmdlets
             BuildToolsSessionState.ContinuousIntegrationOwner = moduleName;
         }
 
-        private void ValidateSingleton(bool isSingleton)
+        private void ValidateSingleton(IPowerShellService powerShell, bool isSingleton)
         {
             if (isSingleton)
             {
@@ -158,6 +175,8 @@ namespace BuildTools.Cmdlets
 
                 if (BuildToolsSessionState.Environments.Length > 0)
                     throw new InvalidOperationException("Cannot load environment: another environment is already loaded, and PowerShell Core only supports singleton environments.");
+
+                powerShell.WriteVerbose("Build Environment is running under PowerShell Core. Only a single build environment will be allowed");
             }
         }
 

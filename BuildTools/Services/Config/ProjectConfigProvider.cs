@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
+using BuildTools.PowerShell;
 
 namespace BuildTools
 {
     class ProjectConfigProvider : IProjectConfigProvider
     {
-        private IFileSystemProvider fileSystem;
+        private readonly IFileSystemProvider fileSystem;
+        private readonly IPowerShellService powerShell;
 
         internal static readonly string[] SrcFolders =
         {
@@ -37,22 +39,32 @@ namespace BuildTools
         private BuildProject[] projects;
         private string baseSolutionName;
 
-        internal ProjectConfigProvider(ProjectConfig config, string buildRoot, IFileSystemProvider fileSystem)
+        internal ProjectConfigProvider(
+            ProjectConfig config,
+            string buildRoot,
+            IFileSystemProvider fileSystem,
+            IPowerShellService powerShell)
         {
             this.fileSystem = fileSystem;
+            this.powerShell = powerShell;
 
             Config = config;
-            SolutionRoot = CalculateSolutionRoot(buildRoot, Config.SourceFolder, fileSystem);
+            SolutionRoot = CalculateSolutionRoot(buildRoot, Config.SourceFolder, fileSystem, powerShell);
+            powerShell.WriteVerbose($"Found solution root '{SolutionRoot}'");
+
             baseSolutionName = GetBaseSolutionName();
 
-            if (config.SourceFolder != null)
-                SourceRoot = Path.Combine(SolutionRoot, config.SourceFolder);
-            else
-                SourceRoot = CalculateSourceRoot();
+            SourceRoot = CalculateSourceRoot();
         }
 
-        internal static string CalculateSolutionRoot(string buildRoot, string sourceFolder, IFileSystemProvider fileSystem)
+        internal static string CalculateSolutionRoot(
+            string buildRoot,
+            string sourceFolder,
+            IFileSystemProvider fileSystem,
+            IPowerShellService powerShell)
         {
+            powerShell.WriteVerbose($"Calculating solution root using build root {buildRoot}{(!string.IsNullOrWhiteSpace(sourceFolder) ? $" and source folder {sourceFolder}" : string.Empty)}");
+
             var subDirs = new List<string>();
             subDirs.AddRange(SrcFolders);
 
@@ -61,6 +73,8 @@ namespace BuildTools
 
             while (buildRoot != null)
             {
+                powerShell.WriteVerbose($"Searching for *.sln files in {buildRoot}");
+
                 //Is it in the current folder?
                 if (fileSystem.EnumerateFiles(buildRoot, "*.sln").Any())
                     return buildRoot;
@@ -83,12 +97,16 @@ namespace BuildTools
 
         private string CalculateSourceRoot()
         {
+            powerShell.WriteVerbose("Calculating source root");
+
             if (Config.SourceFolder != null)
             {
                 var path = Path.Combine(SolutionRoot, Config.SourceFolder);
 
                 if (!fileSystem.DirectoryExists(path))
                     throw new InvalidOperationException($"Specified {nameof(ProjectConfig.SourceFolder)} '{path}' does not exist.");
+
+                powerShell.WriteVerbose($"Source folder specified, setting source root to {SourceRoot}");
 
                 return path;
             }
@@ -101,9 +119,13 @@ namespace BuildTools
                     var path = Path.Combine(SolutionRoot, dir);
 
                     if (fileSystem.DirectoryExists(path))
+                    {
+                        powerShell.WriteVerbose($"Found directory '{dir}', setting source root to '{path}'");
                         return path;
+                    }
                 }
 
+                powerShell.WriteVerbose($"Couldn't find a custom source root, using solution root '{SolutionRoot}'");
                 return SolutionRoot;
             }
         }
@@ -304,6 +326,8 @@ namespace BuildTools
 
         private BuildProject[] GetProjectsInternal()
         {
+            powerShell.WriteVerbose("Enumerating solution projects");
+
             //Note that enumerating projects against the Windows Host takes a few seconds in WSL. GetTestResult
             //therefore delays initializing the environment due to it being an IIntegrationProvider, so its dynamic
             //parameters need to check to see whether any integration tests exist in the project. It will access its
@@ -335,11 +359,18 @@ namespace BuildTools
                         normalized = string.Join(".", split);
                     }
 
+                    powerShell.WriteVerbose($"Found project '{item.Path}' (Legacy: {(isLegacy ? "true" : "false")})");
                     results.Add(new BuildProject(item.Path, normalized, isLegacy));
                 }
             }
             else
-                results.AddRange(items.Select(i => new BuildProject(i.Path, i.Name, false)));
+            {
+                foreach (var item in items)
+                {
+                    powerShell.WriteVerbose($"Found project '{item.Path}'");
+                    results.Add(new BuildProject(item.Path, item.Name, false));
+                }
+            }
 
             return results.ToArray();
         }

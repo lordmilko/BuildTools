@@ -256,7 +256,7 @@ PrtgAPI is a C#/PowerShell library that abstracts away the complexity of interfa
                 { typeof(IWebClient), typeof(MockWebClient) },
                 { typeof(IZipService), typeof(ZipService) },
 
-                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>())
+                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>(), p.GetService<IPowerShellService>())
             };
         }
     }

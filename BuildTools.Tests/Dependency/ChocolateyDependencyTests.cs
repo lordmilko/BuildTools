@@ -176,7 +176,7 @@ namespace BuildTools.Tests.Dependency
                 { typeof(IConsoleLogger), typeof(MockConsoleLogger) },
                 { typeof(IFileLogger), typeof(MockFileLogger) },
                 { typeof(IPowerShellService), typeof(MockPowerShellService) },
-                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>())
+                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>(), p.GetService<IPowerShellService>())
             };
         }
 

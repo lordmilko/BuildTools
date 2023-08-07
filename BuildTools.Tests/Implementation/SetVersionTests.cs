@@ -48,7 +48,7 @@ namespace BuildTools.Tests
                 { typeof(IPowerShellService), typeof(MockPowerShellService) },
                 { typeof(IProcessService), typeof(MockProcessService) },
 
-                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>())
+                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>(), p.GetService<IPowerShellService>())
             }.Build();
 
             var fileSystem = (MockFileSystemProvider)serviceProvider.GetService<IFileSystemProvider>();

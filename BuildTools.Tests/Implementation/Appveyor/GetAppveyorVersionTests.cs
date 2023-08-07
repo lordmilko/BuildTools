@@ -188,7 +188,7 @@ namespace BuildTools.Tests.Implementation
                 { typeof(IProcessService), typeof(MockProcessService) },
                 { typeof(IWebClient), typeof(MockWebClient) },
 
-                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>())
+                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>(), p.GetService<IPowerShellService>())
             };
         }
     }

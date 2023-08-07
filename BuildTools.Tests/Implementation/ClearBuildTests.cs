@@ -135,7 +135,7 @@ namespace BuildTools.Tests
                 { typeof(IVsProductLocator), typeof(MockVsProductLocator) },
                 { typeof(IWebClient), typeof(MockWebClient) },
 
-                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>())
+                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>(), p.GetService<IPowerShellService>())
             };
         }
     }

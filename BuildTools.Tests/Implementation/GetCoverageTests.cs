@@ -693,7 +693,7 @@ namespace BuildTools.Tests
 
                 { typeof(IProjectConfigProviderFactory), typeof(ProjectConfigProviderFactory) },
 
-                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>())
+                p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>(), p.GetService<IPowerShellService>())
             };
         }
     }
