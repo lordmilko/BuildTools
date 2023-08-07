@@ -14,7 +14,7 @@ namespace BuildTools.Cmdlets.Appveyor
 
     public abstract class AppveyorCmdlet : BaseCICmdlet<AppveyorEnvironment>
     {
-        protected override bool IsLegacyMode => BuildToolsSessionState.AppveyorBuildCore ?? base.IsLegacyMode;
+        protected override bool IsLegacyMode => BuildToolsSessionState.AppveyorBuildLegacy ?? base.IsLegacyMode;
 
         public string[] GetLegacyParameterSets() => null;
     }

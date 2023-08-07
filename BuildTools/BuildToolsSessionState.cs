@@ -20,7 +20,7 @@ namespace BuildTools
 
         internal static string ContinuousIntegrationOwner { get; set; }
 
-        internal static bool? AppveyorBuildCore { get; set; }
+        internal static bool? AppveyorBuildLegacy { get; set; }
 
         internal static IServiceProvider ServiceProvider(Type environment)
         {
