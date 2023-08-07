@@ -21,6 +21,8 @@ namespace BuildTools.Tests
 
         public Dictionary<string, Action<string>> OnUninstallPackage { get; } = new Dictionary<string, Action<string>>();
 
+        public Dictionary<string, Action<string, string>> OnUpdateModuleManifest { get; } = new Dictionary<string, Action<string, string>>();
+
         public bool IsISE { get; }
         public PSEdition Edition { get; }
         public bool IsProgressEnabled { get; }
@@ -91,6 +93,8 @@ namespace BuildTools.Tests
 
         public void UpdateModuleManifest(string path, string rootModule = null)
         {
+            if (OnUpdateModuleManifest.TryGetValue(path, out var action))
+                action(path, rootModule);
         }
 
         public IPowerShellPackage GetPackage(string name, string destination = null) =>

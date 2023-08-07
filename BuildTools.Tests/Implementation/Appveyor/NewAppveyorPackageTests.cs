@@ -146,6 +146,47 @@ namespace BuildTools.Tests.Implementation
             });
         }
 
+        [TestMethod]
+        public void NewAppveyorPackage_PrtgAPI_CSharp_Appveyor()
+        {
+
+            Test((
+                MockFileSystemProvider fileSystem,
+                MockEnvironmentVariableProvider envProvider,
+                MockPowerShellService powerShell,
+                MockProcessService processService,
+                Lazy<AppveyorCSharpPackageProvider> appveyorCSharpPackageProvider) =>
+            {
+                MockSetup(fileSystem, envProvider, powerShell);
+                MockCSharpPackageProvider(fileSystem, envProvider, powerShell);
+                MockVersion(fileSystem, powerShell, false);
+
+                MockTestCSharpPackage(
+                    fileSystem,
+                    powerShell,
+                    processService,
+
+                    ("lib\\net452\\PrtgAPI.dll", false),
+                    ("lib\\net452\\PrtgAPI.xml", false),
+                    ("lib\\netstandard2.0\\PrtgAPI.dll", false),
+                    ("lib\\netstandard2.0\\PrtgAPI.xml", false),
+                    ("LICENSE", false)
+                );
+
+                envProvider.SetValue(WellKnownEnvironmentVariable.Appveyor, "1");
+                envProvider.SetValue(WellKnownEnvironmentVariable.AppveyorBuildVersion, "0.9.16-build.2");
+                fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.*nupkg", SearchOption.TopDirectoryOnly)] = new[]
+                {
+                    "C:\\temp\\PrtgAPI.0.9.16.nupkg",
+                    "C:\\temp\\PrtgAPI.0.9.16.snupkg"
+                };
+
+                fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.zip", SearchOption.TopDirectoryOnly)] = new string[0];
+
+                appveyorCSharpPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, PackageType.CSharp));
+            });
+        }
+
         #endregion
         #region PowerShell
 
@@ -303,6 +344,76 @@ namespace BuildTools.Tests.Implementation
                 );
 
                 appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, PackageType.PowerShell));
+            });
+        }
+
+        [TestMethod]
+        public void NewAppveyorPackage_PrtgAPI_PowerShell_Appveyor()
+        {
+            Test((
+                MockFileSystemProvider fileSystem,
+                MockEnvironmentVariableProvider envProvider,
+                MockPowerShellService powerShell,
+                MockProcessService processService,
+                Lazy<AppveyorPowerShellPackageProvider> appveyorPowerShellPackageProvider) =>
+            {
+                MockSetup(fileSystem, envProvider, powerShell);
+                MockPowerShellPackageProvider(fileSystem);
+                MockVersion(fileSystem, powerShell, false);
+
+                bool contentsUpdated = false;
+
+                MockTestPowerShellPackage(
+                    fileSystem,
+                    powerShell,
+                    processService,
+                    false,
+
+                    new[]
+                    {
+                        ("about_ChannelSettings.help.txt", false),
+                        ("about_ObjectSettings.help.txt", false),
+                        ("about_PrtgAPI.help.txt", false),
+                        ("about_SensorParameters.help.txt", false),
+                        ("about_SensorSettings.help.txt", false),
+                        ("Functions\\New-Credential.ps1", false),
+                        ("coreclr\\PrtgAPI.dll", false),
+                        ("coreclr\\PrtgAPI.PowerShell.dll", false),
+                        ("fullclr\\PrtgAPI.dll", false),
+                        ("fullclr\\PrtgAPI.PowerShell.dll", false),
+                        ("PrtgAPI.Format.ps1xml", false),
+                        ("PrtgAPI.PowerShell.dll-Help.xml", false),
+                        ("PrtgAPI.psd1", false),
+                        ("PrtgAPI.psm1", false),
+                        ("PrtgAPI.Types.ps1xml", false)
+                    },
+                    
+                    psd1Contents => (a, b) =>
+                    {
+                        var psd1Hashtable = (Hashtable) powerShell.InvokeScriptMap[psd1Contents];
+
+                        var cmdletsToExport = (object[])psd1Hashtable["CmdletsToExport"];
+                        cmdletsToExport[0] = "Get-Sensor";
+
+                        var aliasesToExport = (object[])psd1Hashtable["AliasesToExport"];
+                        aliasesToExport[0] = "Add-Trigger";
+
+                        contentsUpdated = true;
+                    }
+                );
+
+                fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.*nupkg", SearchOption.TopDirectoryOnly)] = new[]
+                {
+                    "C:\\temp\\PrtgAPI_PowerShell.0.9.16.nupkg",
+                };
+
+                fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.zip", SearchOption.TopDirectoryOnly)] = new string[0];
+
+                envProvider.SetValue(WellKnownEnvironmentVariable.Appveyor, "1");
+
+                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, PackageType.PowerShell));
+
+                Assert.IsTrue(contentsUpdated, "UpdateModuleManifest was not called");
             });
         }
 
@@ -493,6 +604,65 @@ namespace BuildTools.Tests.Implementation
                     ("PrtgAPI.psm1", false),
                     ("PrtgAPI.Types.ps1xml", false)
                 );
+
+                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, PackageType.Redistributable));
+            });
+        }
+
+        [TestMethod]
+        public void NewAppveyorPackage_PrtgAPI_Redist_Appveyor()
+        {
+            Test((
+                MockFileSystemProvider fileSystem,
+                MockEnvironmentVariableProvider envProvider,
+                MockPowerShellService powerShell,
+                MockProcessService processService,
+                Lazy<AppveyorPowerShellPackageProvider> appveyorPowerShellPackageProvider) =>
+            {
+                MockSetup(fileSystem, envProvider, powerShell);
+                MockPowerShellPackageProvider(fileSystem);
+                MockVersion(fileSystem, powerShell, false);
+
+                MockTestPowerShellPackage(
+                    fileSystem,
+                    powerShell,
+                    processService,
+                    true,
+
+                    ("PrtgAPI.cmd", false),
+                    ("PrtgAPI.sh", false),
+                    ("about_ChannelSettings.help.txt", false),
+                    ("about_ObjectSettings.help.txt", false),
+                    ("about_PrtgAPI.help.txt", false),
+                    ("about_SensorParameters.help.txt", false),
+                    ("about_SensorSettings.help.txt", false),
+                    ("Functions\\New-Credential.ps1", false),
+                    ("coreclr\\PrtgAPI.dll", false),
+                    ("coreclr\\PrtgAPI.pdb", false),
+                    ("coreclr\\PrtgAPI.xml", false),
+                    ("coreclr\\PrtgAPI.PowerShell.dll", false),
+                    ("coreclr\\PrtgAPI.PowerShell.pdb", false),
+                    ("coreclr\\PrtgAPI.PowerShell.xml", false),
+                    ("fullclr\\PrtgAPI.dll", false),
+                    ("fullclr\\PrtgAPI.pdb", false),
+                    ("fullclr\\PrtgAPI.xml", false),
+                    ("fullclr\\PrtgAPI.PowerShell.dll", false),
+                    ("fullclr\\PrtgAPI.PowerShell.pdb", false),
+                    ("fullclr\\PrtgAPI.PowerShell.xml", false),
+                    ("coreclr\\PrtgAPI.deps.json", false),
+                    ("coreclr\\PrtgAPI.PowerShell.deps.json", false),
+                    ("PrtgAPI.Format.ps1xml", false),
+                    ("PrtgAPI.PowerShell.dll-Help.xml", false),
+                    ("PrtgAPI.psd1", false),
+                    ("PrtgAPI.psm1", false),
+                    ("PrtgAPI.Types.ps1xml", false)
+                );
+
+                envProvider.SetValue(WellKnownEnvironmentVariable.Appveyor, "1");
+
+                fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.*nupkg", SearchOption.TopDirectoryOnly)] = new string[0];
+
+                fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.zip", SearchOption.TopDirectoryOnly)] = new string[0];
 
                 appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, PackageType.Redistributable));
             });
@@ -742,7 +912,16 @@ PrtgAPI is a C#/PowerShell library that abstracts away the complexity of interfa
             MockPowerShellService powerShell,
             MockProcessService processService,
             bool isRedist,
-            params (string relativePath, bool isFolder)[] files)
+            params (string relativePath, bool isFolder)[] files) =>
+            MockTestPowerShellPackage(fileSystem, powerShell, processService, isRedist, files, null);
+
+        private void MockTestPowerShellPackage(
+            MockFileSystemProvider fileSystem,
+            MockPowerShellService powerShell,
+            MockProcessService processService,
+            bool isRedist,
+            (string relativePath, bool isFolder)[] files,
+            Func<string, Action<string, string>> onModuleManifest)
         {
             fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.nupkg", SearchOption.TopDirectoryOnly)] = new[]
             {
@@ -752,12 +931,16 @@ PrtgAPI is a C#/PowerShell library that abstracts away the complexity of interfa
             fileSystem.DirectoryExistsMap["C:\\temp\\PrtgAPI.0.9.16"] = true;
             fileSystem.DirectoryExistsMap[Path.Combine(PackageSourceService.RepoLocation, "PrtgAPI")] = true;
 
-            TestPowerShellPackageDefinition(fileSystem, powerShell, isRedist);
+            TestPowerShellPackageDefinition(fileSystem, powerShell, isRedist, onModuleManifest);
             MockFilesInPackage(fileSystem, isRedist, files);
             TestPowerShellPackageInstalls(fileSystem, processService);
         }
 
-        private void TestPowerShellPackageDefinition(MockFileSystemProvider fileSystem, MockPowerShellService powerShell, bool isRedist)
+        private void TestPowerShellPackageDefinition(
+            MockFileSystemProvider fileSystem,
+            MockPowerShellService powerShell,
+            bool isRedist,
+            Func<string, Action<string, string>> onModuleManifest = null)
         {
             var parentDir = "C:\\temp\\PrtgAPI.0.9.16";
 
@@ -787,8 +970,13 @@ PrtgAPI is a C#/PowerShell library that abstracts away the complexity of interfa
 PrtgAPI is a C#/PowerShell library that abstracts away the complexity of interfacing with the PRTG Network Monitor HTTP API.
 " }
                     } }
-                } }
+                } },
+                { "CmdletsToExport", new[]{"*"} },
+                { "AliasesToExport", new[]{"*"} }
             };
+
+            if (onModuleManifest != null)
+                powerShell.OnUpdateModuleManifest[psd1Path] = onModuleManifest(psd1Contents);
 
             //Release
             fileSystem.FileExistsMap["C:\\temp\\PrtgAPI.0.9.16\\fullclr\\PrtgAPI.PowerShell.dll"] = true;
