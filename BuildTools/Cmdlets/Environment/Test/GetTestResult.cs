@@ -50,7 +50,14 @@ namespace BuildTools.Cmdlets
             set => testResultConfig.Integration = value;
         }
 
-        private TestResultConfig testResultConfig = new TestResultConfig();
+        private TestResultConfig testResultConfig;
+
+        protected GetTestResult()
+        {
+            var configProvider = BuildToolsSessionState.ServiceProvider<TEnvironment>().GetService<IProjectConfigProvider>();
+
+            testResultConfig = new TestResultConfig(configProvider.Config.TestTypes);
+        }
 
         public static void CreateHelp(HelpConfig help, IProjectConfigProvider configProvider, ICommandService commandService)
         {

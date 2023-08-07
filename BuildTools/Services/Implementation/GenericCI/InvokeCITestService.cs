@@ -34,7 +34,7 @@ namespace BuildTools
                 "TestCategory!=SkipCI"
             };
 
-            invokeTestService.InvokeCICSharpTest(new InvokeTestConfig
+            invokeTestService.InvokeCICSharpTest(new InvokeTestConfig(configProvider.Config.TestTypes)
             {
                 Configuration = configuration
             }, csharpArgs, false);

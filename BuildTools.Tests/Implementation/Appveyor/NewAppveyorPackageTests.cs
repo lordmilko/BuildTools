@@ -57,7 +57,7 @@ namespace BuildTools.Tests.Implementation
                     ("lib\\net452\\PrtgAPI.xml", false)
                 );
 
-                appveyorCSharpPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Debug, true, true, PackageType.CSharp));
+                appveyorCSharpPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Debug, true, true, null, PackageType.CSharp));
             });
         }
 
@@ -84,7 +84,7 @@ namespace BuildTools.Tests.Implementation
                     ("lib\\net452\\PrtgAPI.xml", false)
                 );
 
-                appveyorCSharpPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, true, true, PackageType.CSharp));
+                appveyorCSharpPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, true, true, null, PackageType.CSharp));
             });
         }
 
@@ -112,7 +112,7 @@ namespace BuildTools.Tests.Implementation
                     ("LICENSE", false)
                 );
 
-                appveyorCSharpPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Debug, false, true, PackageType.CSharp));
+                appveyorCSharpPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Debug, false, true, null, PackageType.CSharp));
             });
         }
 
@@ -142,7 +142,7 @@ namespace BuildTools.Tests.Implementation
                     ("LICENSE", false)
                 );
 
-                appveyorCSharpPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, PackageType.CSharp));
+                appveyorCSharpPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, null, PackageType.CSharp));
             });
         }
 
@@ -183,7 +183,7 @@ namespace BuildTools.Tests.Implementation
 
                 fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.zip", SearchOption.TopDirectoryOnly)] = new string[0];
 
-                appveyorCSharpPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, PackageType.CSharp));
+                appveyorCSharpPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, null, PackageType.CSharp));
             });
         }
 
@@ -225,7 +225,7 @@ namespace BuildTools.Tests.Implementation
                     ("PrtgAPI.Types.ps1xml", false)
                 );
 
-                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Debug, true, true, PackageType.PowerShell));
+                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Debug, true, true, null, PackageType.PowerShell));
             });
         }
 
@@ -264,7 +264,7 @@ namespace BuildTools.Tests.Implementation
                     ("PrtgAPI.Types.ps1xml", false)
                 );
 
-                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, true, true, PackageType.PowerShell));
+                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, true, true, null, PackageType.PowerShell));
             });
         }
 
@@ -302,7 +302,7 @@ namespace BuildTools.Tests.Implementation
                     ("PrtgAPI.Types.ps1xml", false)
                 );
 
-                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Debug, false, true, PackageType.PowerShell));
+                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Debug, false, true, null, PackageType.PowerShell));
             });
         }
 
@@ -343,7 +343,7 @@ namespace BuildTools.Tests.Implementation
                     ("PrtgAPI.Types.ps1xml", false)
                 );
 
-                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, PackageType.PowerShell));
+                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, null, PackageType.PowerShell));
             });
         }
 
@@ -411,7 +411,7 @@ namespace BuildTools.Tests.Implementation
 
                 envProvider.SetValue(WellKnownEnvironmentVariable.Appveyor, "1");
 
-                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, PackageType.PowerShell));
+                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, null, PackageType.PowerShell));
 
                 Assert.IsTrue(contentsUpdated, "UpdateModuleManifest was not called");
             });
@@ -461,7 +461,7 @@ namespace BuildTools.Tests.Implementation
                     ("PrtgAPI.Types.ps1xml", false)
                 );
 
-                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Debug, true, true, PackageType.Redistributable));
+                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Debug, true, true, null, PackageType.Redistributable));
             });
         }
 
@@ -506,7 +506,7 @@ namespace BuildTools.Tests.Implementation
                     ("PrtgAPI.Types.ps1xml", false)
                 );
 
-                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, true, true, PackageType.Redistributable));
+                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, true, true, null, PackageType.Redistributable));
             });
         }
 
@@ -552,7 +552,7 @@ namespace BuildTools.Tests.Implementation
                     ("PrtgAPI.Types.ps1xml", false)
                 );
 
-                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Debug, false, true, PackageType.Redistributable));
+                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Debug, false, true, null, PackageType.Redistributable));
             });
         }
 
@@ -605,7 +605,7 @@ namespace BuildTools.Tests.Implementation
                     ("PrtgAPI.Types.ps1xml", false)
                 );
 
-                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, PackageType.Redistributable));
+                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, null, PackageType.Redistributable));
             });
         }
 
@@ -664,7 +664,7 @@ namespace BuildTools.Tests.Implementation
 
                 fileSystem.EnumerateFilesMap[(PackageSourceService.RepoLocation, "*.zip", SearchOption.TopDirectoryOnly)] = new string[0];
 
-                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, PackageType.Redistributable));
+                appveyorPowerShellPackageProvider.Value.Execute(new PackageConfig(BuildConfiguration.Release, false, true, null, PackageType.Redistributable));
             });
         }
 

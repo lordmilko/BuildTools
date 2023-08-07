@@ -36,7 +36,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell, false);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] {TestType.CSharp}
                     },
@@ -71,7 +71,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] { TestType.CSharp },
                         TestOnly = true
@@ -99,7 +99,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] { TestType.CSharp }
                     },
@@ -131,7 +131,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] { TestType.CSharp },
                         TestOnly = true
@@ -161,7 +161,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] { TestType.CSharp },
                         Name = "*foo*"
@@ -194,7 +194,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] { TestType.CSharp },
                         Name = "*foo*"
@@ -230,7 +230,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] { TestType.PowerShell }
                     },
@@ -263,7 +263,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] { TestType.PowerShell },
                         TestOnly = true
@@ -293,7 +293,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] { TestType.PowerShell }
                     },
@@ -326,7 +326,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] { TestType.PowerShell },
                         TestOnly = true
@@ -356,7 +356,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] { TestType.PowerShell },
                         Name = "*first*"
@@ -390,7 +390,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] { TestType.PowerShell },
                         Name = "*first*"
@@ -424,7 +424,7 @@ namespace BuildTools.Tests
                 Setup(fileSystem, envProvider, powerShell);
 
                 getService.Value.GetCoverage(
-                    new CoverageConfig
+                    new CoverageConfig(null)
                     {
                         Type = new[] { TestType.PowerShell },
                         Name = "*foo*"
@@ -459,7 +459,7 @@ namespace BuildTools.Tests
 
                 AssertEx.Throws<InvalidOperationException>(
                     () => getService.Value.GetCoverage(
-                        new CoverageConfig
+                        new CoverageConfig(null)
                         {
                             Type = new[] { TestType.PowerShell }
                         },
@@ -490,7 +490,7 @@ namespace BuildTools.Tests
 
                 AssertEx.Throws<InvalidOperationException>(
                     () => getService.Value.GetCoverage(
-                        new CoverageConfig
+                        new CoverageConfig(null)
                         {
                             Type = new[] { TestType.PowerShell }
                         },
@@ -537,7 +537,7 @@ namespace BuildTools.Tests
                     configProvider.Value.Config.PowerShellUnitTestFilter = temp.Config.PowerShellUnitTestFilter;
 
                     getService.Value.GetCoverage(
-                        new CoverageConfig
+                        new CoverageConfig(null)
                         {
                             Type = new[] { TestType.PowerShell }
                         },

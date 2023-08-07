@@ -44,7 +44,14 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false)]
         public SwitchParameter SkipReport { get; set; }
 
-        private CoverageConfig coverageConfig = new CoverageConfig();
+        private CoverageConfig coverageConfig;
+
+        protected GetCoverage()
+        {
+            var configProvider = BuildToolsSessionState.ServiceProvider<TEnvironment>().GetService<IProjectConfigProvider>();
+
+            coverageConfig = new CoverageConfig(configProvider.Config.TestTypes);
+        }
 
         public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {

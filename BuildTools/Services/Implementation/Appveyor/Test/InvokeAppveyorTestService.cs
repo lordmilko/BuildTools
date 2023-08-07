@@ -68,7 +68,7 @@ namespace BuildTools
 
         private void ProcessCSharp(BuildConfiguration configuration, bool isLegacy)
         {
-            var config = new InvokeTestConfig
+            var config = new InvokeTestConfig(configProvider.Config.TestTypes)
             {
                 Configuration = configuration
             };

@@ -14,14 +14,22 @@
 
         public PackageType[] Types { get; }
 
-        public PackageTarget Target => new PackageTarget(Types);
+        public PackageType[] ProjectType { get; }
 
-        public PackageConfig(BuildConfiguration configuration, bool isLegacy, bool powerShellMultiTargeted, params PackageType[] types)
+        public PackageTarget Target => new PackageTarget(Types, ProjectType);
+
+        public PackageConfig(
+            BuildConfiguration configuration,
+            bool isLegacy,
+            bool powerShellMultiTargeted,
+            PackageType[] projectType,
+            params PackageType[] types)
         {
             Configuration = configuration;
             IsLegacy = isLegacy;
             IsMultiTargeting = IsRelease && !isLegacy && powerShellMultiTargeted;
             Types = types;
+            ProjectType = projectType;
         }
     }
 }

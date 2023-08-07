@@ -17,11 +17,18 @@ namespace BuildTools
 
         public TestType[] Type { get; set; }
 
+        public TestType[] ProjectType { get; }
+
         public BuildConfiguration Configuration { get; set; } = BuildConfiguration.Debug;
 
         public bool TestOnly { get; set; }
 
-        public TestTarget Target => new TestTarget(Type);
+        public TestTarget Target => new TestTarget(Type, ProjectType);
+
+        public CoverageConfig(TestType[] projectType)
+        {
+            ProjectType = projectType;
+        }
     }
 
     class GetCoverageService

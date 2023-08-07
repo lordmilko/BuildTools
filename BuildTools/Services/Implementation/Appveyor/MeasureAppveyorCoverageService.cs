@@ -33,7 +33,7 @@ namespace BuildTools
         {
             logger.LogHeader("Calculating code coverage");
 
-            getCoverageService.GetCoverage(new CoverageConfig
+            getCoverageService.GetCoverage(new CoverageConfig(configProvider.Config.TestTypes)
             {
                 Configuration = configuration
             }, isLegacy);

@@ -45,7 +45,14 @@ namespace BuildTools.Cmdlets
             set => invokeTestConfig.Tags = value;
         }
 
-        private InvokeTestConfig invokeTestConfig = new InvokeTestConfig();
+        private InvokeTestConfig invokeTestConfig;
+
+        protected InvokeTest()
+        {
+            var configProvider = BuildToolsSessionState.ServiceProvider<TEnvironment>().GetService<IProjectConfigProvider>();
+
+            invokeTestConfig = new InvokeTestConfig(configProvider.Config.TestTypes);
+        }
 
         public static void CreateHelp(HelpConfig help, IProjectConfigProvider configProvider, ICommandService commandService)
         {

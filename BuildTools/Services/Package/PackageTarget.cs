@@ -4,7 +4,8 @@ namespace BuildTools
 {
     struct PackageTarget
     {
-        private PackageType[] types;
+        private PackageType[] userTypes;
+        private PackageType[] projectTypes;
 
         public bool CSharp => HasType(PackageType.CSharp);
 
@@ -12,11 +13,18 @@ namespace BuildTools
 
         public bool Redist => HasType(PackageType.Redistributable);
 
-        public PackageTarget(PackageType[] types)
+        public PackageTarget(PackageType[] userTypes, PackageType[] projectTypes)
         {
-            this.types = types;
+            this.userTypes = userTypes;
+            this.projectTypes = projectTypes;
         }
 
-        private bool HasType(PackageType type) => types.Length == 0 || types.Contains(type);
+        private bool HasType(PackageType type)
+        {
+            if (userTypes != null && userTypes.Length > 0)
+                return userTypes.Contains(type);
+
+            return projectTypes == null || projectTypes.Length == 0 || projectTypes.Contains(type);
+        }
     }
 }
