@@ -57,8 +57,41 @@ namespace BuildTools.Tests
             });
         }
 
-        private void Test(Action<dynamic> action, [CallerMemberName] string methodName = null)
+        [TestMethod]
+        public void Help_IncludeRelated()
         {
+            Test(help =>
+            {
+                var relatedLinks = help.relatedLinks;
+
+                var linkText = (PSObject) relatedLinks.navigationLink.linkText;
+
+                var value = linkText.BaseObject;
+
+                Assert.AreEqual("Clear-Help_IncludeRelatedBuild\nInvoke-Help_IncludeRelatedTest", value);
+            }, cmdlet: "Invoke-{0}Build", features: new[] { "Build", "Test" });
+        }
+
+        [TestMethod]
+        public void Help_ExcludeRelated()
+        {
+            Test(help =>
+            {
+                var relatedLinks = help.relatedLinks;
+
+                var linkText = (PSObject)relatedLinks.navigationLink.linkText;
+
+                var value = linkText.BaseObject;
+
+                Assert.AreEqual("Clear-Help_ExcludeRelatedBuild", value);
+            }, cmdlet: "Invoke-{0}Build", features: new[] { "Build" });
+        }
+
+        private void Test(Action<dynamic> action, [CallerMemberName] string methodName = null, string cmdlet = "Clear-{0}Build", string[] features = null)
+        {
+            if (features == null)
+                features = new[] { "~Package" };
+
             var invoker = new PowerShellInvoker();
 
             BuildToolsSessionState.HeadlessUI = true;
@@ -67,14 +100,19 @@ namespace BuildTools.Tests
 
             try
             {
+                string featuresStr = "''";
+
+                if (features != null)
+                    featuresStr = string.Join(", ", features.Select(v => $"'{v}'").ToArray());
+
                 File.WriteAllText(configFile, $@"
 @{{
     Name = '{methodName}'
     CmdletPrefix = '{methodName}'
     SolutionName = '{methodName}.sln'
     Copyright = 'foo, 2023'
-    ExcludedCommands = 'GetVersion','SetVersion','UpdateVersion','NewPackage'
     CoverageThreshold = 10
+    Features = {featuresStr}
 }}
 ");
 
@@ -84,7 +122,7 @@ namespace BuildTools.Tests
                     File = configFile
                 });
 
-                dynamic help = invoker.Invoke<PSObject>("Get-Help", $"Clear-{methodName}Build").SingleOrDefault();
+                dynamic help = invoker.Invoke<PSObject>("Get-Help", string.Format(cmdlet, methodName)).SingleOrDefault();
 
                 Assert.IsNotNull(help);
 

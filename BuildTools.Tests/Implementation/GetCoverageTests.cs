@@ -529,7 +529,9 @@ namespace BuildTools.Tests
                         { "SolutionName", "PrtgAPI.sln" },
                         { "CmdletPrefix", "Prtg" },
                         { "PowerShellUnitTestFilter", ScriptBlock.Create("$_.BaseName -ne 'First.Tests'") },
-                        { "Copyright", "lordmilko, 2015" }
+                        { "Copyright", "lordmilko, 2015" },
+                        { "Features", "~Package" },
+                        { "CoverageThreshold", 10 }
                     };
                     fileSystem.EnumerateFilesMap[("C:\\Root\\build", "*.sln", SearchOption.TopDirectoryOnly)] = Array.Empty<string>();
                     fileSystem.DirectoryExistsMap["C:\\Root\\build\\src"] = false;
@@ -691,7 +693,7 @@ namespace BuildTools.Tests
                 { typeof(IVsProductLocator), typeof(MockVsProductLocator) },
                 { typeof(IWebClient), typeof(MockWebClient) },
 
-                { typeof(IProjectConfigProviderFactory), typeof(ProjectConfigProviderFactory) },
+                { typeof(IProjectConfigProviderFactory), typeof(MockProjectConfigProviderFactory) },
 
                 p => (IProjectConfigProvider) new ProjectConfigProvider(WellKnownConfig.PrtgAPI, "C:\\Root", p.GetService<IFileSystemProvider>(), p.GetService<IPowerShellService>())
             };

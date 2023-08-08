@@ -4,6 +4,7 @@ namespace BuildTools
 {
     class SetAppveyorVersionService
     {
+        private readonly IProjectConfigProvider configProvider;
         private readonly EnvironmentService environmentService;
         private readonly GetAppveyorVersionService getAppveyorVersionService;
         private readonly SetVersionService setVersionService;
@@ -11,12 +12,14 @@ namespace BuildTools
         private readonly Logger logger;
 
         public SetAppveyorVersionService(
+            IProjectConfigProvider configProvider,
             EnvironmentService environmentService,
             GetAppveyorVersionService getAppveyorVersion,
             SetVersionService setVersionService,
             IPowerShellService powerShell,
             Logger logger)
         {
+            this.configProvider = configProvider;
             this.environmentService = environmentService;
             this.getAppveyorVersionService = getAppveyorVersion;
             this.setVersionService = setVersionService;
@@ -26,6 +29,9 @@ namespace BuildTools
 
         public void SetVersion(bool isLegacy)
         {
+            if (!configProvider.HasFeature(Feature.Version))
+                return;
+
             logger.LogInformation("Calculating version");
             var version = getAppveyorVersionService.GetVersion(isLegacy);
 

@@ -14,6 +14,9 @@
 
         public override void Execute(BuildConfiguration configuration, bool isLegacy)
         {
+            if (!configProvider.HasFeature(Feature.Dependency))
+                return;
+
             logger.LogHeader("Installing build dependencies");
 
             var dependencies = dependencyProvider.GetDependencies();

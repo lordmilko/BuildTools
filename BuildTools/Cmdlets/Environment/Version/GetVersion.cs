@@ -4,19 +4,19 @@ using System.Management.Automation;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Version")]
-    [BuildCommand(CommandKind.GetVersion, CommandCategory.Version)]
+    [BuildCommand(CommandKind.GetVersion, CommandCategory.Version, Feature.Version)]
     public abstract class GetVersion<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
         public static void CreateHelp(HelpConfig help, IProjectConfigProvider configProvider, ICommandService commandService)
         {
             var project = configProvider.Config;
 
-            var setVersion = commandService.GetCommand(CommandKind.SetVersion);
-            var updateVersion = commandService.GetCommand(CommandKind.UpdateVersion);
+            var setVersionName = commandService.GetCommandNameOrDefault(CommandKind.SetVersion);
+            var updateVersionName = commandService.GetCommandNameOrDefault(CommandKind.UpdateVersion);
 
             help.Synopsis = $"Retrieves version information used by various components of {project.Name}";
             help.Description = $@"
-The {help.Command} cmdlet retrieves version details found in various locations in the {project.Name} project. Version details can be updated using the {setVersion.Name} and {updateVersion.Name} cmdlets. The following table details the version details that can be retrieved:
+The {help.Command} cmdlet retrieves version details found in various locations in the {project.Name} project. Version details can be updated using the {setVersionName} and {updateVersionName} cmdlets. The following table details the version details that can be retrieved:
 
 {GetVersionTable(configProvider)}
 
@@ -35,8 +35,8 @@ Note that if {help.Command} detects that the .git folder is missing from the rep
 
             help.RelatedLinks = new[]
             {
-                setVersion,
-                updateVersion
+                commandService.GetOptionalCommand(CommandKind.SetVersion),
+                commandService.GetOptionalCommand(CommandKind.UpdateVersion)
             };
         }
 

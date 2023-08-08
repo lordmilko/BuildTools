@@ -35,6 +35,9 @@ namespace BuildTools
 
         public void ClearFull()
         {
+            if (!configProvider.HasFeature(Feature.Build))
+                return;
+
             ClearCommon();
 
             var root = configProvider.SolutionRoot;
@@ -74,6 +77,9 @@ namespace BuildTools
 
         public void ClearMSBuild(BuildConfiguration configuration, bool isLegacy)
         {
+            if (!configProvider.HasFeature(Feature.Build))
+                return;
+
             ClearCommon();
 
             if (isLegacy)

@@ -20,7 +20,7 @@ namespace BuildTools.Cmdlets
     }
 
     [Cmdlet(VerbsCommon.Get, "GitStatus")]
-    [BuildCommand(CommandKind.GitStatus, CommandCategory.Utility)]
+    [BuildCommand(CommandKind.GitStatus, CommandCategory.Utility, Feature.System)]
     public abstract class GetGitStatus<TEnvironment> : BuildCmdlet<TEnvironment>
     {
         public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)

@@ -68,6 +68,9 @@ namespace BuildTools
 
         public void GetCoverage(CoverageConfig coverageConfig, bool isLegacy)
         {
+            if (!configProvider.HasFeature(Feature.Coverage))
+                return;
+
             ClearCoverage();
 
             var unitTestProject = configProvider.GetUnitTestProject(isLegacy);

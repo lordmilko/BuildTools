@@ -112,19 +112,19 @@ namespace BuildTools
                             throw new NotImplementedException($"Deserializing a property of type {prop.PropertyType} is not implemented");
                     }
 
-                    var hashtableConverterAttrib = prop.GetCustomAttribute<HashtableConverterAttribute>();
+                    var valueConverterAttrib = prop.GetCustomAttribute<ValueConverterAttribute>();
 
-                    if (hashtableConverterAttrib != null)
+                    if (valueConverterAttrib != null)
                     {
-                        var instanceField = hashtableConverterAttrib.Type.GetField("Instance");
+                        var instanceField = valueConverterAttrib.Type.GetField("Instance");
 
                         if (instanceField == null)
-                            throw new MissingMemberException(hashtableConverterAttrib.Type.Name, "Instance");
+                            throw new MissingMemberException(valueConverterAttrib.Type.Name, "Instance");
 
-                        value = ((IHashtableConverter) instanceField.GetValue(null)).Convert((Hashtable) value);
+                        value = ((IValueConverter) instanceField.GetValue(null)).Convert(value);
                     }
 
-                    if (value.GetType() != prop.PropertyType)
+                    if (value != null && value.GetType() != prop.PropertyType)
                         value = LanguagePrimitives.ConvertTo(value, prop.PropertyType);
 
                     prop.SetValue(config, value);
@@ -192,8 +192,10 @@ namespace BuildTools
                     throw new InvalidOperationException($"Cannot initialize build environment: a build environment with cmdlet prefix '{config.CmdletPrefix}' has already been loaded.");
             }
 
-            existingConfigs.Add(config);
+            RegisterConfig(config);
         }
+
+        protected virtual void RegisterConfig(ProjectConfig config) => existingConfigs.Add(config);
 
         private void ValidateRequired(ProjectConfig config, PropertyInfo[] properties)
         {
@@ -209,8 +211,8 @@ namespace BuildTools
                     {
                         if (IsMissingValue(value))
                         {
-                            if (config.ExcludedCommands != null && !config.ExcludedCommands.Contains(rw.CommandKind))
-                                throw new InvalidOperationException($"Property '{prop.Name}' is required when feature '{rw.CommandKind}' is used however no value was specified");
+                            if (config.HasFeature(rw.Feature))
+                                throw new InvalidOperationException($"Property '{prop.Name}' is required when feature '{rw.Feature}' is used however no value was specified");
                         }
                     }
                     else

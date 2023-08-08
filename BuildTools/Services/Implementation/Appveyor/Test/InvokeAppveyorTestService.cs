@@ -24,6 +24,9 @@ namespace BuildTools
 
         public void Execute(BuildConfiguration configuration, bool isLegacy)
         {
+            if (!configProvider.HasFeature(Feature.Test))
+                return;
+
             logger.LogHeader("Executing tests");
 
             ProcessPowerShell(isLegacy);

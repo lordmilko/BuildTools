@@ -4,7 +4,7 @@ using BuildTools.PowerShell;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsLifecycle.Start, "Module")]
-    [BuildCommand(CommandKind.LaunchModule, CommandCategory.Utility)]
+    [BuildCommand(CommandKind.LaunchModule, CommandCategory.Utility, Feature.System)]
     public abstract class StartModule<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
         [Parameter(Mandatory = false)]
@@ -44,7 +44,7 @@ If -Legacy is true, {help.Command} will skip enumerating target frameworks and i
 
             help.RelatedLinks = new[]
             {
-                commandService.GetCommand(CommandKind.InvokeBuild)
+                commandService.GetOptionalCommand(CommandKind.InvokeBuild)
             };
         }
 

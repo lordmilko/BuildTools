@@ -4,7 +4,7 @@ using System.Management.Automation;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsCommon.Set, "Version")]
-    [BuildCommand(CommandKind.SetVersion, CommandCategory.Version)]
+    [BuildCommand(CommandKind.SetVersion, CommandCategory.Version, Feature.Version)]
     public abstract class SetVersion<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
         [Parameter(Mandatory = true, Position = 0)]
@@ -12,8 +12,10 @@ namespace BuildTools.Cmdlets
 
         public static void CreateHelp(HelpConfig help, ProjectConfig project, ICommandService commandService)
         {
+            var updateVersionName = commandService.GetCommandNameOrDefault(CommandKind.UpdateVersion);
+
             help.Synopsis = $"Sets the version of all components used when building {project.Name}";
-            help.Description = $"The {help.Command} cmdlet updates the version of {project.Name}. The {help.Command} cmdlet allows the major, minor, build and revision components to be replaced with any arbitrary version. Typically the {help.Command} cmdlet is used to revert mistakes made when utilizing the {commandService.GetCommand(CommandKind.UpdateVersion).Name} cmdlet as part of a normal release, or to reset the version when updating the major or minor version components.";
+            help.Description = $"The {help.Command} cmdlet updates the version of {project.Name}. The {help.Command} cmdlet allows the major, minor, build and revision components to be replaced with any arbitrary version. Typically the {help.Command} cmdlet is used to revert mistakes made when utilizing the {updateVersionName} cmdlet as part of a normal release, or to reset the version when updating the major or minor version components.";
 
             help.Parameters = new[]
             {
@@ -29,8 +31,8 @@ namespace BuildTools.Cmdlets
 
             help.RelatedLinks = new[]
             {
-                commandService.GetCommand(CommandKind.GetVersion),
-                commandService.GetCommand(CommandKind.UpdateVersion)
+                commandService.GetOptionalCommand(CommandKind.GetVersion),
+                commandService.GetOptionalCommand(CommandKind.UpdateVersion)
             };
         }
 

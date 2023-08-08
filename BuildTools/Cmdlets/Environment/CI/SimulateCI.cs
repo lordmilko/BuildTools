@@ -17,7 +17,7 @@ namespace BuildTools.Cmdlets
 
     [Name("Simulate-CI")]
     [Cmdlet(VerbsDiagnostic.Test, "CI", DefaultParameterSetName = ParameterSet.Appveyor)]
-    [BuildCommand(CommandKind.SimulateCI, CommandCategory.CI)]
+    [BuildCommand(CommandKind.SimulateCI, CommandCategory.CI, Feature.System)]
     public abstract class SimulateCI<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
         [Parameter(Mandatory = false, ParameterSetName = ParameterSet.Appveyor)]

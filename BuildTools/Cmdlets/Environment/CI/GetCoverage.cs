@@ -8,7 +8,7 @@ using BuildTools.PowerShell;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Coverage")]
-    [BuildCommand(CommandKind.Coverage, CommandCategory.CI)]
+    [BuildCommand(CommandKind.Coverage, CommandCategory.CI, Feature.Coverage)]
     public abstract class GetCoverage<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
         [Parameter(Mandatory = false, Position = 0)]
@@ -79,7 +79,7 @@ When the coverage analysis has completed, a HTML report detailing the results of
 
             help.RelatedLinks = new[]
             {
-                commandService.GetCommand(CommandKind.InvokeBuild)
+                commandService.GetOptionalCommand(CommandKind.InvokeBuild)
             };
         }
 

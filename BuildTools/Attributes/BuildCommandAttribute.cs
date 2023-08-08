@@ -9,10 +9,13 @@ namespace BuildTools
 
         public CommandCategory Category { get; }
 
-        public BuildCommandAttribute(CommandKind kind, CommandCategory category)
+        public Feature Feature { get; }
+
+        public BuildCommandAttribute(CommandKind kind, CommandCategory category, Feature feature)
         {
             Kind = kind;
             Category = category;
+            Feature = feature;
         }
     }
 }

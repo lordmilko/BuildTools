@@ -1,6 +1,6 @@
 ﻿namespace BuildTools
 {
-    internal class InvokeAppveyorBeforeTestService : IAppveyorService
+    public class InvokeAppveyorBeforeTestService : IAppveyorService
     {
         private readonly NewAppveyorPackageService newAppveyorPackageService;
 

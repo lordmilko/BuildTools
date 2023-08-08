@@ -19,6 +19,9 @@ namespace BuildTools.Tests
 
     class MockCommandService : ICommandService
     {
+        public IBuildCommand GetOptionalCommand(CommandKind kind) =>
+            new MockBuildCommand(kind);
+
         public IBuildCommand GetCommand(CommandKind kind) =>
             new MockBuildCommand(kind);
 

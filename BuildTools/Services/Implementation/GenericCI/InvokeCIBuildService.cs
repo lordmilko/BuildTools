@@ -18,9 +18,12 @@
 
         public void Execute(BuildConfiguration configuration)
         {
+            if (!configProvider.HasFeature(Feature.Build))
+                return;
+
             logger.LogHeader($"Building {configProvider.Config.Name}");
 
-            invokeBuildService.Build(new BuildConfig
+            invokeBuildService.Execute(new BuildConfig
             {
                 Configuration = configuration
             }, false);

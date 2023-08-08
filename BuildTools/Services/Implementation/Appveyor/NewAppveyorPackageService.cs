@@ -17,6 +17,9 @@
 
         public override void Execute(BuildConfiguration configuration, bool isLegacy)
         {
+            if (!configProvider.HasFeature(Feature.Package))
+                return;
+
             LogHeader("Building NuGet Package", isLegacy);
 
             var config = new PackageConfig(configuration, isLegacy, configProvider.Config.PowerShellMultiTargeted, configProvider.Config.PackageTypes);

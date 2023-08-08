@@ -51,8 +51,11 @@ namespace BuildTools
             this.vsProductLocator = vsProductLocator;
         }
 
-        public void Build(BuildConfig buildConfig, bool isLegacy)
+        public void Execute(BuildConfig buildConfig, bool isLegacy)
         {
+            if (!configProvider.HasFeature(Feature.Build))
+                return;
+
             if (powerShell.IsWindows && buildConfig.SourceLink == null)
                 buildConfig.SourceLink = true;
 

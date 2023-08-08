@@ -7,21 +7,23 @@ using System.Management.Automation.Language;
 
 namespace BuildTools
 {
-    class PackageFilesHashtableConverter : IHashtableConverter
+    class PackageFilesValueConverter : IValueConverter
     {
-        public static readonly PackageFilesHashtableConverter Instance = new PackageFilesHashtableConverter();
+        public static readonly PackageFilesValueConverter Instance = new PackageFilesValueConverter();
 
         private static readonly string[] packageContextProps = typeof(PackageFileContext).GetProperties().Select(v => v.Name).ToArray();
 
-        public object Convert(Hashtable value)
+        public object Convert(object value)
         {
-            var keys = value.Keys.Cast<string>().ToArray();
+            var hashtable = (Hashtable) value;
+
+            var keys = hashtable.Keys.Cast<string>().ToArray();
 
             var packageFiles = new PackageFiles();
 
             foreach (var key in keys)
             {
-                var val = (object[])value[key];
+                var val = (object[]) LanguagePrimitives.ConvertTo(hashtable[key], typeof(object[]));
 
                 switch (key)
                 {

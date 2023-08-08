@@ -9,7 +9,7 @@ using BuildTools.Reflection;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsLifecycle.Invoke, "Analyzer", SupportsShouldProcess = true)]
-    [BuildCommand(CommandKind.InvokePSAnalyzer, CommandCategory.Utility)]
+    [BuildCommand(CommandKind.InvokePSAnalyzer, CommandCategory.Utility, Feature.System)]
     public abstract class InvokeAnalyzer<TEnvironment> : BuildCmdlet<TEnvironment>
     {
         private static readonly string rules = string.Join(",", new[]

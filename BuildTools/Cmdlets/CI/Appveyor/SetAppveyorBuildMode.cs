@@ -2,6 +2,7 @@
 
 namespace BuildTools.Cmdlets.Appveyor
 {
+    [Feature(Feature.System)]
     [Cmdlet(VerbsCommon.Set, "AppveyorBuildMode")]
     public class SetAppveyorBuildMode : AppveyorCmdlet
     {

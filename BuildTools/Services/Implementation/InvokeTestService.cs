@@ -39,6 +39,9 @@ namespace BuildTools
 
         public void Execute(InvokeTestConfig invokeTestConfig, bool isLegacy)
         {
+            if (!configProvider.HasFeature(Feature.Test))
+                return;
+
             //We will throw if dotnet/vstest.console fails, so execute PowerShell tests first
             InvokePowerShellTest(invokeTestConfig, isLegacy);
             InvokeCSharpTest(invokeTestConfig, isLegacy);

@@ -6,19 +6,21 @@ using System.Management.Automation;
 
 namespace BuildTools
 {
-    class PackageTestsHashtableConverter : IHashtableConverter
+    class PackageTestsValueConverter : IValueConverter
     {
-        public static readonly PackageTestsHashtableConverter Instance = new PackageTestsHashtableConverter();
+        public static readonly PackageTestsValueConverter Instance = new PackageTestsValueConverter();
 
-        public object Convert(Hashtable value)
+        public object Convert(object value)
         {
-            var keys = value.Keys.Cast<string>().ToArray();
+            var hashtable = (Hashtable) value;
+
+            var keys = hashtable.Keys.Cast<string>().ToArray();
 
             var packageTests = new PackageTests();
 
             foreach (var key in keys)
             {
-                var val = (object[])value[key];
+                var val = (object[]) LanguagePrimitives.ConvertTo(hashtable[key], typeof(object[]));
 
                 switch (key)
                 {

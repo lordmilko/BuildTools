@@ -5,7 +5,7 @@ using System.Management.Automation;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Command")]
-    [BuildCommand(CommandKind.CommandList, CommandCategory.Help)]
+    [BuildCommand(CommandKind.CommandList, CommandCategory.Help, Feature.System)]
     public abstract class GetCommand<TEnvironment> : BuildCmdlet<TEnvironment>
     {
         [Parameter(Mandatory = false, Position = 0)]

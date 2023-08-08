@@ -2,6 +2,7 @@
 
 namespace BuildTools.Cmdlets.Appveyor
 {
+    [Feature(Feature.Build)]
     [Cmdlet(VerbsCommon.Clear, "AppveyorBuild")]
     public class ClearAppveyorBuild : AppveyorCmdlet<ClearAppveyorBuildService>, ILegacyProvider
     {
@@ -33,7 +34,7 @@ namespace BuildTools.Cmdlets.Appveyor
     #region Test
 
     [Cmdlet(VerbsLifecycle.Invoke, "AppveyorBeforeTest")]
-    public class InvokeAppveyorBeforeTest : AppveyorCmdlet<NewAppveyorPackageService>, ILegacyProvider
+    public class InvokeAppveyorBeforeTest : AppveyorCmdlet<InvokeAppveyorBeforeTestService>, ILegacyProvider
     {
     }
 

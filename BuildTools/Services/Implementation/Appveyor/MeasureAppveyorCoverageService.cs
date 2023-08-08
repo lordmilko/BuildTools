@@ -31,6 +31,9 @@ namespace BuildTools
 
         public void Execute(BuildConfiguration configuration, bool isLegacy)
         {
+            if (!configProvider.HasFeature(Feature.Coverage))
+                return;
+
             logger.LogHeader("Calculating code coverage");
 
             getCoverageService.GetCoverage(new CoverageConfig(configProvider.Config.TestTypes)

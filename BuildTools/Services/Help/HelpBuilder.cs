@@ -68,6 +68,8 @@ namespace BuildTools
 
             createHelp.Invoke(null, args.ToArray());
 
+            helpConfig.RelatedLinks = helpConfig.RelatedLinks?.Where(v => v != null).ToArray();
+
             return helpConfig;
         }
 

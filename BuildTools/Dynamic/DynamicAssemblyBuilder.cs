@@ -56,9 +56,7 @@ namespace BuildTools.Dynamic
             if (genericArgs.Length != 1)
                 throw new InvalidOperationException($"Cannot define cmdlet proxy for type '{baseType.Name}'. Expected Generic Args: 1. Actual: {genericArgs.Length}.");
 
-            var kind = baseType.GetCustomAttribute<BuildCommandAttribute>().Kind;
-
-            if (config.ExcludedCommands != null && config.ExcludedCommands.Contains(kind))
+            if (!config.HasCommand(baseType))
                 return;
 
             var genericBaseType = baseType.MakeGenericType(EnvironmentId);

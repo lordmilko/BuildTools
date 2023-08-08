@@ -8,11 +8,11 @@ namespace BuildTools
     [AttributeUsage(AttributeTargets.Property)]
     class RequiredWithAttribute : RequiredAttribute
     {
-        public CommandKind CommandKind { get; }
+        public Feature Feature { get; }
 
-        public RequiredWithAttribute(CommandKind commandKind)
+        public RequiredWithAttribute(Feature feature)
         {
-            CommandKind = commandKind;
+            Feature = feature;
         }
     }
 }

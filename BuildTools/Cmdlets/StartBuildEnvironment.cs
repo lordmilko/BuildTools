@@ -64,7 +64,7 @@ namespace BuildTools.Cmdlets
             if (CI)
             {
                 powerShell.WriteVerbose($"Generating CI module instead of regular module as -{nameof(CI)} was specified");
-                RegisterCI(powerShell, name);
+                RegisterCI(configProvider, powerShell, name);
             }
             else
                 module = powerShell.RegisterModule($"{name}.Build", dynamicAssemblyBuilder.CmdletTypes);
@@ -121,7 +121,7 @@ namespace BuildTools.Cmdlets
             }
         }
 
-        private void RegisterCI(IPowerShellService powerShell, string name)
+        private void RegisterCI(IProjectConfigProvider configProvider, IPowerShellService powerShell, string name)
         {
             var environmentService = GetService<EnvironmentService>();
 
@@ -134,24 +134,43 @@ namespace BuildTools.Cmdlets
             {
                 powerShell.WriteVerbose("Generating Appveyor CI module");
 
-                RegisterCIModule<AppveyorCmdlet>(powerShell, name, "Appveyor");
+                RegisterCIModule<AppveyorCmdlet>(configProvider, powerShell, name, "Appveyor");
             }
             else
             {
                 powerShell.WriteVerbose("Generating generic CI module");
 
-                RegisterCIModule<GenericCICmdlet>(powerShell, name, "CI");
+                RegisterCIModule<GenericCICmdlet>(configProvider, powerShell, name, "CI");
             }
         }
 
-        private void RegisterCIModule<T>(IPowerShellService powerShell, string name, string suffix)
+        private void RegisterCIModule<T>(IProjectConfigProvider configProvider, IPowerShellService powerShell, string name, string suffix)
         {
             var moduleName = $"{name}.{suffix}";
 
             if (BuildToolsSessionState.ContinuousIntegrationOwner != null)
                 throw new InvalidOperationException($"Cannot register {name} cmdlets: {name} cmdlets have already been registered under the {BuildToolsSessionState.ContinuousIntegrationOwner} build environment");
 
-            var cmdlets = typeof(StartBuildEnvironment).Assembly.GetTypes().Where(v => typeof(T).IsAssignableFrom(v) && v.GetCustomAttribute<CmdletAttribute>() != null).ToArray();
+            var cmdlets = typeof(StartBuildEnvironment).Assembly.GetTypes()
+                .Where(v =>
+                {
+                    if (!typeof(T).IsAssignableFrom(v))
+                        return false;
+
+                    if (v.GetCustomAttribute<CmdletAttribute>() == null)
+                        return false;
+
+                    var featureAttrib = v.GetCustomAttribute<FeatureAttribute>();
+
+                    if (featureAttrib != null)
+                    {
+                        if (!configProvider.HasFeature(featureAttrib.Feature))
+                            return false;
+                    }
+
+                    return true;
+                })
+                .ToArray();
 
             powerShell.RegisterModule(moduleName, cmdlets);
 

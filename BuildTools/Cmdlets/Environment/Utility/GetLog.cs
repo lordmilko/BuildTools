@@ -5,7 +5,7 @@ using System.Management.Automation;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Log")]
-    [BuildCommand(CommandKind.Log, CommandCategory.Utility)]
+    [BuildCommand(CommandKind.Log, CommandCategory.Utility, Feature.System)]
     public abstract class GetLog<TEnvironment> : BuildCmdlet<TEnvironment>
     {
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = ParameterSet.Integration)]
@@ -86,7 +86,7 @@ If you wish to view logs in a separate window from where {help.Command} was invo
 
             help.RelatedLinks = new[]
             {
-                commandService.GetCommand(CommandKind.InvokeTest)
+                commandService.GetOptionalCommand(CommandKind.InvokeTest)
             };
         }
 

@@ -5,7 +5,7 @@ using System.Management.Automation;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsLifecycle.Invoke, "Test")]
-    [BuildCommand(CommandKind.InvokeTest, CommandCategory.Test)]
+    [BuildCommand(CommandKind.InvokeTest, CommandCategory.Test, Feature.Test)]
     public abstract class InvokeTest<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider, IIntegrationProvider
     {
         [Parameter(Mandatory = false, Position = 0)]
@@ -58,14 +58,14 @@ namespace BuildTools.Cmdlets
         {
             var project = configProvider.Config;
             var unitTest = configProvider.GetUnitTestProject(false);
-            var testResultCommand = commandService.GetCommand(CommandKind.TestResult);
+            var testResultCommandName = commandService.GetCommandNameOrDefault(CommandKind.TestResult);
 
             help.Synopsis = $"Executes tests on a {project.Name} build.";
 
             help.Description = $@"
 The {help.Command} cmdlet executes tests on previously generated builds of {project.Name}. By default, test types for all languages supported by the project will be executed against the last Debug build. Tests can be limited to a specific platform by specifying a value to the -Type parameter, and can also be limited to those whose name matches a specified wildcard expression via the -Name parameter.
 
-Tests executed by {help.Command} are automatically logged in the TRX format (C#) and NUnitXml format (PowerShell) under the {unitTest.Name}\TestResults folder of the {project.Name} solution. Test results in this directory can be evaluated and filtered after the fact using the {testResultCommand.Name} cmdlet. Note that upon compiling a new build of {unitTest.Name}, all items in this test results folder will automatically be deleted.";
+Tests executed by {help.Command} are automatically logged in the TRX format (C#) and NUnitXml format (PowerShell) under the {unitTest.Name}\TestResults folder of the {project.Name} solution. Test results in this directory can be evaluated and filtered after the fact using the {testResultCommandName} cmdlet. Note that upon compiling a new build of {unitTest.Name}, all items in this test results folder will automatically be deleted.";
 
             help.Parameters = new[]
             {
@@ -88,8 +88,8 @@ Tests executed by {help.Command} are automatically logged in the TRX format (C#)
 
             help.RelatedLinks = new[]
             {
-                commandService.GetCommand(CommandKind.InvokeBuild),
-                commandService.GetCommand(CommandKind.TestResult)
+                commandService.GetOptionalCommand(CommandKind.InvokeBuild),
+                commandService.GetOptionalCommand(CommandKind.TestResult)
             };
         }
 

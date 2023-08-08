@@ -20,33 +20,36 @@
 
         public override void Execute(BuildConfiguration configuration, bool isLegacy)
         {
-            LogHeader("Restoring NuGet Packages", isLegacy);
-            var solutionPath = configProvider.GetSolutionPath(isLegacy);
-
-            if (isLegacy)
+            if (configProvider.HasFeature(Feature.Build))
             {
-                var args = new ArgList
+                LogHeader("Restoring NuGet Packages", isLegacy);
+                var solutionPath = configProvider.GetSolutionPath(isLegacy);
+
+                if (isLegacy)
                 {
-                    "restore",
-                    solutionPath
-                };
+                    var args = new ArgList
+                    {
+                        "restore",
+                        solutionPath
+                    };
 
-                var nuget = dependencyProvider.Install(WellKnownDependency.NuGet);
+                    var nuget = dependencyProvider.Install(WellKnownDependency.NuGet);
 
-                processService.Execute(nuget.Path, args);
-            }
-            else
-            {
-                var args = new ArgList
+                    processService.Execute(nuget.Path, args);
+                }
+                else
                 {
-                    "restore",
-                    solutionPath,
-                    "-p:EnableSourceLink=true"
-                };
+                    var args = new ArgList
+                    {
+                        "restore",
+                        solutionPath,
+                        "-p:EnableSourceLink=true"
+                    };
 
-                var dotnet = dependencyProvider.Install(WellKnownDependency.Dotnet);
+                    var dotnet = dependencyProvider.Install(WellKnownDependency.Dotnet);
 
-                processService.Execute(dotnet.Path, args);
+                    processService.Execute(dotnet.Path, args);
+                }
             }
 
             setAppveyorVersionService.SetVersion(isLegacy);

@@ -2,11 +2,11 @@
 
 namespace BuildTools
 {
-    internal class HashtableConverterAttribute : Attribute
+    internal class ValueConverterAttribute : Attribute
     {
         public Type Type { get; }
 
-        public HashtableConverterAttribute(Type type)
+        public ValueConverterAttribute(Type type)
         {
             Type = type;
         }

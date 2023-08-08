@@ -17,6 +17,9 @@
 
         public override void Execute(BuildConfiguration configuration, bool isLegacy)
         {
+            if (!configProvider.HasFeature(Feature.Build))
+                return;
+
             LogHeader($"Building {configProvider.Config.Name}", isLegacy);
 
             var additionalArgs = new ArgList();
@@ -28,7 +31,7 @@
             if (!isLegacy)
                 additionalArgs.Add("--no-restore");
 
-            invokeBuildService.Build(new BuildConfig
+            invokeBuildService.Execute(new BuildConfig
             {
                 ArgumentList = additionalArgs,
                 Configuration = configuration,

@@ -46,7 +46,12 @@ namespace BuildTools
         public string DebugTargetFramework { get; set; }
 
         [Optional]
-        public CommandKind[] ExcludedCommands { get; set; }
+        [ValueConverter(typeof(NegatableEnumValueConverter<Feature>))]
+        public Feature[] Features { get; set; }
+
+        [Optional]
+        [ValueConverter(typeof(NegatableEnumValueConverter<CommandKind>))]
+        public CommandKind[] Commands { get; set; }
 
         private string prompt;
 
@@ -65,7 +70,7 @@ namespace BuildTools
         [Optional]
         public string SourceFolder { get; set; }
 
-        [RequiredWith(CommandKind.Coverage)]
+        [RequiredWith(Feature.Coverage)]
         public double? CoverageThreshold { get; set; }
 
         #endregion
@@ -127,11 +132,11 @@ namespace BuildTools
         }
 
         [Optional]
-        [HashtableConverter(typeof(PackageTestsHashtableConverter))]
+        [ValueConverter(typeof(PackageTestsValueConverter))]
         public PackageTests PackageTests { get; set; }
 
-        [RequiredWith(CommandKind.NewPackage)]
-        [HashtableConverter(typeof(PackageFilesHashtableConverter))]
+        [RequiredWith(Feature.Package)]
+        [ValueConverter(typeof(PackageFilesValueConverter))]
         public PackageFiles PackageFiles { get; set; }
 
         #endregion

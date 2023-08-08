@@ -7,7 +7,7 @@ using System.Text;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "TestResult", DefaultParameterSetName = ParameterSet.Default)]
-    [BuildCommand(CommandKind.TestResult, CommandCategory.Test)]
+    [BuildCommand(CommandKind.TestResult, CommandCategory.Test, Feature.Test)]
     public abstract class GetTestResult<TEnvironment> : BuildCmdlet<TEnvironment>, IIntegrationProvider
     {
         [Parameter(Mandatory = false, Position = 0)]
@@ -61,12 +61,12 @@ namespace BuildTools.Cmdlets
 
         public static void CreateHelp(HelpConfig help, IProjectConfigProvider configProvider, ICommandService commandService)
         {
-            var invokeTest = commandService.GetCommand(CommandKind.InvokeTest);
+            var invokeTestName = commandService.GetCommandNameOrDefault(CommandKind.InvokeTest);
 
             var description = new StringBuilder();
 
             description.Append(
-                $"The {help.Command} cmdlet retrieves test results from the last invocation of {invokeTest.Name}. By default, test results for all supported test languages will be displayed. " +
+                $"The {help.Command} cmdlet retrieves test results from the last invocation of {invokeTestName}. By default, test results for all supported test languages will be displayed. " +
                 "Results can be limited to either of the two by specifying a value to the -Type parameter. The -Name parameter allows results to be further limited based on a wildcard expression that matches part of the results' name. " +
                 "Results can also be filtered to those that had a particular status (such as Failed) using the -Outcome parameter."
             ).AppendLine().AppendLine();
@@ -87,7 +87,7 @@ namespace BuildTools.Cmdlets
                 description.Append($"Note that whenever the {str} projects are built, all previous test results may automatically be cleared.");
             }
 
-            help.Synopsis = $"Retrieve test results from the last invocation of {invokeTest.Name}";
+            help.Synopsis = $"Retrieve test results from the last invocation of {invokeTestName}";
             help.Description = description.ToString();
 
             help.Parameters = new[]
@@ -104,15 +104,15 @@ namespace BuildTools.Cmdlets
             {
                 new HelpExample(help.Command, "View all test results"),
                 new HelpExample($"{help.Command} *dynamic*", "View all test results whose name contains the word \"dynamic\""),
-                new HelpExample($"{help.Command} -Outcome Failed", $"View all tests that failed in the last invocation of {invokeTest.Name}"),
+                new HelpExample($"{help.Command} -Outcome Failed", $"View all tests that failed in the last invocation of {invokeTestName}"),
                 new HelpExample($"{help.Command} -ListAvailable", "List all unit test results that are available"),
                 new HelpExample($"{help.Command} *2019* -ListAvailable | {help.Command} *dynamic* -Type C#", "Get all C# test results from 2019 whose test name contains the word \"dynamic\""),
-                new ConditionalHelpExample(NeedIntegrationParameter, $"{help.Command} -Integration", $"View all test results from the last invocation of {invokeTest.Name} -Integration") //todo
+                new ConditionalHelpExample(NeedIntegrationParameter, $"{help.Command} -Integration", $"View all test results from the last invocation of {invokeTestName} -Integration") //todo
             };
 
             help.RelatedLinks = new[]
             {
-                commandService.GetCommand(CommandKind.InvokeTest)
+                commandService.GetOptionalCommand(CommandKind.InvokeTest)
             };
         }
 

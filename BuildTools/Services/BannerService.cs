@@ -60,9 +60,10 @@ namespace BuildTools
 
         private void PrintCommand(string text, CommandKind kind)
         {
-            var command = commandService.GetCommand(kind);
+            var command = commandService.GetOptionalCommand(kind);
 
-            lines.Add(new CommandLine(text, command.Name));
+            if (command != null)
+                lines.Add(new CommandLine(text, command.Name));
         }
 
         private void PrintCommandLines()

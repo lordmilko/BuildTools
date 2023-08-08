@@ -20,6 +20,9 @@ namespace BuildTools
 
         public void Execute(BuildConfiguration configuration)
         {
+            if (!configProvider.HasFeature(Feature.Test))
+                return;
+
             logger.LogHeader("Executing tests");
 
             var project = configProvider.GetUnitTestProject(false);

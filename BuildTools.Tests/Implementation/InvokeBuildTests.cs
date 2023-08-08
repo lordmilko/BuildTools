@@ -34,7 +34,7 @@ namespace BuildTools.Tests
                 envProvider.SetValue(WellKnownEnvironmentVariable.CI, string.Empty);
                 powerShell.KnownCommands["dotnet"] = new MockPowerShellCommand("dotnet");
 
-                invokeBuild.Value.Build(new BuildConfig(), false);
+                invokeBuild.Value.Execute(new BuildConfig(), false);
 
                 process.AssertExecuted("C:\\dotnet.exe build C:\\Root\\PrtgAPIv17.sln -nologo -c Debug");
             });
@@ -63,7 +63,7 @@ namespace BuildTools.Tests
                 powerShell.KnownCommands["dotnet"] = new MockPowerShellCommand("dotnet");
                 powerShell.IsWindows = true;
 
-                invokeBuild.Value.Build(new BuildConfig
+                invokeBuild.Value.Execute(new BuildConfig
                 {
                     Configuration = BuildConfiguration.Release
                 }, false);
@@ -92,7 +92,7 @@ namespace BuildTools.Tests
                 envProvider.SetValue(WellKnownEnvironmentVariable.ChocolateyInstall, null);
                 powerShell.IsWindows = true;
 
-                invokeBuild.Value.Build(new BuildConfig(), true);
+                invokeBuild.Value.Execute(new BuildConfig(), true);
 
                 process.AssertExecuted("C:\\msbuild.exe C:\\Root\\PrtgAPI.sln /verbosity:minimal /p:Configuration=Debug");
             });

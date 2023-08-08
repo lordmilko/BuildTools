@@ -5,7 +5,7 @@ using System.Management.Automation;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsCommon.New, "Package")]
-    [BuildCommand(CommandKind.NewPackage, CommandCategory.CI)]
+    [BuildCommand(CommandKind.NewPackage, CommandCategory.CI, Feature.Package)]
     public abstract class NewPackage<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
         [Parameter(Mandatory = false, Position = 0)]
@@ -40,7 +40,7 @@ Unlike packaging done in CI builds, {help.Command} does not verify that the cont
 
             help.RelatedLinks = new[]
             {
-                commandService.GetCommand(CommandKind.InvokeBuild)
+                commandService.GetOptionalCommand(CommandKind.InvokeBuild)
             };
         }
 

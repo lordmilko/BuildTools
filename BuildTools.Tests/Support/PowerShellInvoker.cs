@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using BuildTools.Cmdlets;
@@ -20,7 +21,7 @@ namespace BuildTools.Tests
 
         public T[] Invoke<T>(string cmdlet, object param, string inputCmdlet = null)
         {
-            try
+            return InvokeInternal<T>(() =>
             {
                 if (inputCmdlet != null)
                 {
@@ -30,6 +31,16 @@ namespace BuildTools.Tests
                 powerShell.AddCommand(cmdlet);
 
                 AddParameters(param);
+            });
+        }
+
+        public T[] InvokeScript<T>(string script) => InvokeInternal<T>(() => powerShell.AddScript(script));
+
+        private T[] InvokeInternal<T>(Action addCommands)
+        {
+            try
+            {
+                addCommands();
 
                 var result = powerShell.Invoke();
 

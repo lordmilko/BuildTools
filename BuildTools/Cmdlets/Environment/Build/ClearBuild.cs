@@ -3,7 +3,7 @@
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsCommon.Clear, "Build", DefaultParameterSetName = ParameterSet.Default)]
-    [BuildCommand(CommandKind.ClearBuild, CommandCategory.Build)]
+    [BuildCommand(CommandKind.ClearBuild, CommandCategory.Build, Feature.Build)]
     public abstract class ClearBuild<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
         [Parameter(Mandatory = false, ParameterSetName = ParameterSet.Default)]
@@ -32,7 +32,7 @@ namespace BuildTools.Cmdlets
 
             help.RelatedLinks = new[]
             {
-                commandService.GetCommand(CommandKind.InvokeBuild)
+                commandService.GetOptionalCommand(CommandKind.InvokeBuild)
             };
         }
 

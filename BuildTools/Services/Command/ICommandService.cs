@@ -4,6 +4,8 @@ namespace BuildTools
 {
     public interface ICommandService
     {
+        IBuildCommand GetOptionalCommand(CommandKind kind);
+
         IBuildCommand GetCommand(CommandKind kind);
 
         IBuildCommand GetCommand(Type type);

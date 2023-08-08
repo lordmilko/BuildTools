@@ -6,7 +6,7 @@ using BuildTools.PowerShell;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Help")]
-    [BuildCommand(CommandKind.OpenWiki, CommandCategory.Help)]
+    [BuildCommand(CommandKind.OpenWiki, CommandCategory.Help, Feature.System)]
     public abstract class GetHelp<TEnvironment> : BuildCmdlet<TEnvironment>
     {
         public static void CreateHelp(HelpConfig help, ProjectConfig project)

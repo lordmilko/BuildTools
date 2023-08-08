@@ -5,7 +5,7 @@ using BuildTools.PowerShell;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsLifecycle.Invoke, "Build")]
-    [BuildCommand(CommandKind.InvokeBuild, CommandCategory.Build)]
+    [BuildCommand(CommandKind.InvokeBuild, CommandCategory.Build, Feature.Build)]
     public abstract class InvokeBuild<TEnvironment> : BuildCmdlet<TEnvironment>, ILegacyProvider
     {
         [Parameter(Mandatory = false, Position = 0)]
@@ -83,8 +83,8 @@ In the event you wish to debug your build, the -Dbg parameter can be specified. 
 
             help.RelatedLinks = new[]
             {
-                commandService.GetCommand(CommandKind.ClearBuild),
-                commandService.GetCommand(CommandKind.InvokeTest)
+                commandService.GetOptionalCommand(CommandKind.ClearBuild),
+                commandService.GetOptionalCommand(CommandKind.InvokeTest)
             };
         }
 
@@ -92,7 +92,7 @@ In the event you wish to debug your build, the -Dbg parameter can be specified. 
         {
             var buildService = GetService<InvokeBuildService>();
 
-            buildService.Build(buildConfig, IsLegacyMode);
+            buildService.Execute(buildConfig, IsLegacyMode);
         }
 
         public string[] GetLegacyParameterSets() => null;
