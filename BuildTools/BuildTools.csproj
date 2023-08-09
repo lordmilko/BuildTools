@@ -4,7 +4,7 @@
     <TargetFrameworks Condition="'$(IsWindows)'">net461;netstandard2.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(IsWindows)' == 'false'">netstandard2.1</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
-    <OutputPath>$(ProjectDir)bin\$(Configuration)\BuildTools</OutputPath>
+    <OutputPath>$(ProjectDir)bin\$(Configuration)\lordmilko.BuildTools</OutputPath>
 
     <TestAdapterPath>..\PowerShell.TestAdapter\bin\$(Configuration)\netstandard2.0\PowerShell.TestAdapter.dll</TestAdapterPath>
   </PropertyGroup>
@@ -29,7 +29,7 @@
     <None Update="BuildTools.Format.ps1xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="BuildTools.psd1">
+    <None Update="lordmilko.BuildTools.psd1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
