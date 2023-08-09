@@ -7,15 +7,6 @@ using BuildTools.PowerShell;
 
 namespace BuildTools
 {
-    class NewBuildEnvConfig
-    {
-        public string SolutionPath { get; set; }
-
-        public string BuildPath { get; set; }
-
-        public bool Force { get; set; }
-    }
-
     internal class NewBuildEnvironmentService
     {
         private readonly IFileSystemProvider fileSystem;
@@ -32,7 +23,7 @@ namespace BuildTools
             this.powerShell = powerShell;
         }
 
-        public string[] Execute(string path, bool force)
+        public string[] Execute(string path, bool force, IConfigSettingValueProvider valueProvider)
         {
             CalculateSolutionPaths(path, out var solutionRoot, out var buildFolder);
 
@@ -41,7 +32,7 @@ namespace BuildTools
                 GenerateBuildCmd(solutionRoot, force, false),
                 GenerateBuildBash(solutionRoot, force),
                 GenerateBootstrap(buildFolder, force),
-                GenerateConfig(buildFolder, force),
+                GenerateConfig(buildFolder, force, valueProvider),
                 GenerateAppveyor(solutionRoot, force)
             };
 
@@ -119,7 +110,7 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
             return WriteFile(buildFolder, "Bootstrap.ps1", str, force);
         }
 
-        private string GenerateConfig(string buildFolder, bool force)
+        private string GenerateConfig(string buildFolder, bool force, IConfigSettingValueProvider valueProvider)
         {
             var name = "Config.psd1";
 
@@ -132,43 +123,56 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
                     name = Path.GetFileName(existing[0]);
             }
 
+            var str = CreateConfigContents(valueProvider);
+
+            return WriteFile(buildFolder, name, str, force);
+        }
+
+        public string CreateConfigContents(IConfigSettingValueProvider valueProvider)
+        {
+            Func<string, IConfigValue> stringValue = valueProvider.String;
+            Func<string, IConfigValue> arrayValue = valueProvider.Array;
+            Func<string, IConfigValue> hashTableValue = valueProvider.HashTable;
+            Func<string, IConfigValue> nullValue = valueProvider.Null;
+            Func<string, IConfigValue> boolValue = valueProvider.Bool;
+
             var groups = new[]
             {
                 new ConfigGroup("Global", new[]
                 {
-                    new ConfigSetting("Name",                 required: true,                description: "The name of the project/GitHub repository"),
-                    new ConfigSetting("CmdletPrefix",         required: true,                description: "The prefix to use for all build environment cmdlets"),
-                    new ConfigSetting("Copyright",            required: true,                description: "The copyright author and year to display in the build environment"),
-                    new ConfigSetting("SolutionName",         required: false,               description: "The name of the Visual Studio Solution. Required when a project contains multiple solutions"),
-                    new ConfigSetting("BuildFilter",          required: false,               description: "A wildcard expression indicating the projects that should be built in CI"),
-                    new ConfigSetting("DebugTargetFramework", required: false,               description: "The target framework that is used in debug mode when the project conditionally multi-targets only on Release"),
-                    new ConfigSetting("Features",             required: false,               description: $"Features to enable in the build environment. By default all features are allowed, and can be negated with ~. Valid values include: {string.Join(", ", Enum.GetNames(typeof(Feature)).Where(n => n != Feature.System.ToString()))}"),
-                    new ConfigSetting("Commands",             required: false, value: "@()", description: $"Commands to enable in the build environment. By default all commands are allowed, and can be negated with ~. Valid values include: {string.Join(", ", Enum.GetNames(typeof(CommandKind)))}"),
-                    new ConfigSetting("Prompt",               required: false,               description: "The value to use for the prompt in the build environment. If not specified, Name will be used"),
-                    new ConfigSetting("SourceFolder",         required: false,               description: "The name of the folder that the source code is contained in. If not specified, will automatically be calculated"),
-                    new ConfigSetting("CoverageThreshold",    required: false,               description: "The minimum coverage threshold that must be met under CI"),
+                    new ConfigSetting("Name",                        required: true,  value: stringValue,    description: "The name of the project/GitHub repository"),
+                    new ConfigSetting("CmdletPrefix",                required: true,  value: stringValue,    description: "The prefix to use for all build environment cmdlets"),
+                    new ConfigSetting("Copyright",                   required: true,  value: stringValue,    description: "The copyright author and year to display in the build environment"),
+                    new ConfigSetting("SolutionName",                required: false, value: stringValue,    description: "The name of the Visual Studio Solution. Required when a project contains multiple solutions"),
+                    new ConfigSetting("BuildFilter",                 required: false, value: stringValue,    description: "A wildcard expression indicating the projects that should be built in CI"),
+                    new ConfigSetting("DebugTargetFramework",        required: false, value: stringValue,    description: "The target framework that is used in debug mode when the project conditionally multi-targets only on Release"),
+                    new ConfigSetting("Features",                    required: false, value: stringValue,    description: $"Features to enable in the build environment. By default all features are allowed, and can be negated with ~. Valid values include: {string.Join(", ", Enum.GetNames(typeof(Feature)).Where(n => n != Feature.System.ToString()))}"),
+                    new ConfigSetting("Commands",                    required: false, value: arrayValue,     description: $"Commands to enable in the build environment. By default all commands are allowed, and can be negated with ~. Valid values include: {string.Join(", ", Enum.GetNames(typeof(CommandKind)))}"),
+                    new ConfigSetting("Prompt",                      required: false, value: stringValue,    description: "The value to use for the prompt in the build environment. If not specified, Name will be used"),
+                    new ConfigSetting("SourceFolder",                required: false, value: stringValue,    description: "The name of the folder that the source code is contained in. If not specified, will automatically be calculated"),
+                    new ConfigSetting("CoverageThreshold",           required: false, value: stringValue,    description: "The minimum coverage threshold that must be met under CI"),
                 }),
                 new ConfigGroup("CSharp", new[]
                 {
-                    new ConfigSetting("CSharpLegacyPackageExcludes", required: false, value: "@()", description: "Files to exclude from the C# NuGet Package when building legacy packages")
+                    new ConfigSetting("CSharpLegacyPackageExcludes", required: false, value: arrayValue,     description: "Files to exclude from the C# NuGet Package when building legacy packages")
                 }),
                 new ConfigGroup("PowerShell", new[]
                 {
-                    new ConfigSetting("PowerShellMultiTargeted", required: false, value: "$false", description: "Indicates that a PowerShell package should be built containing both coreclr and fullclr subfolders"),
-                    new ConfigSetting("PowerShellModuleName", required: false, description: "The name of the PowerShell module. If not specified, Name will be used"),
-                    new ConfigSetting("PowerShellProjectName", required: false, description: "The name of the PowerShell project. If not specified, will automatically be calculated"),
-                    new ConfigSetting("PowerShellUnitTestFilter", required: false, value: "$null", description: "A ScriptBlock that takes a FileInfo/DirectoryInfo as $_ and returns whether or not to process unit tests for that file/folder")
+                    new ConfigSetting("PowerShellMultiTargeted",     required: false, value: boolValue,      description: "Indicates that a PowerShell package should be built containing both coreclr and fullclr subfolders"),
+                    new ConfigSetting("PowerShellModuleName",        required: false, value: stringValue,    description: "The name of the PowerShell module. If not specified, Name will be used"),
+                    new ConfigSetting("PowerShellProjectName",       required: false, value: stringValue,    description: "The name of the PowerShell project. If not specified, will automatically be calculated"),
+                    new ConfigSetting("PowerShellUnitTestFilter",    required: false, value: nullValue,      description: "A ScriptBlock that takes a FileInfo/DirectoryInfo as $_ and returns whether or not to process unit tests for that file/folder")
                 }),
                 new ConfigGroup("Test", new[]
                 {
-                    new ConfigSetting("TestTypes", required: false, value: "@()", description: "The languages to perform unit tests for. If not specified, CSharp and PowerShell will be tested"),
-                    new ConfigSetting("UnitTestProjectName", required: false, description: "The name of the Unit Test project. If not specified, will automatically be calculated")
+                    new ConfigSetting("TestTypes",                   required: false, value: arrayValue,     description: "The languages to perform unit tests for. If not specified, CSharp and PowerShell will be tested"),
+                    new ConfigSetting("UnitTestProjectName",         required: false, value: stringValue,    description: "The name of the Unit Test project. If not specified, will automatically be calculated")
                 }),
                 new ConfigGroup("Package", new[]
                 {
-                    new ConfigSetting("PackageTypes", required: false, value: "@()", description: "The types of packages to produce. If not specified, C#/PowerShell *.nupkg and Redist *.zip files will be produced"),
-                    new ConfigSetting("PackageTests", required: false, value: "@{}", description: ""),
-                    new ConfigSetting("PackageFiles", required: false, value: "@{}", description: "")
+                    new ConfigSetting("PackageTypes",                required: false, value: arrayValue,     description: "The types of packages to produce. If not specified, C#/PowerShell *.nupkg and Redist *.zip files will be produced"),
+                    new ConfigSetting("PackageTests",                required: false, value: hashTableValue, description: "The tests to perform for each type of package"),
+                    new ConfigSetting("PackageFiles",                required: false, value: hashTableValue, description: "The files that are expected to exist in each tyoe of package")
                 })
             };
 
@@ -178,7 +182,7 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
 
             var str = builder.ToString();
 
-            return WriteFile(buildFolder, name, str, force);
+            return str;
         }
 
         private string GenerateAppveyor(string solutionRoot, bool force)

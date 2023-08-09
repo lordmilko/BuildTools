@@ -69,7 +69,7 @@ namespace BuildTools
         public void WriteSetting(ConfigSetting setting)
         {
             WriteLineFormat("# {0}. {1}", setting.Required ? "Required" : "Optional", setting.Description);
-            WriteLineFormat("{0}{1} = {2}", setting.Required ? string.Empty : "# ", setting.Name, setting.Value);
+            WriteLineFormat("{0}{1} = {2}", setting.Required || !setting.Value.IsDefault ? string.Empty : "# ", setting.Name, setting.Value.Value);
         }
 
         private void WriteLine(string value)

@@ -10,7 +10,7 @@ using BuildTools.PowerShell;
 namespace BuildTools.Cmdlets
 {
     [Cmdlet(VerbsLifecycle.Start, "BuildEnvironment", DefaultParameterSetName = ParameterAttribute.AllParameterSets)]
-    public class StartBuildEnvironment : BuildCmdlet<object>
+    public class StartBuildEnvironment : GlobalBuildCmdlet
     {
         /// <summary>
         /// The "build" folder containing the config file to read.
@@ -32,10 +32,6 @@ namespace BuildTools.Cmdlets
         /// </summary>
         [Parameter(Mandatory = false, ParameterSetName = ParameterSet.CI)]
         public SwitchParameter Alternate { get; set; }
-
-        public StartBuildEnvironment() : base(false)
-        {
-        }
 
         protected override void ProcessRecordEx()
         {
@@ -198,7 +194,5 @@ namespace BuildTools.Cmdlets
                 powerShell.WriteVerbose("Build Environment is running under PowerShell Core. Only a single build environment will be allowed");
             }
         }
-
-        protected override T GetService<T>() => BuildToolsSessionState.GlobalServiceProvider.GetService<T>();
     }
 }

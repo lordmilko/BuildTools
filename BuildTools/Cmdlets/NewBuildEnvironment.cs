@@ -3,8 +3,9 @@ using System.Management.Automation;
 
 namespace BuildTools.Cmdlets
 {
+    [Alias("New-BuildManifest")]
     [Cmdlet(VerbsCommon.New, "BuildEnvironment")]
-    public class NewBuildEnvironment : BuildCmdlet<object>
+    public class NewBuildEnvironment : GlobalBuildCmdlet
     {
         [Parameter(Mandatory = true, Position = 0)]
         public string Path { get; set; }
@@ -16,10 +17,8 @@ namespace BuildTools.Cmdlets
         {
             var service = GetService<NewBuildEnvironmentService>();
 
-            foreach (var item in service.Execute(Path, Force))
+            foreach (var item in service.Execute(Path, Force, DefaultConfigSettingValueProvider.Instance))
                 WriteObject(new FileInfo(item));
         }
-
-        protected override T GetService<T>() => BuildToolsSessionState.GlobalServiceProvider.GetService<T>();
     }
 }
