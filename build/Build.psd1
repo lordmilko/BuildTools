@@ -22,7 +22,7 @@
     # DebugTargetFramework = ''
 
     # Optional. Features to enable in the build environment. By default all features are allowed, and can be negated with ~. Valid values include: Dependency, Build, Test, Coverage, Package, Version
-    Features = '~Coverage'
+    # Features = ''
 
     # Optional. Commands to enable in the build environment. By default all commands are allowed, and can be negated with ~. Valid values include: CommandList, Coverage, ClearBuild, GetVersion, GitStatus, InstallDependency, InvokeBuild, InvokePSAnalyzer, InvokeTest, LaunchModule, Log, NewPackage, SimulateCI, OpenWiki, SetVersion, TestResult, UpdateVersion
     # Commands = ''
@@ -34,7 +34,7 @@
     # SourceFolder = ''
 
     # Optional. The minimum coverage threshold that must be met under CI
-    # CoverageThreshold = ''
+    CoverageThreshold = '50'
 
     ####################
     ####   CSharp   ####

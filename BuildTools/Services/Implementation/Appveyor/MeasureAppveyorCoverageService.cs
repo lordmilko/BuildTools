@@ -6,17 +6,19 @@ namespace BuildTools
 {
     class MeasureAppveyorCoverageService
     {
-        private EnvironmentService environmentService;
-        private IFileSystemProvider fileSystem;
-        private IProjectConfigProvider configProvider;
+        private readonly DependencyProvider dependencyProvider;
+        private readonly EnvironmentService environmentService;
+        private readonly IFileSystemProvider fileSystem;
+        private readonly IProjectConfigProvider configProvider;
 
         //Lazily initialized so we don't try and install opencover if coverage is not supported
-        private Lazy<GetCoverageService> getCoverageService;
+        private readonly Lazy<GetCoverageService> getCoverageService;
 
-        private IProcessService processService;
-        private Logger logger;
+        private readonly IProcessService processService;
+        private readonly Logger logger;
 
         public MeasureAppveyorCoverageService(
+            DependencyProvider dependencyProvider,
             EnvironmentService environmentService,
             IFileSystemProvider fileSystem,
             IProjectConfigProvider configProvider,
@@ -24,6 +26,7 @@ namespace BuildTools
             IProcessService processService,
             Logger logger)
         {
+            this.dependencyProvider = dependencyProvider;
             this.environmentService = environmentService;
             this.fileSystem = fileSystem;
             this.configProvider = configProvider;
@@ -75,7 +78,24 @@ namespace BuildTools
                 if (environmentService.IsAppveyor)
                 {
                     logger.LogInformation("\tUploading coverage to codecov");
-                    processService.Execute("cmd", $"/c \"codecov - f \\\"{GetCoverageService.OpenCoverOutput}\\\" 2 > nul\"", writeHost: true);
+
+                    var codecovArgs = new ArgList
+                    {
+                        "-f",
+                        $"\"{GetCoverageService.OpenCoverOutput}\"",
+                        "--required" //codecov will return 0 on failure unless --required is specified
+                    };
+
+                    var codecov = dependencyProvider.Install(WellKnownDependency.CodeCov);
+
+                    //It seems Appveyor starts with a current directory of system32, but sets the PowerShell current directory
+                    //to your project path. All cmdlets that run in C# cmdlets will have the default working directory of system32.
+                    //Thus, it is up to us to ensure our working directory is correct when we try and execute codecov
+
+                    fileSystem.WithCurrentDirectory(
+                        configProvider.SolutionRoot,
+                        () => processService.Execute(codecov.Path, codecovArgs, writeHost: true)
+                    );
                 }
             }
         }

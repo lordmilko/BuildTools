@@ -43,7 +43,7 @@ namespace BuildTools
             if (environmentService.IsCI)
             {
                 //dotnet SDK should be managed by CI system, not by us
-                return new DependencyResult(dependency, WellKnownDependency.Dotnet, null, DependencyAction.Skipped);
+                return new DependencyResult(dependency, powerShell.GetCommand(WellKnownDependency.Dotnet).Source, null, DependencyAction.Skipped);
             }
 
             if (TryGetExecutable(out var path))

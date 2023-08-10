@@ -25,7 +25,7 @@ namespace BuildTools
             if (writeHost)
             {
                 if (record.Data is ErrorRecord e)
-                    powerShell.WriteError(e);
+                    powerShell.WriteColor(e.Exception.Message, ConsoleColor.Red);
                 else
                     powerShell.WriteColor(record.Data.ToString());
             }

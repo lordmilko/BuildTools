@@ -10,6 +10,7 @@
         public const string TargetingPack452 = "net452";
         public const string TargetingPack461 = "net461";
 
+        public const string CodeCov = "codecov";
         public const string NuGet = "NuGet";
         public const string OpenCover = "OpenCover";
         public const string ReportGenerator = "ReportGenerator";

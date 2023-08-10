@@ -1,1 +1,1 @@
-start powershell -executionpolicy bypass -noexit -noninteractive -command "ipmo psreadline; . '%~dp0Build\Bootstrap.ps1'"
+start powershell -executionpolicy bypass -noexit -noninteractive -command "ipmo psreadline; $env:LORDMILKO_BUILDTOOLS_DEVELOPMENT='SelfBootstrap'; . '%~dp0Build\Bootstrap.ps1'"

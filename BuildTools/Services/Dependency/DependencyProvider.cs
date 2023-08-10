@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 using BuildTools.Cmdlets;
+using BuildTools.PowerShell;
 
 namespace BuildTools
 {
     class DependencyProvider
     {
         private readonly IProjectConfigProvider configProvider;
+        private readonly IPowerShellService powerShell;
         private readonly DotnetDependencyInstaller dotnetInstaller;
         private readonly Lazy<ChocolateyDependencyInstaller> chocolateyInstaller; //Depends on DependencyProvider
         private readonly PSPackageDependencyInstaller powerShellInstaller;
@@ -30,6 +32,7 @@ namespace BuildTools
 
         public DependencyProvider(
             IProjectConfigProvider configProvider,
+            IPowerShellService powerShell,
             DotnetDependencyInstaller dotnetInstaller,
             Lazy<ChocolateyDependencyInstaller> chocolateyInstaller,
             PSPackageDependencyInstaller powerShellInstaller,
@@ -37,6 +40,7 @@ namespace BuildTools
             TargetingPackDependencyInstaller targetingPackInstaller)
         {
             this.configProvider = configProvider;
+            this.powerShell = powerShell;
             this.dotnetInstaller = dotnetInstaller;
             this.chocolateyInstaller = chocolateyInstaller;
             this.powerShellInstaller = powerShellInstaller;
@@ -55,7 +59,7 @@ namespace BuildTools
             {
                 new ChocolateyDependency(                                             minimumVersion: "0.10.5.0"),
                 new DotnetDependency(),
-                new ChocolateyPackageDependency("codecov",                                                                                                                                             condition: hasCoverage),
+                new ChocolateyPackageDependency(WellKnownDependency.CodeCov,                                                                                                                           condition: hasCoverage),
                 new ChocolateyPackageDependency("opencover.portable",                 minimumVersion: "4.7.922.0", commandName: "opencover.console", displayName: WellKnownDependency.OpenCover,       condition: hasCoverage),
                 new ChocolateyPackageDependency("reportgenerator.portable",           minimumVersion: "3.0.0.0",   commandName: "reportgenerator",   displayName: WellKnownDependency.ReportGenerator, condition: hasCoverage),
                 new ChocolateyPackageDependency(WellKnownDependency.vswhere,          minimumVersion: "2.6.7"),
@@ -66,7 +70,19 @@ namespace BuildTools
                 new PSPackageDependency        (WellKnownDependency.PSScriptAnalyzer,                                                                                                                  condition: hasScriptAnalyzer),
                 new TargetingPackDependency    (WellKnownDependency.TargetingPack452, version: "4.5.2"),
                 new TargetingPackDependency    (WellKnownDependency.TargetingPack461, version: "4.6.1"),
-            }.Where(d => d.Condition).ToArray();
+            }.Where(d =>
+            {
+                if (!d.Condition)
+                    return false;
+
+                if (!powerShell.IsWindows)
+                {
+                    if (d is ChocolateyPackageDependency || d is TargetingPackDependency)
+                        return false;
+                }
+
+                return true;
+            }).ToArray();
         }
 
         public Dependency GetDependency(string name) => GetDependencies(name).Single();

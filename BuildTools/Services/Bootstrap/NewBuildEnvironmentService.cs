@@ -31,7 +31,7 @@ namespace BuildTools
             {
                 GenerateBuildCmd(solutionRoot, force, false),
                 GenerateBuildBash(solutionRoot, force),
-                GenerateBootstrap(buildFolder, force),
+                GenerateBootstrap(solutionRoot, buildFolder, force),
                 GenerateConfig(buildFolder, force, valueProvider),
                 GenerateVersion(buildFolder, force),
                 GenerateAppveyor(solutionRoot, force)
@@ -86,29 +86,105 @@ pwsh -executionpolicy bypass -noexit -noninteractive -command ""ipmo psreadline;
             return result;
         }
 
-        private string GenerateBootstrap(string buildFolder, bool force)
+        private string GenerateBootstrap(string solutionRoot, string buildFolder, bool force)
         {
-            var str = @"
+            var items = new List<string>();
+
+            var location = GetType().Assembly.Location;
+
+            if (location.StartsWith(solutionRoot, StringComparison.OrdinalIgnoreCase))
+                items.Add(GenerateSelfBootstrap());
+
+            items.Add(GenerateAppveyorArtifactBootstrap());
+
+            var devBootstrap = new StringBuilder();
+
+            for (var i = 0; i < items.Count; i++)
+            {
+                devBootstrap.Append("        ").Append(items[i].TrimStart());
+
+                if (i < items.Count - 1)
+                    devBootstrap.AppendLine().AppendLine();
+            }
+
+            var str = $@"
 param(
     [Parameter(Mandatory = $false)]
     [switch]$Quiet
 )
 
-if(!$env:LORDMILKO_BUILDTOOLS_DEVELOPMENT -and !(Get-Module lordmilko.BuildTools))
-{
+if($env:LORDMILKO_BUILDTOOLS_DEVELOPMENT)
+{{
+    switch($env:LORDMILKO_BUILDTOOLS_DEVELOPMENT)
+    {{
+{devBootstrap}
+    }}
+}}
+elseif(!(Get-Module lordmilko.BuildTools))
+{{
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
     if(!(Get-Module -ListAvailable lordmilko.BuildTools))
-    {
+    {{
         Install-Package lordmilko.BuildTools -ForceBootstrap -Force -Source PSGallery | Out-Null
-    }
+    }}
     
     Import-Module lordmilko.BuildTools -Scope Local
-}
+}}
 
 Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
 
             return WriteFile(buildFolder, "Bootstrap.ps1", str, force);
+        }
+
+        private string GenerateSelfBootstrap()
+        {
+            return @"
+        ""SelfBootstrap"" {
+            dotnet build $PSScriptRoot\..\BuildTools\BuildTools.csproj -c Release
+
+            Import-Module $PSScriptRoot\..\BuildTools\bin\Release\net461\lordmilko.BuildTools
+        }";
+        }
+
+        private string GenerateAppveyorArtifactBootstrap()
+        {
+            return @"
+        ""AppveyorArtifact"" {
+            if(!(Get-Command New-BuildEnvironment -ErrorAction SilentlyContinue))
+            {
+                $bytes = (Invoke-WebRequest https://ci.appveyor.com/api/projects/lordmilko/buildtools/artifacts/lordmilko.BuildTools.zip -UseBasicParsing).Content
+
+                $stream = New-Object System.IO.MemoryStream (,$bytes)
+
+                if($PSEdition -eq ""Desktop"")
+                {
+                    Add-Type -AssemblyName System.IO.Compression
+                }
+
+                $archive = [System.IO.Compression.ZipArchive]::new($stream)
+
+                $dllEntry = $archive.Entries|where Fullname -eq ""fullclr/BuildTools.dll""
+
+                $entryStream = $dllEntry.Open()
+
+                try
+                {
+                    $entryMemStream = New-Object System.IO.MemoryStream
+                    $entryStream.CopyTo($entryMemStream)
+
+                    $dllBytes = $entryMemStream.ToArray()
+
+                    $assembly = [System.Reflection.Assembly]::Load($dllBytes)
+
+                    Import-Module $assembly
+                }
+                finally
+                {
+                    $entryStream.Dispose()
+                }
+            }
+        }";
         }
 
         private string GenerateConfig(string buildFolder, bool force, IConfigSettingValueProvider valueProvider)

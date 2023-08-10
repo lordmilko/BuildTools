@@ -97,7 +97,7 @@ When the coverage analysis has completed, a HTML report detailing the results of
             var date = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
             var coverageDir = Path.Combine(Path.GetTempPath(), $"{configProvider.Config.Name}Coverage_{date}");
 
-            powerShell.WriteColor("Generating coverage report in $dir", ConsoleColor.Cyan);
+            powerShell.WriteColor($"Generating coverage report in {coverageDir}", ConsoleColor.Cyan);
 
             service.CreateReport(targetDir: coverageDir);
 
