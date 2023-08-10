@@ -100,6 +100,11 @@ namespace BuildTools.Tests.Dependency
                 powerShell.KnownCommands[CodeCovCommand] = null;
 
                 fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] { "PrtgAPI.sln", "PrtgAPIv17.sln" };
+                fileSystem.EnumerateFilesMap[("C:\\Root", "*.csproj", SearchOption.AllDirectories)] = new[]
+                {
+                    "C:\\Root\\first\\first.csproj",
+                    "C:\\Root\\first\\firstv17.csproj",
+                };
                 fileSystem.DirectoryExistsMap["C:\\Root\\src"] = true;
                 fileSystem.DirectoryExistsMap[ChocolateyInstall] = true;
                 fileSystem.FileExistsMap[CodeCovExe] = false;

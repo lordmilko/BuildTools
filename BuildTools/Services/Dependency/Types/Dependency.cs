@@ -14,12 +14,15 @@ namespace BuildTools
 
         public DependencyType Type { get; }
 
+        public bool Condition { get; }
+
         protected Dependency(
             string name,
             DependencyType type,
             string version = null,
             string minimumVersion = null,
-            string displayName = null)
+            string displayName = null,
+            bool condition = true)
         {
             Name = name;
             Type = type;
@@ -31,6 +34,7 @@ namespace BuildTools
                 MinimumVersion = new Version(minimumVersion);
 
             DisplayName = displayName;
+            Condition = condition;
         }
 
         public override string ToString()

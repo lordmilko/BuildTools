@@ -20,6 +20,11 @@ namespace BuildTools.Tests
             {
                 //Preparation
                 fileSystem.EnumerateFilesMap[("C:\\Root", "*.sln", SearchOption.TopDirectoryOnly)] = new[] {"PrtgAPI.sln", "PrtgAPIv17.sln"};
+                fileSystem.EnumerateFilesMap[("C:\\Root", "*.csproj", SearchOption.AllDirectories)] = new[]
+                {
+                    "C:\\Root\\first\\first.csproj",
+                    "C:\\Root\\first\\firstv17.csproj",
+                };
                 fileSystem.EnumerateFilesMap[("C:\\Root", "*.*nupkg", SearchOption.AllDirectories)] = new[] {"foo.nupkg"};
                 fileSystem.EnumerateFilesMap[("C:\\Root", "*.zip", SearchOption.TopDirectoryOnly)] = new[] {"foo.zip"};
                 fileSystem.FileExistsMap["C:\\Root\\msbuild.binlog"] = false;

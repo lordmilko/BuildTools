@@ -25,7 +25,7 @@
     Features = '~Coverage'
 
     # Optional. Commands to enable in the build environment. By default all commands are allowed, and can be negated with ~. Valid values include: CommandList, Coverage, ClearBuild, GetVersion, GitStatus, InstallDependency, InvokeBuild, InvokePSAnalyzer, InvokeTest, LaunchModule, Log, NewPackage, SimulateCI, OpenWiki, SetVersion, TestResult, UpdateVersion
-    # Commands = @()
+    # Commands = ''
 
     # Optional. The value to use for the prompt in the build environment. If not specified, Name will be used
     # Prompt = ''
@@ -74,14 +74,15 @@
     ####################
 
     # Optional. The types of packages to produce. If not specified, C#/PowerShell *.nupkg and Redist *.zip files will be produced
-    PackageTypes = 'PowerShell'
+    PackageTypes = 'PowerShell','Redist'
 
     # Optional. The tests to perform for each type of package
     PackageTests = @{
         "PowerShell"=@(
             @{ command = "New-BuildEnvironment C:\"; result = "Could not determine the solution root of the project."; kind = "cmdlet" }
-            @{ command = "New-BuildEnvironment"    ; kind = "cmdletexport" }
-            @{ command = "New-BuildManifest"       ; kind = "aliasexport" }
+
+            @{ command = "New-BuildEnvironment"; kind = "cmdletexport" }
+            @{ command = "New-BuildManifest";    kind = "aliasexport" }
         )
     }
 
@@ -99,6 +100,22 @@
             @{ name = "BuildTools.dll"        ; condition = { $_.IsDebug } }
             @{ name = "fullclr\BuildTools.dll"; condition = { $_.IsMultiTargeting } }
             @{ name = "coreclr\BuildTools.dll"; condition = { $_.IsMultiTargeting } }
+        )
+
+        "Redist"=@(
+            @{ name = "BuildTools.dll"; condition = { $_.IsDebug } }
+            @{ name = "BuildTools.pdb"; condition = { $_.IsDebug } }
+
+            @{ name = "fullclr\BuildTools.dll"; condition = { $_.IsMultiTargeting } }
+            @{ name = "fullclr\BuildTools.pdb"; condition = { $_.IsMultiTargeting } }
+            @{ name = "coreclr\BuildTools.dll"; condition = { $_.IsMultiTargeting } }
+            @{ name = "coreclr\BuildTools.pdb"; condition = { $_.IsMultiTargeting } }
+
+            @{ name = "coreclr\BuildTools.deps.json"; condition = { $_.IsMultiTargeting } }
+
+            "BuildTools.Format.ps1xml"
+            "lordmilko.BuildTools.psd1"
+            "TestAdapters\PowerShell.TestAdapter.dll"
         )
     }
 }

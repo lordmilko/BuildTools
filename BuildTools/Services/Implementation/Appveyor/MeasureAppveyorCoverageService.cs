@@ -9,7 +9,10 @@ namespace BuildTools
         private EnvironmentService environmentService;
         private IFileSystemProvider fileSystem;
         private IProjectConfigProvider configProvider;
-        private GetCoverageService getCoverageService;
+
+        //Lazily initialized so we don't try and install opencover if coverage is not supported
+        private Lazy<GetCoverageService> getCoverageService;
+
         private IProcessService processService;
         private Logger logger;
 
@@ -17,7 +20,7 @@ namespace BuildTools
             EnvironmentService environmentService,
             IFileSystemProvider fileSystem,
             IProjectConfigProvider configProvider,
-            GetCoverageService getCoverageService,
+            Lazy<GetCoverageService> getCoverageService,
             IProcessService processService,
             Logger logger)
         {
@@ -36,7 +39,7 @@ namespace BuildTools
 
             logger.LogHeader("Calculating code coverage");
 
-            getCoverageService.GetCoverage(new CoverageConfig(configProvider.Config.TestTypes)
+            getCoverageService.Value.GetCoverage(new CoverageConfig(configProvider.Config.TestTypes)
             {
                 Configuration = configuration
             }, isLegacy);
@@ -46,7 +49,7 @@ namespace BuildTools
             if (fileSystem.FileExists(summaryPath))
                 fileSystem.DeleteFile(summaryPath);
 
-            getCoverageService.CreateReport(CoverageReportType.XmlSummary);
+            getCoverageService.Value.CreateReport(CoverageReportType.XmlSummary);
 
             if (!fileSystem.FileExists(summaryPath))
                 throw new FileNotFoundException($"Cannot find coverage report '{summaryPath}'", summaryPath);

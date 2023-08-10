@@ -44,9 +44,9 @@ namespace BuildTools
 
     class SetVersionService
     {
-        private IProjectConfigProvider configProvider;
-        private IFileSystemProvider fileSystem;
-        private GetVersionService getVersionService;
+        private readonly IProjectConfigProvider configProvider;
+        private readonly IFileSystemProvider fileSystem;
+        private readonly GetVersionService getVersionService;
 
         public SetVersionService(IProjectConfigProvider configProvider, IFileSystemProvider fileSystem, GetVersionService getVersionService)
         {
@@ -153,7 +153,7 @@ namespace BuildTools
 
             var versionPath = configProvider.GetVersionPropsPath();
 
-            fileSystem.WriteFileText(versionPath, newContent.Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
+            fileSystem.WriteFileText(versionPath, newContent.TrimStart().Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
         }
 
         private void SetVersionPropsDesktop(string assemblyVersion, string fileVersion, string infoVersion)
@@ -179,7 +179,7 @@ using System.Reflection;
 [assembly: AssemblyInformationalVersion(""{infoVersion}"")]
 
 ";
-            fileSystem.WriteFileText(versionPath, newContent.Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
+            fileSystem.WriteFileText(versionPath, newContent.TrimStart().Replace("\r", string.Empty).Replace("\n", Environment.NewLine));
         }
 
         private void SetPsd1Props(Version version)
@@ -215,6 +215,9 @@ using System.Reflection;
                 return v;
             }).ToArray();
 
+            //New-ModuleManifest in PowerShell 5.1 generates a UTF16 file with little endian byte order.
+            //PowerShell Core generates a UTF8 file without a BOM. We opt to go for "normal UTF8" and
+            //include a BOM
             fileSystem.WriteFileLines(psd1Path, newContents);
         }
     }

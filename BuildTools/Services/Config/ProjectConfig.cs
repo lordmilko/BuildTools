@@ -108,7 +108,7 @@ namespace BuildTools
 
         [Optional]
         [RequiredWith(Feature.Test)]
-        public TestType[] TestTypes { get; set; }
+        public TestType[] TestTypes { get; set; } = new TestType[0];
 
         [Optional]
         public string UnitTestProjectName { get; set; }
