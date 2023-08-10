@@ -113,6 +113,7 @@ namespace BuildTools.Tests
     Copyright = 'foo, 2023'
     CoverageThreshold = 10
     Features = {featuresStr}
+    TestTypes = 'C#'
 }}
 ");
 
@@ -167,7 +168,7 @@ namespace BuildTools.Tests
             var buildDir = Path.Combine(solutionDir, "build");
             Directory.CreateDirectory(buildDir);
 
-            var configFile = Path.Combine(buildDir, "Config.psd1");
+            var configFile = Path.Combine(buildDir, "Build.psd1");
 
             return (solutionDir, buildDir, configFile);
         }

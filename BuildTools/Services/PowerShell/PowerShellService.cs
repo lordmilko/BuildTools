@@ -4,6 +4,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using BuildTools.Reflection;
 
 namespace BuildTools.PowerShell
@@ -11,6 +12,8 @@ namespace BuildTools.PowerShell
     class PowerShellService : IPowerShellService
     {
         private Stack<PSCmdlet> cmdletStack = new Stack<PSCmdlet>();
+
+        public static readonly PowerShellService Instance = new PowerShellService();
 
         public bool IsISE => GetVariable(WellKnownPowerShellVariable.psISE) != null;
 
@@ -24,10 +27,23 @@ namespace BuildTools.PowerShell
         {
             get
             {
-                if (Edition == PSEdition.Core)
-                    return (bool) GetVariable(WellKnownPowerShellVariable.IsWindows);
+                var activeCmdlet = ActiveCmdlet;
 
-                return true;
+                if (activeCmdlet == null)
+                {
+#if NETSTANDARD
+                    return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+#else
+                    return true;
+#endif
+                }
+                else
+                {
+                    if (Edition == PSEdition.Core)
+                        return (bool) activeCmdlet.GetVariableValue(WellKnownPowerShellVariable.IsWindows);
+
+                    return true;
+                }
             }
         }
 
@@ -38,22 +54,20 @@ namespace BuildTools.PowerShell
                 if (cmdletStack.Count == 0)
                     throw new InvalidOperationException("Cannot get the active cmdlet: no cmdlets are currently active");
 
-                if (cmdletStack.Count == 1)
-                    return cmdletStack.First();
-
                 foreach (var cmdlet in cmdletStack)
                 {
                     if (cmdlet.CommandRuntime == null)
                         continue;
 
-                    var permitted = cmdlet.CommandRuntime.GetInternalProperty("PipelineProcessor").GetInternalField("_permittedToWrite");
+                    var permitted = cmdlet.CommandRuntime.GetInternalProperty("PipelineProcessor")?.GetInternalField("_permittedToWrite");
 
                     if (ReferenceEquals(cmdlet, permitted))
                         return cmdlet;
                 }
 
-                //We tried our best; just go with the first one then and see what happens
-                return cmdletStack.First();
+                //If you start typing a command and hit tab, GetDynamicParameters() may be invoked,
+                //but there won't be an active cmdlet
+                return null;
             }
         }
 
@@ -129,7 +143,7 @@ namespace BuildTools.PowerShell
             ActiveCmdlet.WriteError(errorRecord);
 
         public void WriteVerbose(string message) =>
-            ActiveCmdlet.WriteVerbose(message);
+            ActiveCmdlet?.WriteVerbose(message);
 
         public void WriteProgress(
             string activity = null,

@@ -1,4 +1,5 @@
 ﻿using System;
+using BuildTools.PowerShell;
 
 namespace BuildTools
 {
@@ -9,27 +10,19 @@ namespace BuildTools
 
     class ConsoleLogger : IConsoleLogger
     {
+        private IPowerShellService powerShell;
+
+        public ConsoleLogger(IPowerShellService powerShell)
+        {
+            this.powerShell = powerShell;
+        }
+
         public void Log(string message, ConsoleColor? color)
         {
-            if (color != null)
-            {
-                var original = Console.ForegroundColor;
-
-                try
-                {
-                    Console.ForegroundColor = color.Value;
-
-                    Console.WriteLine(message);
-                }
-                finally
-                {
-                    Console.ForegroundColor = original;
-                }
-            }
-            else
-            {
-                Console.WriteLine(message);
-            }
+            //Appveyour has a custom PSHostUserInterface in Host.UI.externalUI,
+            //which I imagine captures all output and displays it in the log. As such,
+            //if you Console.WriteLine(), it will bypass their PSHostUserInterface
+            powerShell.WriteColor(message, color);
         }
     }
 }

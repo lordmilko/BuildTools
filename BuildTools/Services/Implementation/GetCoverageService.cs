@@ -253,11 +253,21 @@ namespace BuildTools
 
         private ArgList GetPowerShellTestParams(CoverageConfig coverageConfig, string[] tests)
         {
+            var dirName = "TestAdapters";
+
             var dir = Path.GetDirectoryName(GetType().Assembly.Location);
-            var subDir = Path.Combine(dir, "TestAdapters");
+            var subDir = Path.Combine(dir, dirName);
 
             if (!fileSystem.DirectoryExists(subDir))
-                throw new DirectoryNotFoundException($"TestAdapters directory '{subDir}' was not found. Is BuildTools corrupt?");
+            {
+                var parentDir = Path.GetDirectoryName(dir);
+                var alternateSubDir = Path.Combine(parentDir, dirName);
+
+                if (!fileSystem.DirectoryExists(alternateSubDir))
+                    throw new DirectoryNotFoundException($"TestAdapters directory '{subDir}' was not found. Is BuildTools corrupt?");
+
+                subDir = alternateSubDir;
+            }
 
             var dll = Path.Combine(subDir, "PowerShell.TestAdapter.dll");
 

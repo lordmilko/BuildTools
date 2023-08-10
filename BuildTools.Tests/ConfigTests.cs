@@ -247,7 +247,7 @@ namespace BuildTools.Tests
         {
             Test((MockFileSystemProvider fileSystem, MockPowerShellService powerShell, IProjectConfigProviderFactory factory) =>
             {
-                var psd1 = "C:\\Root\\build\\Config.psd1";
+                var psd1 = "C:\\Root\\build\\Build.psd1";
 
                 var psd1Contents = $@"
 @{{
@@ -257,12 +257,16 @@ namespace BuildTools.Tests
     Copyright = 'foo, 2023'
     {(features == null ? string.Empty : $"Features = {features}")}
     {(commands == null ? string.Empty : $"Commands = {commands}")}
+    TestTypes = 'C#'
     PackageTypes = 'Redist'
 
     CoverageThreshold = 1
+    PackageTests = @{{
+        Redist=@()
+    }}
     PackageFiles = @{{
         Redist= 'Foo'
-}}
+    }}
 }}";
                 var invoker = new PowerShellInvoker();
 

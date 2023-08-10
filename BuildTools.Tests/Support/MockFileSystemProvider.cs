@@ -131,7 +131,7 @@ namespace BuildTools.Tests
             throw new InvalidOperationException($"Lines of file '{path}' have not been set");
         }
 
-        public void WriteFileText(string path, string contents)
+        public void WriteFileText(string path, string contents, Encoding encoding = null)
         {
             if (OnWriteFileText.TryGetValue(path, out var action))
                 action(path, contents);
@@ -139,7 +139,7 @@ namespace BuildTools.Tests
                 throw new InvalidOperationException($"{nameof(OnWriteFileText)} for '{path}' is not set");
         }
 
-        public void WriteFileLines(string path, string[] contents)
+        public void WriteFileLines(string path, string[] contents, Encoding encoding = null)
         {
             if (OnWriteFileLines.TryGetValue(path, out var action))
                 action(path, contents);

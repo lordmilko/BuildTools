@@ -113,7 +113,7 @@ namespace BuildTools
                 var exportTests = configProvider.Config.PackageTests.PowerShell.OfType<PSExportPackageTest>().ToArray();
 
                 if (exportTests.Length == 0)
-                    throw new InvalidOperationException($"No tests of type {nameof(PSExportPackageTest)} were specified for PowerShell tests");
+                    throw new InvalidOperationException($"No tests of type {nameof(PSExportPackageTest)} were specified for PowerShell tests. Add a {nameof(ProjectConfig.PackageTests)} item in the form '{{ command = \"Get-Foo\"; kind = \"cmdletexport\"/\"aliasexport\" }}'");
 
                 foreach (var test in exportTests)
                 {
@@ -223,7 +223,7 @@ namespace BuildTools
                 throw new InvalidOperationException($"No tests of type {nameof(PSCommandPackageTest)} were specified for PowerShell tests");
 
             foreach (var test in tests)
-                test.Test(processService, powerShell.Edition, module);
+                test.Test(processService, edition, module);
         }
 
         private IPowerShellModule[] GetEditionModules(PSEdition edition)

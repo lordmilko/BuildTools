@@ -34,9 +34,9 @@ namespace BuildTools
             var lastBuild = GetLastAppveyorBuild();
             var lastRelease = GetLastAppveyorNuGetVersion();
 
-            logger.LogVerbose($"    Assembly version: {assemblyVersion}");
-            logger.LogVerbose($"    Last build: {lastBuild}");
-            logger.LogVerbose($"    Last release: {lastRelease}");
+            logger.LogInformation($"    Assembly version: {assemblyVersion}");
+            logger.LogInformation($"    Last build: {lastBuild}");
+            logger.LogInformation($"    Last release: {lastRelease}");
 
             string result;
 

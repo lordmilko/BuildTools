@@ -40,7 +40,7 @@ namespace BuildTools
             if (!serviceType.IsInstanceOfType(implementation))
                 throw new ArgumentException($"Implementation type '{implementation.GetType().Name}' does not implement service type '{serviceType.Name}'");
 
-            Validate(serviceType, serviceType);
+            Validate(serviceType, implementation.GetType());
 
             services[serviceType] = new ServiceDescriptor(serviceType, implementation.GetType(), implementation: implementation);
         }

@@ -79,7 +79,7 @@ namespace BuildTools
                 lastType = currentType;
 
                 if (item is string s)
-                    WriteLine(s);
+                    WriteLine($"\"{s}\"");
                 else if (item is Hashtable ht)
                     WriteMainArrayHashTableItem(ht, itemComparer, itemWidths);
                 else

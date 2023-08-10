@@ -4,7 +4,9 @@
     <TargetFrameworks Condition="'$(IsWindows)'">net461;netstandard2.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(IsWindows)' == 'false'">netstandard2.1</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
-    <OutputPath>$(ProjectDir)bin\$(Configuration)\lordmilko.BuildTools</OutputPath>
+    <OutputPath>bin\$(Configuration)\$(TargetFramework)\lordmilko.BuildTools\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework.ToLowerInvariant())\</IntermediateOutputPath>
 
     <TestAdapterPath>..\PowerShell.TestAdapter\bin\$(Configuration)\netstandard2.0\PowerShell.TestAdapter.dll</TestAdapterPath>
   </PropertyGroup>

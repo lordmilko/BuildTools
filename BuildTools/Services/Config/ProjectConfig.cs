@@ -7,7 +7,6 @@ namespace BuildTools
     {
         //We explicitly do not enumerate all known lang types; in the future we may add more, but in that case they won't
         //necessarily exist in all projects and so shouldn't be included in the default!
-        private static readonly TestType[] DefaultTestTypes = new[]{ TestType.CSharp, TestType.PowerShell};
         private static readonly PackageType[] DefaultPackageTypes = new[] { PackageType.CSharp, PackageType.PowerShell, PackageType.Redistributable };
 
         /// <summary>
@@ -107,14 +106,9 @@ namespace BuildTools
         #endregion
         #region Test
 
-        private TestType[] testTypes;
-
         [Optional]
-        public TestType[] TestTypes
-        {
-            get => testTypes ?? DefaultTestTypes;
-            set => testTypes = value;
-        }
+        [RequiredWith(Feature.Test)]
+        public TestType[] TestTypes { get; set; }
 
         [Optional]
         public string UnitTestProjectName { get; set; }
@@ -131,7 +125,7 @@ namespace BuildTools
             set => packageTypes = value;
         }
 
-        [Optional]
+        [RequiredWith(Feature.Package)]
         [ValueConverter(typeof(PackageTestsValueConverter))]
         public PackageTests PackageTests { get; set; }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 
 namespace BuildTools
 {
@@ -37,9 +38,9 @@ namespace BuildTools
 
         string[] ReadFileLines(string path);
 
-        void WriteFileText(string path, string contents);
+        void WriteFileText(string path, string contents, Encoding encoding = null);
 
-        void WriteFileLines(string path, string[] contents);
+        void WriteFileLines(string path, string[] contents, Encoding encoding = null);
 
         void CopyFile(string sourceFileName, string destFileName);
 
@@ -98,9 +99,9 @@ namespace BuildTools
 
         public string[] ReadFileLines(string path) => File.ReadAllLines(path);
 
-        public void WriteFileText(string path, string contents) => File.WriteAllText(path, contents);
+        public void WriteFileText(string path, string contents, Encoding encoding = null) => File.WriteAllText(path, contents, encoding ?? Encoding.UTF8);
 
-        public void WriteFileLines(string path, string[] contents) => File.WriteAllLines(path, contents);
+        public void WriteFileLines(string path, string[] contents, Encoding encoding = null) => File.WriteAllLines(path, contents, encoding ?? Encoding.UTF8);
 
         public void CopyFile(string sourceFileName, string destFileName) => File.Copy(sourceFileName, destFileName);
 

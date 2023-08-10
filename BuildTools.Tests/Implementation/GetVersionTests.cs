@@ -102,6 +102,8 @@ namespace BuildTools.Tests
                 {
                     { "PSData", new Hashtable
                     {
+                        { "LicenseUri", "https://raw.githubusercontent.com/lordmilko/PrtgAPI/master/LICENSE" },
+                        { "ProjectUri", "https://github.com/lordmilko/PrtgAPI" },
                         { "ReleaseNotes", @"Release Notes: https://github.com/lordmilko/PrtgAPI/releases/tag/v0.9.16
 
 ---

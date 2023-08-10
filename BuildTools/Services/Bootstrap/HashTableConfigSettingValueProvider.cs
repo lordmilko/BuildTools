@@ -33,37 +33,38 @@ namespace BuildTools
 
             var type = value.GetType();
 
-            if (type.IsArray)
+            if (!type.IsArray)
             {
-                var arr = (Array) value;
-
-                if (arr.Length == 0)
-                    return (CustomConfigValue) "@()";
-
-                var elementType = type.GetElementType();
-
-                string[] stringArray;
-
-                if (elementType == typeof(string))
-                    stringArray = (string[])value;
-                else if (elementType == typeof(object))
-                {
-                    var objectArray = (object[])value;
-
-                    if (objectArray.All(o => o is string))
-                    {
-                        stringArray = objectArray.Cast<string>().ToArray();
-                    }
-                    else
-                        throw new NotImplementedException($"Don't know how to array containing values of type {(string.Join(", ", objectArray.Select(v => v.GetType().Name).Distinct()))}");
-                }
-                else
-                    throw new NotImplementedException($"Don't know how to handle array with element type '{elementType.Name}' for config property '{name}'.");
-
-                return (CustomConfigValue) string.Join(",", stringArray.Select(v => $"'{v}'"));
+                value = new[] { value };
+                type = value.GetType();
             }
 
-            throw GetUnknownTypeException(name, value);
+            var arr = (Array) value;
+
+            if (arr.Length == 0)
+                return (CustomConfigValue)"@()";
+
+            var elementType = type.GetElementType();
+
+            string[] stringArray;
+
+            if (elementType == typeof(string))
+                stringArray = (string[])value;
+            else if (elementType == typeof(object))
+            {
+                var objectArray = (object[])value;
+
+                if (objectArray.All(o => o is string))
+                {
+                    stringArray = objectArray.Cast<string>().ToArray();
+                }
+                else
+                    throw new NotImplementedException($"Don't know how to array containing values of type {(string.Join(", ", objectArray.Select(v => v.GetType().Name).Distinct()))}");
+            }
+            else
+                throw new NotImplementedException($"Don't know how to handle array with element type '{elementType.Name}' for config property '{name}'.");
+
+            return (CustomConfigValue)string.Join(",", stringArray.Select(v => $"'{v}'"));
         }
 
         public override IConfigValue HashTable(string name)

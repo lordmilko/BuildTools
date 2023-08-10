@@ -257,6 +257,8 @@ For examples and usage scenarios, please see the Project Site.'
                     {
                         { "PSData", new Hashtable
                         {
+                            { "LicenseUri", "https://raw.githubusercontent.com/lordmilko/PrtgAPI/master/LICENSE" },
+                            { "ProjectUri", "https://github.com/lordmilko/PrtgAPI" },
                             { "ReleaseNotes", @"Release Notes: https://github.com/lordmilko/PrtgAPI/releases/tag/v2.0.0
 
 ---
@@ -277,6 +279,8 @@ PrtgAPI is a C#/PowerShell library that abstracts away the complexity of interfa
                 {
                     { "PSData", new Hashtable
                     {
+                        { "LicenseUri", "https://raw.githubusercontent.com/lordmilko/PrtgAPI/master/LICENSE" },
+                        { "ProjectUri", "https://github.com/lordmilko/PrtgAPI" },
                         { "ReleaseNotes", @"Release Notes: https://github.com/lordmilko/PrtgAPI/releases/tag/v0.9.16
 
 ---

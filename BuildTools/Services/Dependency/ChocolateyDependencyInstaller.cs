@@ -114,7 +114,7 @@ namespace BuildTools
             if (!isManager || action == "upgrade")
             {
                 if (!isManager)
-                    provider.Install(WellKnownDependency.Chocolatey, log, logSkipped);
+                    provider.Install(WellKnownDependency.Chocolatey, log, false);
 
                 process.Execute("choco", chocoArgs);
             }

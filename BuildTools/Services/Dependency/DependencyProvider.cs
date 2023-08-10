@@ -16,9 +16,7 @@ namespace BuildTools
 
         private Dependency[] dependencies;
 
-        public DependencyProvider(
-            IPowerShellService powerShell,
-            
+        public DependencyProvider(            
             DotnetDependencyInstaller dotnetInstaller,
             Lazy<ChocolateyDependencyInstaller> chocolateyInstaller,
             PSPackageDependencyInstaller powerShellInstaller,

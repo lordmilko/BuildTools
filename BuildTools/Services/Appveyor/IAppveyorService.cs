@@ -25,7 +25,7 @@ namespace BuildTools
         {
             var builder = new StringBuilder();
 
-            var supportsLegacy = configProvider.GetProjects(true).Any();
+            var supportsLegacy = configProvider.HasLegacyProjects;
 
             builder.Append(message);
 

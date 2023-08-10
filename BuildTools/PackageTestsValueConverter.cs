@@ -22,14 +22,17 @@ namespace BuildTools
             {
                 var val = (object[]) LanguagePrimitives.ConvertTo(hashtable[key], typeof(object[]));
 
-                switch (key)
+                switch (key.ToLower())
                 {
-                    case "C#":
+                    case "c#":
                         packageTests.CSharp = ProcessTests(key, val);
                         break;
 
-                    case "PowerShell":
+                    case "powershell":
                         packageTests.PowerShell = ProcessTests(key, val);
+                        break;
+
+                    case "redist":
                         break;
 
                     default:

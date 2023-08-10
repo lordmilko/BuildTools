@@ -758,6 +758,7 @@ namespace BuildTools.Tests.Implementation
             var tempOutputRelease = Path.Combine(PackageSourceService.RepoLocation, "TempOutput", "Release", "net452", "PrtgAPI");
             fileSystem.DirectoryExistsMap[tempOutputRelease] = true;
 
+            //Enumerate *.dll files to see what xml files might be XmlDocs
             fileSystem.EnumerateFilesMap[(TempOutputPrtgAPI, "*.dll", SearchOption.AllDirectories)] = new string[0];
 
             var tempOutputPsd1 = Path.Combine(tempOutputRelease, "PrtgAPI.psd1");
@@ -768,20 +769,36 @@ namespace BuildTools.Tests.Implementation
             //Move files
             foreach (var targetFramework in new[] {"netstandard2.0", "net452"})
             {
-                var tempOutputTargetFramework = Path.Combine(PackageSourceService.RepoLocation, "TempOutput", "Release", targetFramework);
+                var releaseTempOutput = Path.Combine(PackageSourceService.RepoLocation, "TempOutput", "Release");
+                var tempOutputTargetFramework = Path.Combine(releaseTempOutput, targetFramework);
 
-                var releaseTempOutput = Path.Combine(tempOutputTargetFramework, "PrtgAPI");
+                var releaseTempOutputModule = Path.Combine(tempOutputTargetFramework, "PrtgAPI");
 
                 foreach (var ext in new[] { "*.dll", "*.json", "*.xml", "*.pdb" })
-                    fileSystem.EnumerateFilesMap[(releaseTempOutput, ext, SearchOption.AllDirectories)] = new string[0];
+                    fileSystem.EnumerateFilesMap[(releaseTempOutputModule, ext, SearchOption.TopDirectoryOnly)] = new string[0];
+
+                fileSystem.EnumerateDirectoriesMap[(releaseTempOutput, "netstandard*", SearchOption.TopDirectoryOnly)] = new[]
+                {
+                    Path.Combine(releaseTempOutput, "netstandard2.0")
+                };
+
+                fileSystem.EnumerateDirectoriesMap[(releaseTempOutput, "net4*", SearchOption.TopDirectoryOnly)] = new[]
+                {
+                    Path.Combine(releaseTempOutput, "net452")
+                };
 
                 if (targetFramework == "netstandard2.0")
                     fileSystem.FileExistsMap["C:\\Root\\PrimaryProj\\bin\\Release\\netstandard2.0\\PrtgAPI.deps.json"] = true;
 
                 if (targetFramework == "net452")
                 {
+                    fileSystem.FileExistsMap[Path.Combine(releaseTempOutputModule, "coreclr", "PrtgAPI.deps.json")] = false;
+
+                    //Enumerate *.dll files to see what xml files might be XmlDocs
+                    fileSystem.EnumerateFilesMap[(releaseTempOutputModule, "*.dll", SearchOption.AllDirectories)] = new string[0];
+
                     foreach (var ext in exts)
-                        fileSystem.EnumerateFilesMap[(releaseTempOutput, ext, SearchOption.AllDirectories)] = new string[0];
+                        fileSystem.EnumerateFilesMap[(releaseTempOutputModule, ext, SearchOption.AllDirectories)] = new string[0];
                 }
             }
         }
@@ -828,6 +845,8 @@ namespace BuildTools.Tests.Implementation
                 {
                     { "PSData", new Hashtable
                     {
+                        { "LicenseUri", "https://raw.githubusercontent.com/lordmilko/PrtgAPI/master/LICENSE" },
+                        { "ProjectUri", "https://github.com/lordmilko/PrtgAPI" },
                         { "ReleaseNotes", @"Release Notes: https://github.com/lordmilko/PrtgAPI/releases/tag/v0.9.16
 
 ---

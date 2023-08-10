@@ -37,7 +37,7 @@ namespace BuildTools
             var originalFile = file;
 
             if (file == null)
-                file = "Config.psd1";
+                file = "Build.psd1";
             else
             {
                 var ext = Path.GetExtension(file);
@@ -125,7 +125,28 @@ namespace BuildTools
                     }
 
                     if (value != null && value.GetType() != prop.PropertyType)
+                    {
+                        if (value is string s)
+                        {
+                            if (prop.PropertyType.IsEnum)
+                            {
+                                if (s.TryParseDescriptionToEnum(prop.PropertyType, out var val))
+                                    value = val;
+                            }
+                            else if (prop.PropertyType.IsArray)
+                            {
+                                var elm = prop.PropertyType.GetElementType();
+
+                                if (elm.IsEnum)
+                                {
+                                    if (s.TryParseDescriptionToEnum(elm, out var val))
+                                        value = val;
+                                }
+                            }
+                        }
+
                         value = LanguagePrimitives.ConvertTo(value, prop.PropertyType);
+                    }
 
                     prop.SetValue(config, value);
                 }

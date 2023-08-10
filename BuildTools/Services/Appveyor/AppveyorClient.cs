@@ -61,7 +61,7 @@ namespace BuildTools
         private string ExecuteRequest(HttpMethod method, string query, string body)
         {
             if (string.IsNullOrEmpty(environmentService.AppveyorAPIToken))
-                throw new InvalidOperationException($"Environment variable '{WellKnownEnvironmentVariable.AppveyorAPIToken}' is not set. When running in AppVeyor, this environment variable should be set under the Settings of the project.");
+                throw new InvalidOperationException($"Environment variable '{WellKnownEnvironmentVariable.AppveyorAPIToken}' is not set. When running in AppVeyor, this environment variable should be set under the Settings of the project. API tokens are managed under your account, and are applied at the user level, not project level.");
 
             if (string.IsNullOrEmpty(environmentService.AppveyorAccountName))
                 throw new InvalidOperationException($"Environment variable '{WellKnownEnvironmentVariable.AppveyorAccountName}' is not set.");

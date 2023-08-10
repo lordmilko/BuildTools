@@ -7,7 +7,7 @@ namespace BuildTools
 {
     static class EnumExtensions
     {
-        public static string GetDescription(this Enum element, bool mandatory = true)
+        public static string GetDescription<T>(this T element, bool mandatory = true) where T : Enum
         {
             var memberInfo = element.GetType().GetMember(element.ToString());
 
@@ -42,7 +42,19 @@ namespace BuildTools
 
         public static bool TryParseDescriptionToEnum<TEnum>(this string str, out TEnum value)
         {
-            var fields = typeof(TEnum).GetFields(BindingFlags.Public | BindingFlags.Static);
+            if (TryParseDescriptionToEnum(str, typeof(TEnum), out var val))
+            {
+                value = (TEnum) val;
+                return true;
+            }
+
+            value = default(TEnum);
+            return false;
+        }
+
+        public static bool TryParseDescriptionToEnum(this string str, Type type, out object value)
+        {
+            var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
 
             foreach (var field in fields)
             {
@@ -52,7 +64,7 @@ namespace BuildTools
                 {
                     if (attribute.Description.Equals(str, StringComparison.OrdinalIgnoreCase))
                     {
-                        value = (TEnum) field.GetValue(null);
+                        value = field.GetValue(null);
                         return true;
                     }
                 }
@@ -60,13 +72,13 @@ namespace BuildTools
                 {
                     if (field.Name == str)
                     {
-                        value = (TEnum) field.GetValue(null);
+                        value = field.GetValue(null);
                         return true;
                     }
                 }
             }
 
-            value = default(TEnum);
+            value = null;
             return false;
         }
     }

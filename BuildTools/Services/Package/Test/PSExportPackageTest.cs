@@ -18,8 +18,19 @@ namespace BuildTools
 
         public void Test(object exports)
         {
-            if (exports is object[] o && o.Contains(Command))
-                return;
+            if (exports != null)
+            {
+                if (exports is string s)
+                {
+                    if (s == Command)
+                        return;
+                }
+                else if (exports is object[] oa)
+                {
+                    if (oa.Cast<string>().Contains(Command))
+                        return;
+                }
+            }
 
 #pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
             var word = Type switch

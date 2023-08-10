@@ -1,0 +1,1 @@
+start powershell -executionpolicy bypass -noexit -noninteractive -command "ipmo psreadline; . '%~dp0Build\Bootstrap.ps1'"

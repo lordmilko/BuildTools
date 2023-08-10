@@ -43,9 +43,9 @@ namespace BuildTools
             if (result != Result)
             {
                 if (string.IsNullOrWhiteSpace(result))
-                    throw new InvalidOperationException($"Command '{args}' returned an empty value");
+                    throw new InvalidOperationException($"Command '{Command}' returned an empty value");
 
-                throw new InvalidOperationException(result);
+                throw new InvalidOperationException($"Test command '{Command}' returned '{result}'");
             }
                 
         }

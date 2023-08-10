@@ -411,6 +411,10 @@ namespace BuildTools
             }
             else
             {
+                //If the module directory is outside the target framework folders, thats bad, because Publish-Module is going to look at the
+                //target framework folder name when it tries to lookup what the *.psd1 filename is. You can't signify to Publish-Module what the *.psd1
+                //name should be. As such, you need to invert your folder hierarchy, as described in PowerShellPackageProvider.CreatePowerShellPackage()
+
                 //.NET SDK style projects may have a variety of subfolders for various target frameworks
 
                 //Get the lowest .NET Framework folder
@@ -435,7 +439,7 @@ namespace BuildTools
                 }
 
                 if (candidates.Length == 0)
-                    throw new InvalidOperationException($"Couldn't find any Core {configuration} build candidates for {Config.PowerShellProjectName}");
+                    throw new InvalidOperationException($"Couldn't find any {configuration} build candidates for PowerShell Project '{Config.PowerShellProjectName}'");
 
                 baseDir = candidates.First();
             }
@@ -485,7 +489,7 @@ namespace BuildTools
             return psd1[0];
         }
 
-        public string GetVersionAttibPath()
+        public bool TryGetVersionAttribPath(out string path)
         {
             var primaryProject = Path.Combine(SourceRoot, Config.Name);
 
@@ -495,9 +499,21 @@ namespace BuildTools
             var versionFile = Path.Combine(primaryProject, "Properties", "Version.cs");
 
             if (!fileSystem.FileExists(versionFile))
-                throw new FileNotFoundException($"Could not find legacy version file '{versionFile}'", versionFile);
+            {
+                path = null;
+                return false;
+            }
 
-            return versionFile;
+            path = versionFile;
+            return true;
+        }
+
+        public string GetVersionAttibPath()
+        {
+            if (!TryGetVersionAttribPath(out var path))
+                throw new FileNotFoundException($"Could not find legacy version file '{path}'", path);                
+
+            return path;
         }
 
         public string GetVersionPropsPath(bool relativePath = false)
@@ -534,17 +550,20 @@ namespace BuildTools
         {
             EnsureProjects();
 
+            if (fallbackSetting != null)
+            {
+                if (!projects.Any(p => p.NormalizedName.Equals(fallbackSetting, StringComparison.OrdinalIgnoreCase)))
+                    throw new InvalidOperationException($"Could not find any projects with {fallbackSettingName} '{fallbackSetting}'.");
+
+                return fallbackSetting;
+            }
+
             var candidates = projects.Where(p => (p.Kind & kind) != 0 && !p.IsLegacy).ToArray();
 
             if (candidates.Length == 1)
                 return candidates[0].NormalizedName;
 
-            var name = fallbackSetting;
-
-            if (name == null)
-                throw new InvalidOperationException($"Cannot process PowerShell projects: setting '{fallbackSettingName}' was not specified and PowerShell project could not automatically be identified.");
-
-            return name;
+            throw new InvalidOperationException($"Cannot process PowerShell projects: setting '{fallbackSettingName}' was not specified and PowerShell project could not automatically be identified.");
         }
 
         public string GetProjectConfigurationDirectory(BuildProject project, BuildConfiguration configuration)

@@ -18,7 +18,7 @@ namespace BuildTools.Tests
                 Assert.AreEqual(1, deployments.Length);
 
                 var deployment = deployments.Single();
-                Assert.AreEqual(new DateTime(635435175708776088), deployment.Started);
+                Assert.AreEqual(new DateTime(635434815708776088, DateTimeKind.Utc).ToLocalTime(), deployment.Started);
             });
         }
 

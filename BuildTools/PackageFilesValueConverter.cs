@@ -66,13 +66,13 @@ namespace BuildTools
                     {
                         object val = ht[key];
 
-                        switch (key)
+                        switch (key.ToLower())
                         {
-                            case "Name":
+                            case "name":
                                 name = (string) val;
                                 break;
 
-                            case "Condition":
+                            case "condition":
                                 condition = (ScriptBlock) val;
                                 break;
 

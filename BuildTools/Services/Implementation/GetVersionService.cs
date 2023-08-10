@@ -16,7 +16,7 @@ namespace BuildTools
 
         public Version File { get; }
 
-        public Version Info { get; }
+        public string Info { get; }
 
         public Version Module { get; }
 
@@ -28,7 +28,7 @@ namespace BuildTools
             Version package,
             Version assembly,
             Version file,
-            Version info,
+            string info,
             Version module,
             string moduleTag,
             string previousTag)
@@ -114,7 +114,7 @@ namespace BuildTools
                 new Version(package),
                 new Version(assembly),
                 new Version(file),
-                new Version(info),
+                info,
                 new Version(moduleVersion),
                 releaseTag,
                 previousTag
@@ -165,6 +165,16 @@ namespace BuildTools
 
             var releaseNotes = (string) psData["ReleaseNotes"];
 
+            var licenseUri = (string) psData["LicenseUri"];
+
+            if (string.IsNullOrWhiteSpace(licenseUri))
+                throw new InvalidOperationException("LicenseUri has not been set in psd1 file.");
+
+            var projectUri = (string) psData["ProjectUri"];
+
+            if (string.IsNullOrWhiteSpace(projectUri))
+                throw new InvalidOperationException("ProjectUri has not been set in psd1 file.");
+
             if (string.IsNullOrWhiteSpace(releaseNotes))
                 throw new InvalidOperationException("Could not find ReleaseNotes section in psd1 file.");
 
@@ -193,13 +203,22 @@ namespace BuildTools
 
         private string GetGitTag()
         {
-            var result = processService.Execute("git", new ArgList
+            string[] result;
+
+            try
             {
-                "-C",
-                configProvider.SolutionRoot,
-                "describe",
-                "--tags"
-            });
+                result = processService.Execute("git", new ArgList
+                {
+                    "-C",
+                    configProvider.SolutionRoot,
+                    "describe",
+                    "--tags"
+                });
+            }
+            catch (Exception ex) when (ex.Message.Contains("No names found"))
+            {
+                return null;
+            }
 
             if (result.Length == 0)
                 return null;

@@ -10,6 +10,8 @@ namespace BuildTools
 
         string SourceRoot { get; }
 
+        bool HasLegacyProjects { get; }
+
         /// <summary>
         /// Gets the full path to the project's *.sln file.
         /// </summary>
@@ -65,6 +67,8 @@ namespace BuildTools
         /// </summary>
         /// <returns>The path to the *.psd1 file in its original location.</returns>
         string GetSourcePowerShellModuleManifest(bool relativePath = false);
+
+        bool TryGetVersionAttribPath(out string path);
 
         string GetVersionAttibPath();
 

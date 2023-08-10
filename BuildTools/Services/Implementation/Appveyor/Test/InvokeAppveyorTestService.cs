@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 using BuildTools.PowerShell;
 
 namespace BuildTools
@@ -35,6 +36,9 @@ namespace BuildTools
 
         private void ProcessPowerShell(bool isLegacy)
         {
+            if (!HasType(TestType.PowerShell))
+                return;
+
             if (powerShell.Edition == PSEdition.Desktop && !environmentService.IsAppveyor && !isLegacy)
             {
                 logger.LogInformation("Executing PowerShell tests under PowerShell Core");
@@ -46,7 +50,7 @@ namespace BuildTools
             }
             else
             {
-                var project = configProvider.GetUnitTestProject(true);
+                var project = configProvider.GetUnitTestProject(isLegacy);
                 var result = invokeTestService.InvokeCIPowerShellTest(project, default);
 
                 if (environmentService.IsAppveyor)
@@ -71,6 +75,9 @@ namespace BuildTools
 
         private void ProcessCSharp(BuildConfiguration configuration, bool isLegacy)
         {
+            if (!HasType(TestType.CSharp))
+                return;
+
             var config = new InvokeTestConfig(configProvider.Config.TestTypes)
             {
                 Configuration = configuration
@@ -116,5 +123,7 @@ namespace BuildTools
 
             return builder.ToString();
         }
+
+        private bool HasType(TestType type) => configProvider.Config.TestTypes.Contains(type);
     }
 }

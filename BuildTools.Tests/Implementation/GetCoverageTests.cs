@@ -521,8 +521,8 @@ namespace BuildTools.Tests
                 {
                     Setup(fileSystem, envProvider, powerShell);
 
-                    fileSystem.FileExistsMap["C:\\Root\\build\\Config.psd1"] = true;
-                    fileSystem.ReadFileTextMap["C:\\Root\\build\\Config.psd1"] = "@{}";
+                    fileSystem.FileExistsMap["C:\\Root\\build\\Build.psd1"] = true;
+                    fileSystem.ReadFileTextMap["C:\\Root\\build\\Build.psd1"] = "@{}";
                     powerShell.InvokeScriptMap["@{}"] = new Hashtable
                     {
                         { "Name", "PrtgAPI" },
@@ -531,6 +531,7 @@ namespace BuildTools.Tests
                         { "PowerShellUnitTestFilter", ScriptBlock.Create("$_.BaseName -ne 'First.Tests'") },
                         { "Copyright", "lordmilko, 2015" },
                         { "Features", "~Package" },
+                        { "TestTypes", "C#" },
                         { "CoverageThreshold", 10 }
                     };
                     fileSystem.EnumerateFilesMap[("C:\\Root\\build", "*.sln", SearchOption.TopDirectoryOnly)] = Array.Empty<string>();

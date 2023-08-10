@@ -62,7 +62,11 @@ namespace BuildTools
                 typeof(EnvironmentService),
                 { typeof(IFileSystemProvider), typeof(FileSystemProvider) },
                 { typeof(IProjectConfigProviderFactory), typeof(ProjectConfigProviderFactory) },
-                { typeof(IPowerShellService), typeof(PowerShellService) },
+
+                //Shared between global and local because ProjectConfigProvider stores the global instance, which needs to see
+                //the cmdletStack modified by WithActiveCmdlet
+                { typeof(IPowerShellService), PowerShellService.Instance },
+
                 { typeof(IProcessService), typeof(ProcessService) },
                 { typeof(IEnvironmentVariableProvider), typeof(EnvironmentVariableProvider) }
             };
@@ -150,7 +154,7 @@ namespace BuildTools
                 { typeof(IFileSystemProvider), typeof(FileSystemProvider) },
                 { typeof(IHasher), typeof(Hasher) },
                 { typeof(IHelpService), typeof(HelpService) },
-                { typeof(IPowerShellService), typeof(PowerShellService) },
+                { typeof(IPowerShellService), PowerShellService.Instance },
                 { typeof(IProcessService), typeof(ProcessService) },
                 { typeof(IVsProductLocator), typeof(VsProductLocator) },
                 { typeof(IWebClient), typeof(WebClient) },

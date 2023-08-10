@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace BuildTools
 {
@@ -25,22 +26,30 @@ namespace BuildTools
 
             logger.LogHeader("Executing tests");
 
-            var project = configProvider.GetUnitTestProject(false);
-            var result = invokeTestService.InvokeCIPowerShellTest(project, default);
-
-            if (result.FailedCount > 0)
-                throw new InvalidOperationException($"{result.FailedCount} Pester tests failed");
-
-            var csharpArgs = new ArgList
+            if (HasType(TestType.PowerShell))
             {
-                "--filter",
-                "TestCategory!=SkipCI"
-            };
+                var project = configProvider.GetUnitTestProject(false);
+                var result = invokeTestService.InvokeCIPowerShellTest(project, default);
 
-            invokeTestService.InvokeCICSharpTest(new InvokeTestConfig(configProvider.Config.TestTypes)
+                if (result.FailedCount > 0)
+                    throw new InvalidOperationException($"{result.FailedCount} Pester tests failed");
+            }
+
+            if (HasType(TestType.CSharp))
             {
-                Configuration = configuration
-            }, csharpArgs, false);
+                var csharpArgs = new ArgList
+                {
+                    "--filter",
+                    "TestCategory!=SkipCI"
+                };
+
+                invokeTestService.InvokeCICSharpTest(new InvokeTestConfig(configProvider.Config.TestTypes)
+                {
+                    Configuration = configuration
+                }, csharpArgs, false);
+            }
         }
+
+        private bool HasType(TestType type) => configProvider.Config.TestTypes.Contains(type);
     }
 }

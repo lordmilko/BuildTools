@@ -130,8 +130,19 @@ else # Desktop
 
         private string MovePowerShellAssemblies_MultiTargetedRelease(string modulePath)
         {
-            var netStandardOutput = Path.Combine(modulePath, "netstandard2.0", configProvider.Config.PowerShellModuleName);
-            var netFrameworkOutput = Path.Combine(modulePath, "net452", configProvider.Config.PowerShellModuleName); //todo
+            var standardPath = fileSystem.EnumerateDirectories(modulePath, "netstandard*").FirstOrDefault();
+
+            if (standardPath == null)
+                throw new DirectoryNotFoundException($"Cannot find a netstandard* directory in '{modulePath}' to multi-target against");
+
+            var frameworkPath = fileSystem.EnumerateDirectories(modulePath, "net4*").FirstOrDefault();
+
+            if (frameworkPath == null)
+                throw new DirectoryNotFoundException($"Cannot find a net4* directory in '{modulePath}' to multi-target against");
+
+            var netStandardOutput = Path.Combine(standardPath, configProvider.Config.PowerShellModuleName);
+            var netFrameworkOutput = Path.Combine(frameworkPath, configProvider.Config.PowerShellModuleName);
+            var netStandardName = Path.GetFileName(standardPath);
 
             var coreclr = Path.Combine(netFrameworkOutput, "coreclr");
             var fullclr = Path.Combine(netFrameworkOutput, "fullclr");
@@ -145,7 +156,7 @@ else # Desktop
             };
 
             string[] getFiles(string path) => include
-                .SelectMany(i => fileSystem.EnumerateFiles(path, i, SearchOption.AllDirectories))
+                .SelectMany(i => fileSystem.EnumerateFiles(path, i))
                 .Where(f => !f.EndsWith("-Help.xml", StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
@@ -162,18 +173,25 @@ else # Desktop
                 fileSystem.MoveFile(file, fullclr);
 
             var primaryProject = configProvider.GetPrimaryProject(false);
+
             var configDir = configProvider.GetProjectConfigurationDirectory(primaryProject, BuildConfiguration.Release);
+            configDir = Path.Combine(configDir, netStandardName);
 
-            var depsName = $"{configProvider.GetPrimaryProject(false).NormalizedName}.deps.json";
+            if (primaryProject.NormalizedName == configProvider.GetPowerShellProjectName())
+                configDir = Path.Combine(configDir, configProvider.Config.PowerShellModuleName);
 
-            var depsSourcePath = Path.Combine(configDir, "netstandard2.0", depsName);
+            var depsName = $"{primaryProject.NormalizedName}.deps.json";
+
+            var depsSourcePath = Path.Combine(configDir, depsName);
 
             if (!fileSystem.FileExists(depsSourcePath))
                 throw new FileNotFoundException($"Could not find '{depsName}' at '{depsSourcePath}'", depsSourcePath);
 
             var depsDestPath = Path.Combine(coreclr, depsName);
 
-            fileSystem.CopyFile(depsSourcePath, depsDestPath);
+            //If the PowerShell project is the same as the main project, the file will already exist
+            if (!fileSystem.FileExists(depsDestPath))
+                fileSystem.CopyFile(depsSourcePath, depsDestPath);
 
             //The coreclr and fullclr files were created under this folder. Everything that didn't need moving into the fullclr
             //folder (e.g. *.cmd files, etc) is still in the root
@@ -184,6 +202,19 @@ else # Desktop
         {
             if (target.PowerShell)
             {
+                var folderName = Path.GetFileName(modulePath);
+
+                //Setting AppendTargetFrameworkToOutputPath to false affects both the OutputPath
+                //and IntermediateOutputPath, hence you must specify both when multi-targeting https://github.com/dotnet/msbuild/issues/3787
+                if (!folderName.Equals(configProvider.Config.PowerShellModuleName))
+                    throw new InvalidOperationException($"Cannot publish PowerShell module from path '{modulePath}': " +
+                        $"Publish-Module won't be able to resolve the module manifest (*.psd1) file if the folder name '{folderName}' does not match the module name '{configProvider.Config.PowerShellModuleName}'. " +
+                        $"Consider specifying {Environment.NewLine}{Environment.NewLine}" +
+                        $"<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>{Environment.NewLine}" +
+                        $"<OutputPath>bin\\$(Configuration)\\$(TargetFramework)\\{configProvider.Config.PowerShellModuleName}\\</OutputPath>{Environment.NewLine}" +
+                        $"<IntermediateOutputPath>$(BaseIntermediateOutputPath)\\$(Configuration)\\$(TargetFramework.ToLowerInvariant())\\</IntermediateOutputPath>{Environment.NewLine}{ Environment.NewLine}" +
+                        $"in your project file to invert the folder hierarchy.");
+
                 DeleteUnnecessaryFiles(modulePath);
 
                 logger.LogInformation($"\t\tPublishing module to {PackageSourceService.RepoName}");
