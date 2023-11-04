@@ -345,7 +345,7 @@ skip_tags: true
 
         private void CalculateSolutionPaths(string path, out string solutionRoot, out string buildFolder)
         {
-            path = path.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)).Replace("//", "/");
+            path = Path.GetFullPath(path.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)).Replace("//", "/"));
 
             if (!fileSystem.DirectoryExists(path))
             {

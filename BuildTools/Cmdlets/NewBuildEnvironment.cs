@@ -7,8 +7,8 @@ namespace BuildTools.Cmdlets
     [Cmdlet(VerbsCommon.New, "BuildEnvironment")]
     public class NewBuildEnvironment : GlobalBuildCmdlet
     {
-        [Parameter(Mandatory = true, Position = 0)]
-        public string Path { get; set; }
+        [Parameter(Mandatory = false, Position = 0)]
+        public string Path { get; set; } = ".";
 
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }

@@ -57,6 +57,8 @@ namespace BuildTools.Cmdlets
 
         protected sealed override void BeginProcessing()
         {
+            Environment.CurrentDirectory = SessionState.Path.CurrentLocation.Path;
+
             if (this is IIntegrationProvider provider)
             {
                 if (MyInvocation.BoundParameters.TryGetValue(IntegrationParameterName, out var value))
