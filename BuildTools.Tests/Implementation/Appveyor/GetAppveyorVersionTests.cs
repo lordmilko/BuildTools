@@ -138,6 +138,20 @@ namespace BuildTools.Tests.Implementation
             );
         }
 
+        [TestMethod]
+        public void GetAppveyorVersion_IgnoreDeployedPreview()
+        {
+            //If you erroneously attempted to deploy a preview version, it will have failed, so we need
+            //to make sure we ignore it while checking our last deployed version
+
+            Test(
+                assembly: "0.1.0",
+                lastBuild: "0.1.0",
+                lastRelease: "0.1.0-preview.1",
+                expected: "0.1.0-build.1"
+            );
+        }
+
         private void Test(string assembly, string lastBuild, string lastRelease, string expected)
         {
             Test((

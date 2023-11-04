@@ -149,9 +149,11 @@ namespace BuildTools
             {
                 var deployments = client.GetAppveyorDeployments();
 
+                //Protect against erroneously attempting to deploy a "preview" build before the version
+                //number has been incremented
                 var lastNuGet = deployments
                     .OrderByDescending(d => d.Started)
-                    .FirstOrDefault(d => d.Environment.Provider == "NuGet");
+                    .FirstOrDefault(d => d.Environment.Provider == "NuGet" && !d.Build.Version?.Contains("preview") == true);
 
                 return lastNuGet?.Build.Version;
             }
