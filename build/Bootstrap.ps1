@@ -12,42 +12,6 @@ if($env:LORDMILKO_BUILDTOOLS_DEVELOPMENT)
 
             Import-Module $PSScriptRoot\..\BuildTools\bin\Release\net461\lordmilko.BuildTools
         }
-
-        "AppveyorArtifact" {
-            if(!(Get-Command New-BuildEnvironment -ErrorAction SilentlyContinue))
-            {
-                $bytes = (Invoke-WebRequest https://ci.appveyor.com/api/projects/lordmilko/buildtools/artifacts/lordmilko.BuildTools.zip -UseBasicParsing).Content
-
-                $stream = New-Object System.IO.MemoryStream (,$bytes)
-
-                if($PSEdition -eq "Desktop")
-                {
-                    Add-Type -AssemblyName System.IO.Compression
-                }
-
-                $archive = [System.IO.Compression.ZipArchive]::new($stream)
-
-                $dllEntry = $archive.Entries|where Fullname -eq "fullclr/BuildTools.dll"
-
-                $entryStream = $dllEntry.Open()
-
-                try
-                {
-                    $entryMemStream = New-Object System.IO.MemoryStream
-                    $entryStream.CopyTo($entryMemStream)
-
-                    $dllBytes = $entryMemStream.ToArray()
-
-                    $assembly = [System.Reflection.Assembly]::Load($dllBytes)
-
-                    Import-Module $assembly
-                }
-                finally
-                {
-                    $entryStream.Dispose()
-                }
-            }
-        }
     }
 }
 elseif(!(Get-Module lordmilko.BuildTools))
@@ -56,7 +20,15 @@ elseif(!(Get-Module lordmilko.BuildTools))
 
     if(!(Get-Module -ListAvailable lordmilko.BuildTools))
     {
-        Install-Package lordmilko.BuildTools -ForceBootstrap -Force -Source PSGallery | Out-Null
+        Write-Host "Installing lordmilko.BuildTools..." -NoNewline -ForegroundColor Green
+
+        Register-PackageSource -Name AppveyorBuildToolsNuGet -Location https://ci.appveyor.com/nuget/buildtools-j7nyox2i4tis -ProviderName PowerShellGet | Out-Null
+
+        Install-Package lordmilko.BuildTools -ForceBootstrap -Force -Source AppveyorBuildToolsNuGet | Out-Null
+
+        Unregister-PackageSource -Name AppveyorBuildToolsNuGet
+
+        Write-Host "Done!"
     }
     
     Import-Module lordmilko.BuildTools -Scope Local

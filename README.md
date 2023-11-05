@@ -15,7 +15,9 @@
 * CI
 
 ```powershell
-Install-Package lordmilko.BuildTools -Source PSGallery
+Register-PackageSource -Name AppveyorBuildToolsNuGet -Location https://ci.appveyor.com/nuget/buildtools-j7nyox2i4tis -ProviderName PowerShellGet
+
+Install-Package lordmilko.BuildTools -Source AppveyorBuildToolsNuGet
 ```
 
 For more information please see the [wiki](https://github.com/lordmilko/BuildTools/wiki)

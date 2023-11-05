@@ -108,19 +108,30 @@ pwsh -executionpolicy bypass -noexit -noninteractive -command ""ipmo psreadline;
 
             var location = GetType().Assembly.Location;
 
+            string devSwitch = string.Empty;
+
             if (location.StartsWith(solutionRoot, StringComparison.OrdinalIgnoreCase))
+            {
                 items.Add(GenerateSelfBootstrap());
 
-            items.Add(GenerateAppveyorArtifactBootstrap());
+                var devBootstrap = new StringBuilder();
 
-            var devBootstrap = new StringBuilder();
+                for (var i = 0; i < items.Count; i++)
+                {
+                    devBootstrap.Append("        ").Append(items[i].TrimStart());
 
-            for (var i = 0; i < items.Count; i++)
-            {
-                devBootstrap.Append("        ").Append(items[i].TrimStart());
+                    if (i < items.Count - 1)
+                        devBootstrap.AppendLine().AppendLine();
+                }
 
-                if (i < items.Count - 1)
-                    devBootstrap.AppendLine().AppendLine();
+                devSwitch = $@"if($env:LORDMILKO_BUILDTOOLS_DEVELOPMENT)
+{{
+    switch($env:LORDMILKO_BUILDTOOLS_DEVELOPMENT)
+    {{
+{devBootstrap}
+    }}
+}}
+else";
             }
 
             var str = $@"
@@ -129,20 +140,21 @@ param(
     [switch]$Quiet
 )
 
-if($env:LORDMILKO_BUILDTOOLS_DEVELOPMENT)
-{{
-    switch($env:LORDMILKO_BUILDTOOLS_DEVELOPMENT)
-    {{
-{devBootstrap}
-    }}
-}}
-elseif(!(Get-Module lordmilko.BuildTools))
+{devSwitch}if(!(Get-Module lordmilko.BuildTools))
 {{
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
     if(!(Get-Module -ListAvailable lordmilko.BuildTools))
     {{
-        Install-Package lordmilko.BuildTools -ForceBootstrap -Force -Source PSGallery | Out-Null
+        Write-Host ""Installing lordmilko.BuildTools..."" -NoNewline -ForegroundColor Green
+
+        Register-PackageSource -Name AppveyorBuildToolsNuGet -Location https://ci.appveyor.com/nuget/buildtools-j7nyox2i4tis -ProviderName PowerShellGet | Out-Null
+
+        Install-Package lordmilko.BuildTools -ForceBootstrap -Force -Source AppveyorBuildToolsNuGet | Out-Null
+
+        Unregister-PackageSource -Name AppveyorBuildToolsNuGet
+
+        Write-Host ""Done!""
     }}
     
     Import-Module lordmilko.BuildTools -Scope Local
@@ -258,9 +270,9 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
 
             IConfigValue nameValue(string v)
             {
-                var defaultValue = stringValue(v);
+                var proposedValue = stringValue(v);
 
-                if (string.IsNullOrEmpty(defaultValue.Value) && solutionRoot != null)
+                if (proposedValue.IsDefault && solutionRoot != null)
                 {
                     var candidates = fileSystem.EnumerateFiles(solutionRoot, "*.sln").ToArray();
 
@@ -272,14 +284,14 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
                     }
                 }
 
-                return defaultValue;
+                return proposedValue;
             }
 
             IConfigValue copyrightValue(string v)
             {
-                var defaultValue = stringValue(v);
+                var proposedValue = stringValue(v);
 
-                if (string.IsNullOrEmpty(defaultValue.Value) && !string.IsNullOrEmpty(solutionRoot))
+                if (proposedValue.IsDefault && !string.IsNullOrEmpty(solutionRoot))
                 {
                     var args = new ArgList {"config", "--get", "user.name"};
 
@@ -287,7 +299,7 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
                         return new CustomConfigValue($"'{result[0]}, {DateTime.Now.Year}'");
                 }
 
-                return defaultValue;
+                return proposedValue;
             }
 
             var groups = new[]
