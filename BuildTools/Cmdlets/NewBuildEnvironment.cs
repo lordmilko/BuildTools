@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -18,6 +19,9 @@ namespace BuildTools.Cmdlets
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
+        [Parameter(Mandatory = false)]
+        public SwitchParameter Simple { get; set; }
+
         protected override void ProcessRecordEx()
         {
             var service = GetService<NewBuildEnvironmentService>();
@@ -34,6 +38,32 @@ namespace BuildTools.Cmdlets
 
             foreach (var item in realParameters)
                 boundParameters.Remove(item);
+
+            if (Simple)
+            {
+                if (!boundParameters.ContainsKey(nameof(ProjectConfig.Features)))
+                {
+                    var properties = typeof(ProjectConfig).GetProperties();
+
+                    var bad = new List<Feature>();
+
+                    foreach (var property in properties)
+                    {
+                        var requiredWithAttrib = property.GetCustomAttribute<RequiredWithAttribute>();
+
+                        if (requiredWithAttrib != null)
+                        {
+                            //If we didn't specify this required value, disable the feature that requires it
+
+                            if (!boundParameters.ContainsKey(property.Name))
+                                bad.Add(requiredWithAttrib.Feature);
+                        }
+                    }
+
+                    if (bad.Count > 0)
+                        boundParameters[nameof(ProjectConfig.Features)] = bad.Distinct().Select(v => $"~{v}").OrderBy(v => v.Length).ToArray();
+                }
+            }
 
             var hashtable = new Hashtable();
 
@@ -60,6 +90,22 @@ namespace BuildTools.Cmdlets
                 };
 
                 var type = GetParameterType(property.PropertyType);
+
+                var valueConverterAttrib = property.GetCustomAttribute<ValueConverterAttribute>();
+
+                if (valueConverterAttrib != null)
+                {
+                    if (valueConverterAttrib.Type.IsGenericType && valueConverterAttrib.Type.GetGenericTypeDefinition() == typeof(NegatableEnumValueConverter<>))
+                    {
+                        var elmType = valueConverterAttrib.Type.GetGenericArguments()[0];
+
+                        attributes.Add(new ArgumentCompleterAttribute(typeof(NegatedEnumValueCompleter<>).MakeGenericType(elmType)));
+                        attributes.Add(new ValidateSetExAttribute(typeof(NegatedEnumValueValidator<>).MakeGenericType(elmType)));
+                        attributes.Add(new NegatedEnumValueTransformationAttribute(elmType));
+
+                        type = type.IsArray ? typeof(string[]) : typeof(string);
+                    }
+                }                
 
                 dict.Add(property.Name, new RuntimeDefinedParameter(property.Name, type, attributes));
             }

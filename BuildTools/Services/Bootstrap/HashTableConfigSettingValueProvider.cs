@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
+using System.Reflection;
 
 namespace BuildTools
 {
@@ -49,7 +50,10 @@ namespace BuildTools
 
             var elementType = type.GetElementType();
 
-            var enumTryParse = typeof(Enum).GetMethods().Single(m => m.Name == "TryParse" && m.IsGenericMethod && m.GetParameters().Length == 3).MakeGenericMethod(elementType);
+            MethodInfo enumTryParse = null;
+
+            if (elementType.IsEnum)
+                enumTryParse = typeof(Enum).GetMethods().Single(m => m.Name == "TryParse" && m.IsGenericMethod && m.GetParameters().Length == 3 && m.GetParameters()[0].ParameterType == typeof(string)).MakeGenericMethod(elementType);
 
             bool isEnumValue(object v)
             {
@@ -61,7 +65,7 @@ namespace BuildTools
 
                 var args = new[] { v, true, null };
 
-                if ((bool)enumTryParse.Invoke(null, args))
+                if (enumTryParse != null && (bool)enumTryParse.Invoke(null, args))
                     return true;
 
                 return false;

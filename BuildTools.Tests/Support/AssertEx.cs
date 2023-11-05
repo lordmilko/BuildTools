@@ -58,9 +58,11 @@ namespace BuildTools.Tests
                 }
 
                 if (expected is ScriptBlock sb1 && actual is ScriptBlock sb2)
+                {
                     Assert.AreEqual(sb1.Ast.ToString(), sb2.Ast.ToString());
 
-                return;
+                    return;
+                }
             }
 
             Assert.AreEqual(expected, actual);

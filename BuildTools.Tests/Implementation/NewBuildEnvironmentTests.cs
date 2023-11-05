@@ -46,6 +46,9 @@ namespace BuildTools.Tests
             });
         }
 
+        [TestMethod]
+        public void NewBuildEnvironment_DynamicParameters_NegatedEnum() => Test("Features", "~coverage", "~Coverage");
+
         private void Test(string property, object raw, object expected = null)
         {
             expected = expected ?? raw;
@@ -115,7 +118,7 @@ namespace BuildTools.Tests
         {
             serviceCollection = new ServiceCollection
             {
-                { typeof(NewBuildEnvironmentService) },
+                typeof(NewBuildEnvironmentService),
 
                 { typeof(IFileSystemProvider), typeof(MockFileSystemProvider) },
                 { typeof(IPowerShellService), typeof(MockPowerShellService) },
