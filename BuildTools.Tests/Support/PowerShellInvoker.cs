@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
@@ -77,6 +78,13 @@ namespace BuildTools.Tests
                         var value = prop.GetValue(param);
 
                         powerShell.AddParameter(prop.Name, value);
+                    }
+                }
+                else if (param is IDictionary d)
+                {
+                    foreach (DictionaryEntry entry in d)
+                    {
+                        powerShell.AddParameter(entry.Key.ToString(), entry.Value);
                     }
                 }
                 else

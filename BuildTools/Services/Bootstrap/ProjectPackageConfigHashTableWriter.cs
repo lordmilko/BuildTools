@@ -97,7 +97,7 @@ namespace BuildTools
 
             var results = new List<int>();
 
-            var maxKeys = hashTables.Max(h => h.Keys.Length);
+            var maxKeys = hashTables.Length == 0 ? 0 : hashTables.Max(h => h.Keys.Length);
 
             for (var keyIdx = 0; keyIdx < maxKeys; keyIdx++)
             {

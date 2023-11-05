@@ -23,6 +23,9 @@ namespace BuildTools
             if (value is string s)
                 return (CustomConfigValue) $"'{s}'";
 
+            if (value.GetType().IsArray)
+                return Array(name);
+
             throw GetUnknownTypeException(name, value);
         }
 
@@ -46,20 +49,55 @@ namespace BuildTools
 
             var elementType = type.GetElementType();
 
+            var enumTryParse = typeof(Enum).GetMethods().Single(m => m.Name == "TryParse" && m.IsGenericMethod && m.GetParameters().Length == 3).MakeGenericMethod(elementType);
+
+            bool isEnumValue(object v)
+            {
+                if (v == null)
+                    return false;
+
+                if (v.GetType() == elementType)
+                    return true;
+
+                var args = new[] { v, true, null };
+
+                if ((bool)enumTryParse.Invoke(null, args))
+                    return true;
+
+                return false;
+            }
+
+            string convertToEnum(object v)
+            {
+                if (v.GetType() == elementType)
+                    return v.ToString();
+
+                return Enum.Parse(elementType, v.ToString(), true).ToString();
+            }
+
             string[] stringArray;
+
+            var arrayTypes = new[]
+            {
+                typeof(object),
+                typeof(Feature),
+                typeof(CommandKind),
+                typeof(TestType),
+                typeof(PackageType)
+            };
 
             if (elementType == typeof(string))
                 stringArray = (string[])value;
-            else if (elementType == typeof(object))
+            else if (arrayTypes.Contains(elementType))
             {
-                var objectArray = (object[])value;
+                var objectArray = ((IEnumerable)value).Cast<object>().ToArray();
 
                 if (objectArray.All(o => o is string))
-                {
                     stringArray = objectArray.Cast<string>().ToArray();
-                }
+                else if (elementType.IsEnum && objectArray.All(isEnumValue))
+                    stringArray = objectArray.Select(convertToEnum).ToArray();
                 else
-                    throw new NotImplementedException($"Don't know how to array containing values of type {(string.Join(", ", objectArray.Select(v => v.GetType().Name).Distinct()))}");
+                    throw new NotImplementedException($"Don't know how to parse array containing values of type {(string.Join(", ", objectArray.Select(v => v?.GetType().Name ?? "null").Distinct()))}");
             }
             else
                 throw new NotImplementedException($"Don't know how to handle array with element type '{elementType.Name}' for config property '{name}'.");

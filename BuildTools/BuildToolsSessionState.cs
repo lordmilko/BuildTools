@@ -45,12 +45,17 @@ namespace BuildTools
         {
             get
             {
+                if (ServiceProviderHook != null)
+                    return ServiceProviderHook(true);
+
                 if (globalServiceProvider == null)
                     globalServiceProvider = CreateGlobalServiceProvider();
 
                 return globalServiceProvider;
             }
         }
+
+        internal static Func<bool, IServiceProvider> ServiceProviderHook;
 
         private static IServiceProvider CreateGlobalServiceProvider()
         {

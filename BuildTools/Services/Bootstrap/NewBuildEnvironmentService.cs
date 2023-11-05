@@ -32,7 +32,7 @@ namespace BuildTools
                 GenerateBuildCmd(solutionRoot, force, false),
                 GenerateBuildBash(solutionRoot, force),
                 GenerateBootstrap(solutionRoot, buildFolder, force),
-                GenerateConfig(buildFolder, force, valueProvider),
+                GenerateConfig(solutionRoot, buildFolder, force, valueProvider),
                 GenerateVersion(buildFolder, force),
                 GenerateAppveyor(solutionRoot, force)
             };
@@ -62,28 +62,44 @@ pwsh -executionpolicy bypass -noexit -noninteractive -command ""ipmo psreadline;
 
             if (result != null)
             {
-                var gitDir = Path.Combine(solutionRoot, ".git");
-
-                if (fileSystem.DirectoryExists(gitDir))
-                {
-                    var git = powerShell.GetCommand("git");
-
-                    if (git != null)
+                TryExecuteGit(
+                    solutionRoot,
+                    new ArgList
                     {
-                        processService.Execute("git", new ArgList
-                        {
-                            "-C",
-                            solutionRoot,
-                            "update-index",
-                            "--chmod=+x",
-                            "--add",
-                            result
-                        });
-                    }
-                }
+                        "-C",
+                        solutionRoot,
+                        "update-index",
+                        "--chmod=+x",
+                        "--add",
+                        result
+                    },
+                    out _
+                );
             }
 
             return result;
+        }
+
+        private bool TryExecuteGit(string solutionRoot, ArgList args, out string[] result)
+        {
+            if (solutionRoot == null)
+                throw new ArgumentNullException(nameof(solutionRoot));
+
+            var gitDir = Path.Combine(solutionRoot, ".git");
+
+            if (fileSystem.DirectoryExists(gitDir))
+            {
+                var git = powerShell.GetCommand("git");
+
+                if (git != null)
+                {
+                    result = processService.Execute("git", args);
+                    return true;
+                }
+            }
+
+            result = null;
+            return false;
         }
 
         private string GenerateBootstrap(string solutionRoot, string buildFolder, bool force)
@@ -187,7 +203,7 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
         }";
         }
 
-        private string GenerateConfig(string buildFolder, bool force, IConfigSettingValueProvider valueProvider)
+        private string GenerateConfig(string solutionRoot, string buildFolder, bool force, IConfigSettingValueProvider valueProvider)
         {
             var name = "Build.psd1";
 
@@ -200,7 +216,7 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
                     name = Path.GetFileName(existing[0]);
             }
 
-            var str = CreateConfigContents(valueProvider);
+            var str = CreateConfigContents(valueProvider, solutionRoot);
 
             return WriteFile(buildFolder, name, str, force);
         }
@@ -223,7 +239,7 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
             return WriteFile(buildFolder, "Version.props", str, force);
         }
 
-        public string CreateConfigContents(IConfigSettingValueProvider valueProvider)
+        public string CreateConfigContents(IConfigSettingValueProvider valueProvider, string solutionRoot = null)
         {
             Func<string, IConfigValue> stringValue = valueProvider.String;
             Func<string, IConfigValue> arrayValue = valueProvider.Array;
@@ -240,18 +256,52 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
                 return string.Join(", ", strs);
             }
 
+            IConfigValue nameValue(string v)
+            {
+                var defaultValue = stringValue(v);
+
+                if (string.IsNullOrEmpty(defaultValue.Value) && solutionRoot != null)
+                {
+                    var candidates = fileSystem.EnumerateFiles(solutionRoot, "*.sln").ToArray();
+
+                    if (candidates.Length == 1)
+                    {
+                        var result = Path.GetFileNameWithoutExtension(candidates[0]);
+
+                        return new CustomConfigValue($"'{result}'");
+                    }
+                }
+
+                return defaultValue;
+            }
+
+            IConfigValue copyrightValue(string v)
+            {
+                var defaultValue = stringValue(v);
+
+                if (string.IsNullOrEmpty(defaultValue.Value) && !string.IsNullOrEmpty(solutionRoot))
+                {
+                    var args = new ArgList {"config", "--get", "user.name"};
+
+                    if (TryExecuteGit(solutionRoot, args, out var result) && result.Length == 1)
+                        return new CustomConfigValue($"'{result[0]}, {DateTime.Now.Year}'");
+                }
+
+                return defaultValue;
+            }
+
             var groups = new[]
             {
                 new ConfigGroup("Global", new[]
                 {
-                    new ConfigSetting("Name",                        required: true,  value: stringValue,    description: "The name of the project/GitHub repository"),
+                    new ConfigSetting("Name",                        required: true,  value: nameValue,      description: "The name of the project/GitHub repository"),
                     new ConfigSetting("CmdletPrefix",                required: true,  value: stringValue,    description: "The prefix to use for all build environment cmdlets"),
-                    new ConfigSetting("Copyright",                   required: true,  value: stringValue,    description: "The copyright author and year to display in the build environment"),
+                    new ConfigSetting("Copyright",                   required: true,  value: copyrightValue, description: "The copyright author and year to display in the build environment"),
                     new ConfigSetting("SolutionName",                required: false, value: stringValue,    description: "The name of the Visual Studio Solution. Required when a project contains multiple solutions"),
                     new ConfigSetting("BuildFilter",                 required: false, value: stringValue,    description: "A wildcard expression indicating the projects that should be built in CI"),
                     new ConfigSetting("DebugTargetFramework",        required: false, value: stringValue,    description: "The target framework that is used in debug mode when the project conditionally multi-targets only on Release"),
                     new ConfigSetting("Features",                    required: false, value: stringValue,    description: $"Features to enable in the build environment. By default all features are allowed, and can be negated with ~. Valid values include: {GetEnumNames<Feature>(Feature.System)}"),
-                    new ConfigSetting("Commands",                    required: false, value: stringValue,     description: $"Commands to enable in the build environment. By default all commands are allowed, and can be negated with ~. Valid values include: {GetEnumNames<CommandKind>()}"),
+                    new ConfigSetting("Commands",                    required: false, value: stringValue,    description: $"Commands to enable in the build environment. By default all commands are allowed, and can be negated with ~. Valid values include: {GetEnumNames<CommandKind>()}"),
                     new ConfigSetting("Prompt",                      required: false, value: stringValue,    description: "The value to use for the prompt in the build environment. If not specified, Name will be used"),
                     new ConfigSetting("SourceFolder",                required: false, value: stringValue,    description: "The name of the folder that the source code is contained in. If not specified, will automatically be calculated"),
                     new ConfigSetting("CoverageThreshold",           required: false, value: stringValue,    description: "The minimum coverage threshold that must be met under CI"),

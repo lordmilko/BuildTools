@@ -104,7 +104,7 @@ namespace BuildTools.Cmdlets
             return false;
         }
 
-        public object GetDynamicParameters()
+        public virtual object GetDynamicParameters()
         {
             if (!typeof(IEnvironmentIdentifier).IsAssignableFrom(typeof(TEnvironment)))
                 return null;
@@ -150,9 +150,9 @@ namespace BuildTools.Cmdlets
 
             var parameters = parametersTypes.Select(p => getService.MakeGenericMethod(p.ParameterType).Invoke(this, Array.Empty<object>())).ToArray();
 
-            var powerShell = (PowerShellService) parameters.Single(p => p is IPowerShellService);
+            var powerShell = parameters.Single(p => p is IPowerShellService) as PowerShellService;
 
-            powerShell.Push(this);
+            powerShell?.Push(this);
 
             try
             {
@@ -164,7 +164,7 @@ namespace BuildTools.Cmdlets
             }
             finally
             {
-                powerShell.Pop();
+                powerShell?.Pop();
             }
         }
     }
