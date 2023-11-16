@@ -196,7 +196,7 @@ namespace BuildTools
                 //1.0, this indicates we forgot to include Version.props
 
                 var expectedVersionInfo = getVersionService.GetVersion(config.IsLegacy);
-                var actualVersionInfo = fileSystem.GetVersionInfo(dll);
+                var actualVersionInfo = fileSystem.GetFileVersion(dll);
 
                 if (expectedVersionInfo.File != actualVersionInfo && actualVersionInfo == new Version(1, 0))
                     throw new InvalidOperationException($"File '{dll}' has default file version '{actualVersionInfo}' however it was expected to have version '{expectedVersionInfo.File}'. This indicates Version.props was not imported via any csproj/props file. Consider adding '<Import Project=\"..\\build\\Version.props\" />' to the top of a 'src\\Directory.Build.props' file.");

@@ -918,7 +918,7 @@ PrtgAPI is a C#/PowerShell library that abstracts away the complexity of interfa
                 var dll = Path.Combine(dir, "PrtgAPI.dll");
 
                 fileSystem.FileExistsMap[dll] = true;
-                fileSystem.VersionInfoMap[dll] = new Version(0, 9, 16);
+                fileSystem.FileVersionMap[dll] = new Version(0, 9, 16);
 
                 processService.ExecuteMap[$"powershell -command \"Add-Type -Path '{dll}'; [PrtgAPI.AuthMode]::Password\""] = new[] { "Password" };
             }

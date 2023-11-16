@@ -10,13 +10,29 @@ namespace BuildTools
 
         public string NewVersion { get; set; }
 
-        public VersionChange(Version oldVersion, Version newVersion)
+        public static VersionChange New(Version oldVersion, Version newVersion)
+        {
+            if (oldVersion == null && newVersion == null)
+                return null;
+
+            return new VersionChange(oldVersion, newVersion);
+        }
+
+        public static VersionChange New(string oldVersion, string newVersion)
+        {
+            if (oldVersion == null && newVersion == null)
+                return null;
+
+            return new VersionChange(oldVersion, newVersion);
+        }
+
+        private VersionChange(Version oldVersion, Version newVersion)
         {
             OldVersion = oldVersion.ToString();
             NewVersion = newVersion.ToString();
         }
 
-        public VersionChange(string oldVersion, string newVersion)
+        private VersionChange(string oldVersion, string newVersion)
         {
             OldVersion = oldVersion;
             NewVersion = newVersion;
@@ -65,12 +81,12 @@ namespace BuildTools
 
             var result = new SetVersionResult
             {
-                Package = new VersionChange(oldVersion.Package, newVersion.Package),
-                Assembly = new VersionChange(oldVersion.Assembly, newVersion.Assembly),
-                File = new VersionChange(oldVersion.File, newVersion.File),
-                Info = new VersionChange(oldVersion.Info, newVersion.Info),
-                Module = new VersionChange(oldVersion.Module, newVersion.Module),
-                ModuleTag = new VersionChange(oldVersion.ModuleTag, newVersion.ModuleTag),
+                Package = VersionChange.New(oldVersion.Package, newVersion.Package),
+                Assembly = VersionChange.New(oldVersion.Assembly, newVersion.Assembly),
+                File = VersionChange.New(oldVersion.File, newVersion.File),
+                Info = VersionChange.New(oldVersion.Info, newVersion.Info),
+                Module = VersionChange.New(oldVersion.Module, newVersion.Module),
+                ModuleTag = VersionChange.New(oldVersion.ModuleTag, newVersion.ModuleTag),
                 PreviousTag = oldVersion.PreviousTag
             };
 

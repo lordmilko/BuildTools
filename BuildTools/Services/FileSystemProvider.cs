@@ -32,7 +32,9 @@ namespace BuildTools
 
         void MoveDirectory(string sourceDirName, string destDirName);
 
-        Version GetVersionInfo(string fileName);
+        Version GetFileVersion(string fileName);
+
+        string GetProductVersion(string fileName);
 
         string ReadFileText(string path);
 
@@ -92,8 +94,11 @@ namespace BuildTools
 
         public void MoveDirectory(string sourceDirName, string destDirName) => Directory.Move(sourceDirName, destDirName);
 
-        public Version GetVersionInfo(string fileName) =>
+        public Version GetFileVersion(string fileName) =>
             new Version(FileVersionInfo.GetVersionInfo(fileName).FileVersion);
+
+        public string GetProductVersion(string fileName) =>
+            FileVersionInfo.GetVersionInfo(fileName).ProductVersion;
 
         public string ReadFileText(string path) => File.ReadAllText(path);
 

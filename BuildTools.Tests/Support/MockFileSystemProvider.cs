@@ -19,7 +19,8 @@ namespace BuildTools.Tests
         public List<string> DeletedDirectories { get; } = new List<string>();
         public List<string> CreatedDirectories { get; } = new List<string>();
         public List<(string source, string destination)> MovedFiles { get; } = new List<(string source, string destination)>();
-        public Dictionary<string, Version> VersionInfoMap { get; } = new Dictionary<string, Version>();
+        public Dictionary<string, Version> FileVersionMap { get; } = new Dictionary<string, Version>();
+        public Dictionary<string, string> ProductVersionMap { get; } = new Dictionary<string, string>();
         public Dictionary<string, Stream> WriteFileMap { get; } = new Dictionary<string, Stream>();
         public Dictionary<string, Action<string, string>> OnWriteFileText { get; } = new Dictionary<string, Action<string, string>>();
         public Dictionary<string, Action<string, string[]>> OnWriteFileLines { get; } = new Dictionary<string, Action<string, string[]>>();
@@ -107,12 +108,20 @@ namespace BuildTools.Tests
             throw new NotImplementedException();
         }
 
-        public Version GetVersionInfo(string fileName)
+        public Version GetFileVersion(string fileName)
         {
-            if (VersionInfoMap.TryGetValue(fileName, out var version))
+            if (FileVersionMap.TryGetValue(fileName, out var version))
                 return version;
 
             return new Version(1, 0);
+        }
+
+        public string GetProductVersion(string fileName)
+        {
+            if (ProductVersionMap.TryGetValue(fileName, out var version))
+                return version;
+
+            return "1.0.0.0";
         }
 
         public string ReadFileText(string path)

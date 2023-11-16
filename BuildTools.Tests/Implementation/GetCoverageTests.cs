@@ -603,7 +603,7 @@ namespace BuildTools.Tests
             powerShell.IsWindows = true;
 
             if (openCoverInstalled)
-                fileSystem.VersionInfoMap[OpenCoverExe] = new Version(5, 0);
+                fileSystem.FileVersionMap[OpenCoverExe] = new Version(5, 0);
         }
 
         private void SetupLegacy(MockFileSystemProvider fileSystem)

@@ -58,7 +58,7 @@ namespace BuildTools
 
                 if (existingCommand != null)
                 {
-                    var fileVersion = fileSystem.GetVersionInfo(existingCommand);
+                    var fileVersion = fileSystem.GetFileVersion(existingCommand);
 
                     if (chocolateyDependency.MinimumVersion != null)
                     {

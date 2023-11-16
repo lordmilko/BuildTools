@@ -59,6 +59,8 @@ namespace BuildTools.Cmdlets
 
             if (CI)
             {
+                powerShell.WriteColor($"Using BuildTools {GetType().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}", ConsoleColor.Cyan);
+
                 powerShell.WriteVerbose($"Generating CI module instead of regular module as -{nameof(CI)} was specified");
                 RegisterCI(configProvider, powerShell, name);
             }
