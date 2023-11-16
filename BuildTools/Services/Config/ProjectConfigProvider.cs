@@ -454,15 +454,48 @@ namespace BuildTools
         }
 
         /// <inheritdoc />
-        public string GetPowerShellProjectName() =>
-            GetProjectName(ProjectKind.PowerShell, Config.PowerShellProjectName, nameof(Config.PowerShellProjectName));
+        public string GetPowerShellProjectName(bool mandatory = true)
+        {
+            return GetProjectName(
+                ProjectKind.PowerShell,
+                Config.PowerShellProjectName,
+                nameof(Config.PowerShellProjectName),
+                () =>
+                {
+                    var expected = new[]
+                    {
+                        "System.Management.Automation",
+                        "Microsoft.PowerShell.5.ReferenceAssemblies",
+                        "PowerShellStandard.Library"
+                    };
+
+                    foreach (var project in projects)
+                    {
+                        var contents = fileSystem.ReadFileLines(project.FilePath);
+
+                        //If we have a project that references a PowerShell library, we must have a PowerShell project
+                        //that we just couldn't find (and it's best that our BuildTools config file be updated to say what it is,
+                        //so we don't match any test projects here)
+                        if (contents.Any(l => expected.Any(l.Contains)))
+                            return true;
+                    }
+
+                    return false;
+                }
+            );
+        }
 
         public string GetUnitTestProjectName() =>
             GetProjectName(ProjectKind.UnitTest, Config.UnitTestProjectName, nameof(Config.UnitTestProjectName));
 
         /// <inheritdoc />
-        public string GetSourcePowerShellModuleManifest(bool relativePath = false)
+        public string GetSourcePowerShellModuleManifest(bool relativePath = false, bool mandatory = true)
         {
+            var projectName = GetPowerShellProjectName(mandatory);
+
+            if (projectName == null)
+                return null;
+
             //It could either be under the PowerShell project root, or a Resources subfolder
 
             var powerShellProjectDir = Path.Combine(SourceRoot, GetPowerShellProjectName());
@@ -546,7 +579,7 @@ namespace BuildTools
             return path.Substring(length);
         }
 
-        private string GetProjectName(ProjectKind kind, string fallbackSetting, string fallbackSettingName)
+        private string GetProjectName(ProjectKind kind, string fallbackSetting, string fallbackSettingName, Func<bool> hasProjectType = null)
         {
             EnsureProjects();
 
@@ -562,6 +595,9 @@ namespace BuildTools
 
             if (candidates.Length == 1)
                 return candidates[0].NormalizedName;
+
+            if (hasProjectType != null && !hasProjectType())
+                return null;
 
             throw new InvalidOperationException($"Cannot process PowerShell projects: setting '{fallbackSettingName}' was not specified and PowerShell project could not automatically be identified.");
         }

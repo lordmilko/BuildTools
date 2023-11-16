@@ -195,30 +195,33 @@ using System.Reflection;
 
             var psd1Path = configProvider.GetSourcePowerShellModuleManifest();
 
-            var psd1Contents = fileSystem.ReadFileLines(psd1Path);
-
-            var newContents = psd1Contents.Select(v =>
+            if (psd1Path != null)
             {
-                if (v.StartsWith("ModuleVersion = '"))
+                var psd1Contents = fileSystem.ReadFileLines(psd1Path);
+
+                var newContents = psd1Contents.Select(v =>
                 {
-                    v = Regex.Replace(v, "ModuleVersion = '(.+?)'", $"ModuleVersion = '{versionStr}'");
+                    if (v.StartsWith("ModuleVersion = '"))
+                    {
+                        v = Regex.Replace(v, "ModuleVersion = '(.+?)'", $"ModuleVersion = '{versionStr}'");
+
+                        return v;
+                    }
+                    else if (Regex.IsMatch(v, ".+ReleaseNotes = '.+/tag.+"))
+                    {
+                        v = Regex.Replace(v, "(.+ReleaseNotes = '.+/tag/)(.+)", $"$1v{versionStr}");
+
+                        return v;
+                    }
 
                     return v;
-                }
-                else if (Regex.IsMatch(v, ".+ReleaseNotes = '.+/tag.+"))
-                {
-                    v = Regex.Replace(v, "(.+ReleaseNotes = '.+/tag/)(.+)", $"$1v{versionStr}");
+                }).ToArray();
 
-                    return v;
-                }
-
-                return v;
-            }).ToArray();
-
-            //New-ModuleManifest in PowerShell 5.1 generates a UTF16 file with little endian byte order.
-            //PowerShell Core generates a UTF8 file without a BOM. We opt to go for "normal UTF8" and
-            //include a BOM
-            fileSystem.WriteFileLines(psd1Path, newContents);
+                //New-ModuleManifest in PowerShell 5.1 generates a UTF16 file with little endian byte order.
+                //PowerShell Core generates a UTF8 file without a BOM. We opt to go for "normal UTF8" and
+                //include a BOM
+                fileSystem.WriteFileLines(psd1Path, newContents);
+            }
         }
     }
 }

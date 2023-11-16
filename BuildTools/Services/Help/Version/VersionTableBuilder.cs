@@ -11,7 +11,8 @@ namespace BuildTools
 
         public void Add(VersionType property, string source)
         {
-            Records.Add(new VersionTableRow(property, source));
+            if (source != null)
+                Records.Add(new VersionTableRow(property, source));
         }
 
         public override string ToString()

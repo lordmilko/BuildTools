@@ -34,6 +34,7 @@ namespace BuildTools
         /// <summary>
         /// Gets the directory in a test project containing PowerShell tests.
         /// </summary>
+        /// <param name="project">The project to locate PowerShell tests within.</param>
         /// <returns>The directory in a test project containing PowerShell tests.</returns>
         string GetTestPowerShellDirectory(BuildProject project);
 
@@ -58,15 +59,18 @@ namespace BuildTools
         /// <summary>
         /// Gets the name of the PowerShell project.
         /// </summary>
-        /// <returns>The name of the PowerShell project.</returns>
-        string GetPowerShellProjectName();
+        /// <param name="mandatory">Whether to throw an exception if the PowerShell Project Name cannot be identified.</param>
+        /// <returns>The name of the PowerShell project, or null if <paramref name="mandatory"/> is false.</returns>
+        string GetPowerShellProjectName(bool mandatory = true);
 
         /// <summary>
         /// Gets the full path to the PowerShell Project's *.psd1 module manifest file in its original location.<para/>
         /// This does NOT retrieve the path to the *.psd1 file published to the bin folder.
         /// </summary>
+        /// <param name="relativePath">Whether to retrieve the relative, rather than absolute path to the manifest file.</param>
+        /// <param name="mandatory">Whether to throw an exception if the PowerShell Project Name cannot be identified.</param>
         /// <returns>The path to the *.psd1 file in its original location.</returns>
-        string GetSourcePowerShellModuleManifest(bool relativePath = false);
+        string GetSourcePowerShellModuleManifest(bool relativePath = false, bool mandatory = true);
 
         bool TryGetVersionAttribPath(out string path);
 

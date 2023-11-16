@@ -68,6 +68,8 @@ namespace BuildTools
             string file;
             string info;
             string package;
+            string moduleVersion = null;
+            string releaseTag = null;
             string previousTag = null;
 
             if (isLegacy)
@@ -99,11 +101,15 @@ namespace BuildTools
             }
 
             var psd1Path = configProvider.GetSourcePowerShellModuleManifest();
-            var psd1Contents = fileSystem.ReadFileText(psd1Path);
-            var psd1Hashtable = (Hashtable) powerShell.InvokeAndUnwrap(psd1Contents);
 
-            var moduleVersion = (string) psd1Hashtable["ModuleVersion"];
-            var releaseTag = GetReleaseTag(psd1Hashtable);
+            if (psd1Path != null)
+            {
+                var psd1Contents = fileSystem.ReadFileText(psd1Path);
+                var psd1Hashtable = (Hashtable) powerShell.InvokeAndUnwrap(psd1Contents);
+
+                moduleVersion = (string) psd1Hashtable["ModuleVersion"];
+                releaseTag = GetReleaseTag(psd1Hashtable);
+            }
 
             if (HaveGit())
             {
@@ -115,7 +121,7 @@ namespace BuildTools
                 new Version(assembly),
                 new Version(file),
                 info,
-                new Version(moduleVersion),
+                moduleVersion == null ? null : new Version(moduleVersion),
                 releaseTag,
                 previousTag
             );
