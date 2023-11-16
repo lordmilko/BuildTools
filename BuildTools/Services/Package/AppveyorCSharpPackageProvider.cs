@@ -191,6 +191,16 @@ namespace BuildTools
                 if (!fileSystem.FileExists(dll))
                     throw new FileNotFoundException($"Could not find expected library DLL '{dll}'", dll);
 
+                //Version.props should be included by Directory.Build.props. If we forgot to
+                //include it, the file version will be 1.0. If our expected file version is not
+                //1.0, this indicates we forgot to include Version.props
+
+                var expectedVersionInfo = getVersionService.GetVersion(config.IsLegacy);
+                var actualVersionInfo = fileSystem.GetVersionInfo(dll);
+
+                if (expectedVersionInfo.File != actualVersionInfo && actualVersionInfo == new Version(1, 0))
+                    throw new InvalidOperationException($"File '{dll}' has default file version '{actualVersionInfo}' however it was expected to have version '{expectedVersionInfo.File}'. This indicates Version.props was not imported via any csproj/props file. Consider adding '<Import Project=\"..\\build\\Version.props\" />' to the top of a 'src\\Directory.Build.props' file.");
+
                 var tests = configProvider.Config.PackageTests.CSharp;
 
                 if (tests.Any(t => !(t is ScriptPackageTest)))

@@ -171,7 +171,23 @@ Start-BuildEnvironment $PSScriptRoot -CI:(!!$env:CI) -Quiet:$Quiet";
         ""SelfBootstrap"" {
             dotnet build $PSScriptRoot\..\BuildTools\BuildTools.csproj -c Release
 
-            Import-Module $PSScriptRoot\..\BuildTools\bin\Release\net461\lordmilko.BuildTools
+            $fileStream = [IO.File]::OpenRead(""$PSScriptRoot\..\BuildTools\bin\Release\net461\lordmilko.BuildTools\BuildTools.dll"")
+
+            try
+            {
+                $memoryStream = New-Object System.IO.MemoryStream
+                $fileStream.CopyTo($memoryStream)
+
+                $dllBytes = $memoryStream.ToArray()
+
+                $assembly = [System.Reflection.Assembly]::Load($dllBytes)
+
+                Import-Module $assembly
+            }
+            finally
+            {
+                $fileStream.Dispose()
+            }
         }";
         }
 
