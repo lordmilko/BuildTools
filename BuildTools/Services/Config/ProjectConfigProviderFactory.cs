@@ -128,21 +128,12 @@ namespace BuildTools
                     {
                         if (value is string s)
                         {
-                            if (prop.PropertyType.IsEnum)
-                            {
-                                if (s.TryParseDescriptionToEnum(prop.PropertyType, out var val))
-                                    value = val;
-                            }
-                            else if (prop.PropertyType.IsArray)
-                            {
-                                var elm = prop.PropertyType.GetElementType();
-
-                                if (elm.IsEnum)
-                                {
-                                    if (s.TryParseDescriptionToEnum(elm, out var val))
-                                        value = val;
-                                }
-                            }
+                            value = ConvertString(prop, s);
+                        }
+                        else if (value is object[] o)
+                        {
+                            for (var i = 0; i < o.Length; i++)
+                                o[i] = ConvertString(prop, o[i].ToString());
                         }
 
                         value = LanguagePrimitives.ConvertTo(value, prop.PropertyType);
@@ -155,6 +146,27 @@ namespace BuildTools
             ValidateRequired(config, props.Values.ToArray());
 
             return config;
+        }
+
+        private object ConvertString(PropertyInfo prop, string s)
+        {
+            if (prop.PropertyType.IsEnum)
+            {
+                if (s.TryParseDescriptionToEnum(prop.PropertyType, out var val))
+                    return val;
+            }
+            else if (prop.PropertyType.IsArray)
+            {
+                var elm = prop.PropertyType.GetElementType();
+
+                if (elm.IsEnum)
+                {
+                    if (s.TryParseDescriptionToEnum(elm, out var val))
+                        return val;
+                }
+            }
+
+            return s;
         }
 
         private Func<T, TResult> ConvertScriptBlockToFunc<T, TResult>(ScriptBlock sb)

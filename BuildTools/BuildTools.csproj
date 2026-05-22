@@ -11,12 +11,6 @@
     <TestAdapterPath>..\PowerShell.TestAdapter\bin\$(Configuration)\netstandard2.0\PowerShell.TestAdapter.dll</TestAdapterPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Condition="Exists($(TestAdapterPath))" Include="$(TestAdapterPath)" Link="TestAdapters\PowerShell.TestAdapter.dll" Visible="false">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
   <ItemGroup Condition="'$(FrameworkType)' == 'Full'">
     <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" PrivateAssets="all" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" PrivateAssets="all" />
@@ -40,6 +34,14 @@
     <ItemGroup>
       <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' == 'Microsoft.PowerShell.5.ReferenceAssemblies' OR '%(ReferenceCopyLocalPaths.NuGetPackageId)' == 'System.IO.Compression'" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="CopyTestAdapter" AfterTargets="Build">
+
+    <Error Condition="!Exists('$(TestAdapterPath)')" Text="'$(TestAdapterPath)' does not exist" />
+    
+    <!-- For some reason this gets called 3 times; one of the times the TargetFramework is empty, so we need to exclude it -->
+    <Copy SourceFiles="$(TestAdapterPath)" DestinationFolder="$(OutputPath)\TestAdapters" Condition="'$(TargetFramework)' != ''" />
   </Target>
 
 </Project>

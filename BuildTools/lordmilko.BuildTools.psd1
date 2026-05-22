@@ -12,7 +12,7 @@
 RootModule = 'BuildTools.dll'
 
 # Version number of this module.
-ModuleVersion = '0.1.0'
+ModuleVersion = '0.1.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -107,7 +107,7 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'Release Notes: https://github.com/lordmilko/BuildTools/releases/tag/v0.1.0
+        ReleaseNotes = 'Release Notes: https://github.com/lordmilko/BuildTools/releases/tag/v0.1.1
 
 ---
 

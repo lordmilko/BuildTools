@@ -80,7 +80,11 @@ namespace BuildTools
 
             if (config.Features.Contains(attrib.Feature))
             {
-                //The feature is allowed
+                //The feature is allowed, but we'd better check if the command is banned
+
+                if (config.Commands != null && !config.Commands.Contains(attrib.Kind))
+                    return false;
+
                 return true;
             }
             else

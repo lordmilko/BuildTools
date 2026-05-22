@@ -25,17 +25,18 @@ namespace BuildTools
             {
                 var val = (object[]) LanguagePrimitives.ConvertTo(hashtable[key], typeof(object[]));
 
-                switch (key)
+                switch (key.ToLower())
                 {
-                    case "C#":
+                    case "c#":
+                    case "csharp":
                         packageFiles.CSharp = ProcessFiles(key, val);
                         break;
 
-                    case "PowerShell":
+                    case "powershell":
                         packageFiles.PowerShell = ProcessFiles(key, val);
                         break;
 
-                    case "Redist":
+                    case "redist":
                         packageFiles.Redist = ProcessFiles(key, val);
                         break;
 

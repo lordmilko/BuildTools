@@ -15,7 +15,7 @@ namespace BuildTools.Tests.Implementation
         private const string SourceRoot = SolutionRoot + "\\src";
 
         private const string ChocolateyInstall = "C:\\ProgramData\\chocolatey";
-        private const string ChocolateyExe = ChocolateyInstall + "\\bin\\chocolatey.exe";
+        private const string ChocolateyExe = ChocolateyInstall + "\\bin\\choco.exe";
         private const string NuGetExe = ChocolateyInstall + "\\bin\\nuget.exe";
 
         private static readonly string rootModule = string.Join(Environment.NewLine, new[]

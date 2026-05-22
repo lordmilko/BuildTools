@@ -188,7 +188,8 @@ namespace BuildTools.Tests
         #region Feature + CommandKind
 
         //The logic we want to employ is that Feature immediately narrows the pool of commands, however CommandKind trumps Feature as long as it is specified.
-        //If CommandKind is not specified, the explicit rules set by Feature win
+        //If CommandKind is not specified, the explicit rules set by Feature win. However, this kind of calls apart when we say we want to get rid of PSScriptAnalyzer
+        //which is a System command, so we had to change the rules
 
         [TestMethod]
         public void ConfigTests_CommandAndFeature_Feature_WithoutCommand_LimitsToFeature()
@@ -208,7 +209,7 @@ namespace BuildTools.Tests
             Test("'Build'", "'InvokeBuild'", v =>
             {
                 Assert.IsTrue(v.HasCommand(typeof(InvokeBuild<>)));
-                Assert.IsTrue(v.HasCommand(typeof(ClearBuild<>)));
+                Assert.IsFalse(v.HasCommand(typeof(ClearBuild<>)));
 
                 Assert.IsFalse(v.HasCommand(typeof(InvokeTest<>)));
             });
@@ -220,7 +221,7 @@ namespace BuildTools.Tests
             Test("'Build'", "'InvokeBuild', 'InvokeTest'", v =>
             {
                 Assert.IsTrue(v.HasCommand(typeof(InvokeBuild<>)));
-                Assert.IsTrue(v.HasCommand(typeof(ClearBuild<>)));
+                Assert.IsFalse(v.HasCommand(typeof(ClearBuild<>)));
 
                 Assert.IsTrue(v.HasCommand(typeof(InvokeTest<>)));
             });

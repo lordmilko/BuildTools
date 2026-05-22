@@ -73,7 +73,11 @@ namespace BuildTools
             var expectedVersion = getVersionService.GetVersion(config.IsLegacy).File.ToString(3);
 
             var nuspecVersion = metadata.Element(ns + "version").Value;
-            var releaseNotes = metadata.Element(ns + "releaseNotes").Value;
+            var releaseNotes = metadata.Element(ns + "releaseNotes")?.Value;
+
+            if (releaseNotes == null)
+                throw new InvalidOperationException("A releaseNotes element could not be found. Consider adding a NuGet.props file with the required configuration in it and importing it into your project");
+
             var repository = metadata.Element(ns + "repository")?.Value;
 
             if (expectedVersion != nuspecVersion)
@@ -203,10 +207,10 @@ namespace BuildTools
 
                 var tests = configProvider.Config.PackageTests.CSharp;
 
-                if (tests.Any(t => !(t is ScriptPackageTest)))
+                if (tests.Any(t => !(t is ScriptPackageTest || t is SkipPackageTest)))
                     throw new InvalidOperationException($"C# packages only support package tests of type {nameof(ScriptPackageTest)}");
 
-                var scriptTests = tests.Cast<ScriptPackageTest>().ToArray();
+                var scriptTests = tests.OfType<ScriptPackageTest>().ToArray();
 
                 foreach (var test in scriptTests)
                     test.Test(processService, powerShell.Edition, dll);

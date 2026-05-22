@@ -271,7 +271,7 @@ $global:ProgressPreference = 'SilentlyContinue'
 
 try
 {{
-    Publish-Module -Path '{path}' -Repository '{PackageSourceService.RepoName}' -WarningAction SilentlyContinue
+    Publish-Module -Path '{path}' -Repository '{PackageSourceService.RepoName}' -WarningAction SilentlyContinue -ErrorAction Stop
 }}
 finally
 {{

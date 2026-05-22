@@ -25,6 +25,7 @@ namespace BuildTools
                 switch (key.ToLower())
                 {
                     case "c#":
+                    case "csharp":
                         packageTests.CSharp = ProcessTests(key, val);
                         break;
 
@@ -112,6 +113,10 @@ namespace BuildTools
                                 throw new NotImplementedException($"Package test of type '{kind}' requires {nameof(command)} be specified");
 
                             results.Add(new PSExportPackageTest(command, CommandTypes.Alias));
+                            break;
+
+                        case "skip":
+                            results.Add(SkipPackageTest.Instance);
                             break;
 
                         default:

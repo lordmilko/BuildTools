@@ -8,7 +8,7 @@ if($env:LORDMILKO_BUILDTOOLS_DEVELOPMENT)
     switch($env:LORDMILKO_BUILDTOOLS_DEVELOPMENT)
     {
         "SelfBootstrap" {
-            dotnet build $PSScriptRoot\..\BuildTools\BuildTools.csproj -c Release
+            dotnet build $PSScriptRoot\..\BuildTools.sln -c Release
 
             $fileStream = [IO.File]::OpenRead("$PSScriptRoot\..\BuildTools\bin\Release\net461\lordmilko.BuildTools\BuildTools.dll")
 

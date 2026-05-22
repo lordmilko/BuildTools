@@ -12,7 +12,7 @@ namespace BuildTools.Tests
     public class GetCoverageTests : BaseTest
     {
         private const string ChocolateyInstall = "C:\\ProgramData\\chocolatey";
-        private const string ChocolateyExe = ChocolateyInstall + "\\bin\\chocolatey.exe";
+        private const string ChocolateyExe = ChocolateyInstall + "\\bin\\choco.exe";
 
         private const string OpenCoverCommand = "opencover.console";
         private const string OpenCoverExe = ChocolateyInstall + "\\bin\\opencover.console.exe";

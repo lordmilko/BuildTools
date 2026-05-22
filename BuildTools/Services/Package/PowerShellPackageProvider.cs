@@ -81,25 +81,33 @@ namespace BuildTools
 
             for (var i = 0; i < lines.Length; i++)
             {
-                if (lines[i].StartsWith("RootModule ="))
+                var line = lines[i];
+
+                if (line.StartsWith("RootModule =") || line.StartsWith("RequiredAssemblies ="))
                 {
-                    var dllName = configProvider.GetPowerShellProjectName();
-
-                    lines[i] = string.Join(Environment.NewLine, $@"
-RootModule = if($PSEdition -eq 'Core')
-{{
-    'coreclr\{dllName}.dll'
-}}
-else # Desktop
-{{
-    'fullclr\{dllName}.dll'
-}}".TrimStart().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
-
-                    break;
+                    lines[i] = GetMultiTargetExpr(line);
                 }
             }
 
             fileSystem.WriteFileLines(psd1Path, lines);
+        }
+
+        private string GetMultiTargetExpr(string line)
+        {
+            var equals = line.IndexOf('=') + 1;
+
+            var expr = line.Substring(equals).Trim('@', '(', ' ', ')').Split(',').Select(v => v.Trim('\'', '\"', ' ')).ToArray();
+            var name = line.Substring(0, equals);
+
+            return string.Join(Environment.NewLine, $@"
+{name} if($PSEdition -eq 'Core')
+{{
+    {string.Join(",", expr.Select(v => $"'coreclr\\{v}'"))}
+}}
+else # Desktop
+{{
+    {string.Join(",", expr.Select(v => $"'fullclr\\{v}'"))}
+}}".TrimStart().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
         }
 
         private string GetPsd1Path(string primaryModuleDir)

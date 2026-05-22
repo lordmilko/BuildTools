@@ -8,9 +8,9 @@ namespace BuildTools.Tests.Dependency
     [TestClass]
     public class ChocolateyDependencyTests : BaseTest
     {
-        private const string ChocolateyCommand = "chocolatey";
+        private const string ChocolateyCommand = "choco";
         private const string ChocolateyInstall = "C:\\ProgramData\\chocolatey";
-        private const string ChocolateyExe = ChocolateyInstall + "\\bin\\chocolatey.exe";
+        private const string ChocolateyExe = ChocolateyInstall + "\\bin\\choco.exe";
         private const string ChocolateyUrl = "https://chocolatey.org/install.ps1";
         private const string ChocoScript = "function installChoco {}";
 
